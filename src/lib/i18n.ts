@@ -71,6 +71,7 @@ const en = {
     allLanguages: 'All languages', allPublishers: 'All publishers',
     anyPrice: 'Any price', priceMinLabel: 'Minimum price', priceMaxLabel: 'Maximum price',
     resetFilters: 'Reset filters',
+    seriesLabel: 'Series', seriesDesc: 'Every volume in this collection',
   },
   product: {
     shippingReturns: 'Shipping & returns', shippingNote: 'Ships from Vienna. Free EU shipping over {amount}.',
@@ -595,6 +596,7 @@ const fa: Dict = {
     allLanguages: 'همهٔ زبان‌ها', allPublishers: 'همهٔ ناشران',
     anyPrice: 'هر قیمتی', priceMinLabel: 'کمترین قیمت', priceMaxLabel: 'بیشترین قیمت',
     resetFilters: 'بازنشانی فیلترها',
+    seriesLabel: 'مجموعه‌ها', seriesDesc: 'همهٔ مجلدات این مجموعه',
   },
   product: {
     shippingReturns: 'ارسال و مرجوعی', shippingNote: 'ارسال از وین. ارسال رایگان به اتحادیهٔ اروپا برای خرید بالای {amount}.',

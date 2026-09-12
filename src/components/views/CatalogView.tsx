@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SlidersHorizontal, X, Tag, Ban, RotateCcw } from 'lucide-react'
+import { SlidersHorizontal, X, Tag, Ban, RotateCcw, Layers, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -36,6 +36,7 @@ export interface CatalogQuery {
   sort?: string
   page?: string
   q?: string
+  series?: string
 }
 
 /** Facet options pulled from live catalog data (/api/products/facets). */
@@ -46,6 +47,18 @@ interface Facets {
   price: { min: number; max: number }
 }
 const EMPTY_FACETS: Facets = { languages: [], publishers: [], formats: [], price: { min: 0, max: 100 } }
+
+/** Published book series (R5: the /books series chip rail). Same payload the
+ *  /series index uses — slug, localized names, volume count, cover fan. */
+interface SeriesEntry {
+  slug: string
+  name: string
+  nameEn: string
+  nameFa: string
+  count: number
+  cover: string | null
+  covers: string[]
+}
 
 const toList = (s?: string): string[] =>
   s ? [...new Set(s.split(',').map((x) => x.trim()).filter(Boolean))] : []
@@ -82,6 +95,7 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
   const [categories, setCategories] = useState<CategoryDTO[]>([])
   const [people, setPeople] = useState<PersonDTO[]>([])
   const [facets, setFacets] = useState<Facets | null>(null)
+  const [seriesList, setSeriesList] = useState<SeriesEntry[]>([])
   const [filtersOpen, setFiltersOpen] = useState(false)
   const settings = useSettings()
   const promotion = settings?.promotion ?? null
@@ -100,6 +114,9 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
     apiGet<CategoryDTO[]>('/api/categories?locale=' + locale).then((r) => { if (alive) setCategories(r) }).catch(() => { if (alive) setCategories([]) })
     apiGet<PersonDTO[]>('/api/people?locale=' + locale).then((r) => { if (alive) setPeople(r) }).catch(() => { if (alive) setPeople([]) })
     apiGet<Facets>('/api/products/facets').then((r) => { if (alive) setFacets(r) }).catch(() => { if (alive) setFacets(EMPTY_FACETS) })
+    apiGet<{ series: SeriesEntry[] }>('/api/series?locale=' + locale)
+      .then((r) => { if (alive) setSeriesList(r.series ?? []) })
+      .catch(() => { if (alive) setSeriesList([]) })
     return () => { alive = false }
   }, [locale])
 
@@ -151,6 +168,7 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
     if (q.maxPrice) params.set('maxPrice', q.maxPrice)
     if (q.sale) params.set('sale', q.sale)
     if (q.fixed) params.set('fixed', q.fixed)
+    if (q.series) params.set('series', q.series)
     params.set('sort', q.sort ?? 'featured')
     return params
   }, [queryString, locale])
@@ -206,9 +224,11 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
   }
 
   const activeCategory = categories.find((c) => c.slug === query.category)
+  const selSeries = query.series ?? null
+  const activeSeries = seriesList.find((s) => s.slug === selSeries) ?? null
   const activeFilterCount =
     selCats.length + selFormats.length + selLangs.length + selPubs.length +
-    (availActive ? 1 : 0) + (saleActive ? 1 : 0) + (priceActive ? 1 : 0) + (query.fixed ? 1 : 0)
+    (availActive ? 1 : 0) + (saleActive ? 1 : 0) + (priceActive ? 1 : 0) + (query.fixed ? 1 : 0) + (selSeries ? 1 : 0)
 
   const countBadge = (n: number) => (
     <span className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">
@@ -410,6 +430,7 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
     ...(availActive ? [{ key: 'avail', label: t.catalog.inStockOnly, clear: () => setParam('availability', undefined) }] : []),
     ...(saleActive ? [{ key: 'sale', label: t.catalog.onSale, clear: () => applyParams({ sale: undefined }) }] : []),
     ...(query.fixed ? [{ key: 'fixed', label: t.catalog.fixedFilter, clear: () => applyParams({ fixed: undefined }) }] : []),
+    ...(selSeries ? [{ key: `series-${selSeries}`, label: activeSeries?.name ?? selSeries, clear: () => setParam('series', undefined) }] : []),
     ...(priceActive ? [{
       key: 'price',
       label: `€${query.minPrice ?? priceDomain.min} – €${query.maxPrice ?? priceDomain.max}`,
@@ -424,7 +445,9 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{activeCategory?.name ?? (query.fixed === '1' && promotion ? t.catalog.fixedTitle : query.sale === '1' && promotion ? t.catalog.saleTitle : heading ?? t.catalog.title)}</h1>
           <p className="mt-1 text-sm text-ink-3">
-            {activeCategory?.description ?? (locale === 'fa' ? 'همهٔ عناوین پرس‌پیکس' : 'Every title from Persepix')}
+            {activeSeries
+              ? t.catalog.seriesDesc
+              : activeCategory?.description ?? (locale === 'fa' ? 'همهٔ عناوین پرس‌پیکس' : 'Every title from Persepix')}
             {' · '}
             {items ? tf(t.catalog.count, { n: total }) : '…'}
           </p>
@@ -466,6 +489,59 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
           </div>
         </div>
       </header>
+
+      {/* R5: series chip rail — one-click shelf filtering on /books. Fed by
+          /api/series (same payload as the /series index); hides itself when
+          the shop has no published series. */}
+      {seriesList.length > 0 && (
+        <div className="mb-5 flex items-center gap-3" role="group" aria-label={t.catalog.seriesLabel}>
+          <span className="hidden shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-3 sm:inline">
+            {t.catalog.seriesLabel}
+          </span>
+          <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1 scrollbar-slim">
+            {seriesList.map((s) => {
+              const active = s.slug === selSeries
+              return (
+                <button
+                  key={s.slug} type="button" onClick={() => setParam('series', active ? undefined : s.slug)}
+                  aria-pressed={active} title={s.name}
+                  className={cn(
+                    'group flex h-11 shrink-0 items-center gap-2.5 rounded-full border ps-2 pe-4 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50',
+                    active
+                      ? 'border-brand bg-brand text-white shadow-sm'
+                      : 'border-line bg-white text-ink-2 hover:-translate-y-px hover:border-brand/40 hover:text-ink hover:shadow-sm',
+                  )}
+                >
+                  <span className="relative flex h-7 w-9 shrink-0 items-center justify-center" aria-hidden>
+                    {s.covers.length >= 2 ? (
+                      <span className="relative block h-7 w-9">
+                        <img src={s.covers[1]!} alt="" width={18} height={24} loading="lazy" className="absolute start-4 top-0 h-6 w-4.5 rounded-[3px] border border-white/80 object-cover shadow-sm" />
+                        <img src={s.covers[0]!} alt="" width={18} height={24} loading="lazy" className="absolute start-0 top-0.5 h-6 w-4.5 rounded-[3px] border border-white/80 object-cover shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5" />
+                      </span>
+                    ) : s.cover ? (
+                      <img src={s.cover} alt="" width={20} height={28} loading="lazy" className="h-7 w-5 rounded-[3px] border border-white/80 object-cover shadow-sm" />
+                    ) : (
+                      <span className={cn('flex h-7 w-7 items-center justify-center rounded-md', active ? 'bg-white/20' : 'bg-brand-soft')}>
+                        <Layers className={cn('h-3.5 w-3.5', active ? 'text-white' : 'text-brand')} aria-hidden />
+                      </span>
+                    )}
+                  </span>
+                  <span className="whitespace-nowrap">{s.name}</span>
+                  <span
+                    className={cn(
+                      'rounded-full px-1.5 py-px text-[10px] font-bold leading-4 tabular-nums transition-colors',
+                      active ? 'bg-white/25 text-white' : 'bg-soft text-ink-3 group-hover:bg-brand-soft group-hover:text-brand',
+                    )}
+                  >
+                    {dig(s.count)}
+                  </span>
+                  {active && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Sale banner (sale-filtered catalog view) */}
       {query.sale === '1' && promotion && (

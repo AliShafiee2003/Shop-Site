@@ -14,6 +14,7 @@ import { getCartPayload, getOrCreateCart, type CartPayloadDTO } from '@/lib/serv
 import { validateDiscount } from '@/lib/server/discounts'
 import { loadGiftWrapConfig } from '@/lib/server/giftwrap'
 import { computeTax } from '@/lib/server/money'
+import { queueOrderConfirmationEmail, type OrderMailItem, type OrderMailOrder } from '@/lib/server/order-mail'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { loadShippingSettings, methodServesCountry } from '@/lib/server/shipping'
 import { apiError, clientIp, json, nextOrderNumber, tehranDayParts, zodMessage } from '@/lib/server/utils'
@@ -192,8 +193,9 @@ export async function POST(req: NextRequest) {
   const cartRow = await getOrCreateCart()
 
   type OrderWithNumber = { orderNumber: string; publicRef: string; status: string; paymentStatus: string; totalMinor: number }
+  type PersistResult = { client: OrderWithNumber; mail: OrderMailOrder & { items: OrderMailItem[] } }
 
-  async function persistOrder(paid: boolean, result: CardResult, attempt: number): Promise<OrderWithNumber> {
+  async function persistOrder(paid: boolean, result: CardResult, attempt: number): Promise<PersistResult> {
     return db.$transaction(async (tx) => {
       // Daily sequence (Tehran day) → SP-YY-MM-DD-NNNN; retry bumps the seq past any race collision.
       const { dayStartUTC } = tehranDayParts(new Date())
@@ -343,7 +345,34 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      return { orderNumber, publicRef, status: order.status, paymentStatus: order.paymentStatus, totalMinor }
+      // R5: the payload the REAL outbox mail is built from (returned out of
+      // the tx, queued after commit — a mail failure must not roll back the
+      // order, and the client response shape stays unchanged).
+      const mail: PersistResult['mail'] = {
+        id: order.id,
+        orderNumber,
+        publicRef,
+        email: order.email,
+        locale: order.locale,
+        subtotalMinor,
+        discountCode,
+        discountMinor,
+        shippingMinor,
+        giftWrap,
+        giftWrapMinor,
+        totalMinor,
+        items: cart.items.map((i) => ({
+          titleEn: i.titleEn,
+          titleFa: i.titleFa,
+          quantity: i.quantity,
+          totalMinor: i.lineTotalMinor,
+        })),
+      }
+
+      return {
+        client: { orderNumber, publicRef, status: order.status, paymentStatus: order.paymentStatus, totalMinor },
+        mail,
+      }
     })
   }
 
@@ -357,8 +386,16 @@ export async function POST(req: NextRequest) {
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const order = await persistOrder(true, payment, attempt)
-        if (idemKey) idempotencyRemember(idemKey, 200, order)
-        return json(order)
+        // R5: real ORDER_CONFIRMATION row in the MailMessage outbox (the
+        // seam a production SMTP provider consumes). Best-effort — a mail
+        // outage must never fail a paid order, but it must be visible.
+        try {
+          await queueOrderConfirmationEmail(order.mail, order.mail.items, { headers: req.headers })
+        } catch (mailErr) {
+          console.error('outbox: order confirmation mail failed', mailErr)
+        }
+        if (idemKey) idempotencyRemember(idemKey, 200, order.client)
+        return json(order.client)
       } catch (err) {
         const code = (err as { code?: string })?.code
         if (code === 'P2002' && attempt < 3) continue // order-number collision → retry

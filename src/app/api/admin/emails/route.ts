@@ -38,7 +38,7 @@ export async function GET() {
   const user = await requireAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
-  const [events, notices] = await Promise.all([
+  const [events, notices, mails] = await Promise.all([
     db.orderEvent.findMany({
       where: { type: 'EMAIL_QUEUED' },
       orderBy: { createdAt: 'desc' },
@@ -61,9 +61,35 @@ export async function GET() {
       take: 8,
       include: { variant: { include: { product: { include: { translations: true } } } } },
     }),
+    // R5: real order-lifecycle mails (ORDER_CONFIRMATION / SHIPPING_NOTICE)
+    // joined to their order so the outbox renders the SAME full summary the
+    // recipient's copy carries — straight from the row a provider will send.
+    db.mailMessage.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 12,
+      include: {
+        order: {
+          select: {
+            id: true, orderNumber: true, email: true, locale: true,
+            subtotalMinor: true, discountCode: true, discountMinor: true, shippingMinor: true, totalMinor: true,
+            giftWrap: true, giftWrapMinor: true, giftMessage: true,
+            items: { select: { titleEn: true, quantity: true, totalMinor: true } },
+            shipments: { orderBy: { createdAt: 'desc' }, take: 1, select: { carrier: true, trackingUrl: true } },
+          },
+        },
+      },
+    }),
   ])
 
-  const orderEmails: RenderedEmail[] = events.map((ev) => {
+  // R5 dedupe: orders that already have REAL outbox rows must not ALSO render
+  // their legacy derived EMAIL_QUEUED previews (which would duplicate them).
+  const orderIdsWithRealMail = new Set(
+    mails.filter((m) => m.orderId && m.order).map((m) => m.orderId as string),
+  )
+
+  const orderEmails: RenderedEmail[] = events
+    .filter((ev) => !orderIdsWithRealMail.has(ev.orderId)) // R5: real row exists → skip the derived preview
+    .map((ev) => {
     const o = ev.order
     const isShipping = ev.message.toLowerCase().includes('shipping')
     const fa = o.locale === 'fa'
@@ -134,13 +160,10 @@ export async function GET() {
     }
   })
 
-  // Generic queued mails (MailMessage outbox, S13): password-reset mails etc.
-  // Subjects/links are NOT expanded here — the body contains the single-use
-  // token and only the recipient's own copy would (in production).
-  const mails = await db.mailMessage.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 12,
-  })
+  // Generic queued mails (MailMessage outbox, S13/R5): password-reset mails
+  // etc. render as one-line previews (the full body — with its single-use
+  // token — stays only in the recipient's copy); ORDER_CONFIRMATION /
+  // SHIPPING_NOTICE rows joined to their order render as FULL order emails.
   // Kind-specific one-line previews (the full body — with its single-use
   // token — stays only in the recipient's copy).
   const mailIntro = (kind: string, fa: boolean): string => {
@@ -151,27 +174,62 @@ export async function GET() {
         return fa ? 'پیوند یک‌بارمصرف تأیید ایمیل صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A single-use email-verification link was issued (preview — the full body belongs to the recipient).'
       case 'NEWSLETTER_CONFIRM':
         return fa ? 'پیوند تأیید عضویت در خبرنامه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A newsletter double opt-in confirmation link was issued (preview — the full body belongs to the recipient).'
+      case 'ORDER_CONFIRMATION':
+        return fa ? 'ایمیل تأیید سفارش در صف ارسال قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The order-confirmation email was queued (preview — the originating order is unavailable).'
+      case 'SHIPPING_NOTICE':
+        return fa ? 'ایمیل اطلاع‌رسانی ارسال سفارش در صف قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The shipping-notice email was queued (preview — the originating order is unavailable).'
       default:
         return fa ? 'یک ایمیل تراکنشی در صف قرار گرفت (پیش‌نمایش).' : 'A transactional email was queued (preview).'
     }
   }
-  const mailEmails: RenderedEmail[] = mails.map((m) => ({
-    id: `mail-${m.id}`,
-    orderId: null,
-    orderNumber: '',
-    to: m.to,
-    kind: m.kind as RenderedEmail['kind'],
-    locale: m.locale,
-    createdAt: m.createdAt.toISOString(),
-    subject: m.subject,
-    greeting: '',
-    intro: mailIntro(m.kind, m.locale === 'fa'),
-    items: [],
-    subtotalMinor: 0,
-    shippingMinor: 0,
-    totalMinor: 0,
-    footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
-  }))
+  const orderMailEmails: RenderedEmail[] = []
+  const plainMailEmails: RenderedEmail[] = []
+  for (const m of mails) {
+    if (m.orderId && m.order && (m.kind === 'ORDER_CONFIRMATION' || m.kind === 'SHIPPING_NOTICE')) {
+      const o = m.order
+      const fa = o.locale === 'fa'
+      const items: EmailLine[] = o.items.map((it) => ({ title: it.titleEn, qty: it.quantity, lineTotalMinor: it.totalMinor }))
+      const ship = o.shipments[0]
+      orderMailEmails.push({
+        id: `mail-${m.id}`, orderId: o.id, orderNumber: o.orderNumber, to: o.email, kind: m.kind as RenderedEmail['kind'],
+        locale: o.locale, createdAt: m.createdAt.toISOString(),
+        subject: m.subject,
+        greeting: fa ? 'سلام،' : 'Hello,',
+        intro: fa
+          ? m.kind === 'SHIPPING_NOTICE'
+            ? 'سفارش شما تحویل باربری شد. با پیوند زیر می‌توانید مرسوله را پیگیری کنید.'
+            : 'از خرید شما سپاسگزاریم. خلاصهٔ سفارش شما در زیر آمده است.'
+          : m.kind === 'SHIPPING_NOTICE'
+            ? 'Good news — your parcel is on its way. Track it any time with the link below.'
+            : 'Thank you for your order. Here is a summary of what you’ll be reading soon.',
+        items,
+        subtotalMinor: o.subtotalMinor, discountCode: o.discountCode, discountMinor: o.discountMinor, shippingMinor: o.shippingMinor, totalMinor: o.totalMinor,
+        giftWrap: o.giftWrap, giftWrapMinor: o.giftWrapMinor, giftMessage: o.giftMessage,
+        carrier: ship?.carrier ?? undefined,
+        trackingUrl: ship?.trackingUrl ?? undefined,
+        footerNote: fa ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+      })
+      continue
+    }
+    plainMailEmails.push({
+      id: `mail-${m.id}`,
+      orderId: null,
+      orderNumber: '',
+      to: m.to,
+      kind: m.kind as RenderedEmail['kind'],
+      locale: m.locale,
+      createdAt: m.createdAt.toISOString(),
+      subject: m.subject,
+      greeting: '',
+      intro: mailIntro(m.kind, m.locale === 'fa'),
+      items: [],
+      subtotalMinor: 0,
+      shippingMinor: 0,
+      totalMinor: 0,
+      footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+    })
+  }
+  const mailEmails = [...orderMailEmails, ...plainMailEmails]
 
   const items = [...orderEmails, ...bisEmails, ...mailEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   return json({ items })

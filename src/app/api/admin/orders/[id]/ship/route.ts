@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
+import { queueShippingNoticeEmail } from '@/lib/server/order-mail'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const shipSchema = z.object({
@@ -76,6 +77,34 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       { orderId: order.id, type: 'EMAIL_QUEUED', message: 'Shipping confirmation email queued (sandbox)', actor: 'system' },
     ],
   })
+
+  // R5: real SHIPPING_NOTICE row in the MailMessage outbox (SMTP seam).
+  // Best-effort — the shipment must succeed even if the outbox is unhappy.
+  try {
+    const items = await db.orderItem.findMany({
+      where: { orderId: order.id },
+      select: { titleEn: true, titleFa: true, quantity: true, totalMinor: true },
+    })
+    await queueShippingNoticeEmail(
+      {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        publicRef: order.publicRef,
+        email: order.email,
+        locale: order.locale,
+        subtotalMinor: order.subtotalMinor,
+        discountCode: order.discountCode,
+        discountMinor: order.discountMinor,
+        shippingMinor: order.shippingMinor,
+        giftWrap: order.giftWrap,
+        giftWrapMinor: order.giftWrapMinor,
+        totalMinor: order.totalMinor,
+      },
+      { carrier, trackingNumber: trackingNumberNorm, trackingUrl: shipment.trackingUrl },
+      items,
+      { headers: req.headers },
+    )
+  } catch { /* outbox is best-effort */ }
 
   await audit(user.email, 'ORDER_SHIPPED', 'Order', order.id, `Order ${order.orderNumber} shipped via ${carrier}`)
 

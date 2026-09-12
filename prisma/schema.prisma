@@ -472,6 +472,9 @@ model Order {
   userId              String?
   email               String
   status              String   @default("PENDING_PAYMENT") // PENDING_PAYMENT | PAID | PROCESSING | SHIPPED | DELIVERED | CANCELLED | REFUNDED | PARTIALLY_REFUNDED
+  // R5: transactional mails minted for this order (ORDER_CONFIRMATION /
+  // SHIPPING_NOTICE) — the SMTP outbox seam.
+  orderMails          MailMessage[] @relation("OrderMails")
   paymentStatus       String   @default("PENDING") // PENDING | SUCCEEDED | FAILED | CANCELLED | PARTIALLY_REFUNDED | REFUNDED
   fulfillmentStatus   String   @default("UNFULFILLED") // UNFULFILLED | PARTIAL | FULFILLED | DELIVERED
   currency            String   @default("EUR")
@@ -941,13 +944,19 @@ model MailMessage {
   id        String    @id @default(cuid())
   to        String
   subject   String
-  kind      String // PASSWORD_RESET | EMAIL_VERIFY | NEWSLETTER_CONFIRM | (future: ORDER_CONFIRMATION, …)
+  kind      String // PASSWORD_RESET | EMAIL_VERIFY | NEWSLETTER_CONFIRM | ORDER_CONFIRMATION | SHIPPING_NOTICE
   bodyText  String
   locale    String    @default("en")
+  // Order lifecycle mails (R5) carry the originating order so the admin
+  // outbox can render the full order summary from the SAME row a future SMTP
+  // provider would send. SetNull: the mail survives an order hard-delete.
+  order     Order?    @relation("OrderMails", fields: [orderId], references: [id], onDelete: SetNull)
+  orderId   String?
   sentAt    DateTime?
   createdAt DateTime  @default(now())
 
   @@index([createdAt])
+  @@index([orderId])
 }
 
 // ───────────────── S5 — per-account login throttle (DB-backed) ─────────────────

@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
+// R5: regenerated client required after the MailMessage.orderId push —
+// a stale cached client would reject the new column (Unknown argument).
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }

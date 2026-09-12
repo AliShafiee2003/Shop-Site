@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -4853,8 +4853,10 @@ function AdminMarketing() {
               const isReset = em.kind === 'PASSWORD_RESET'
               const isVerify = em.kind === 'EMAIL_VERIFY'
               const isNlConfirm = em.kind === 'NEWSLETTER_CONFIRM'
+              const isShipNotice = em.kind === 'SHIPPING_NOTICE'
+              const isOrderConfirm = em.kind === 'ORDER_CONFIRMATION'
               return (
-                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : 'border-line')}>
+                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : 'border-line')}>
                   <button
                     type="button" onClick={() => setOpenEmail(open ? null : em.id)} aria-expanded={open}
                     className={cn('flex w-full flex-wrap items-center gap-2 px-4 py-3 text-start transition hover:bg-soft/60', open && 'bg-brand-soft/40')}
@@ -4868,8 +4870,12 @@ function AdminMarketing() {
                       <Badge tone="success"><MailCheck className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید ایمیل' : 'Verify email'}</Badge>
                     ) : isNlConfirm ? (
                       <Badge tone="brand"><MailPlus className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید خبرنامه' : 'Newsletter opt-in'}</Badge>
+                    ) : isShipNotice ? (
+                      <Badge tone="brand"><Truck className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'ارسال سفارش' : 'Shipping notice'}</Badge>
+                    ) : isOrderConfirm ? (
+                      <Badge tone="success"><ReceiptText className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید سفارش' : 'Order confirmation'}</Badge>
                     ) : (
-                      <Badge tone={em.kind === 'SHIPPING_NOTICE' ? 'brand' : 'success'}>{em.kind === 'SHIPPING_NOTICE' ? t.account.shipped : '✓'}</Badge>
+                      <Badge tone="success">✓</Badge>
                     )}
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{em.subject}</span>
                     <span className="text-xs text-ink-3 bdi" dir="ltr">{em.to}</span>
@@ -4933,6 +4939,13 @@ function AdminMarketing() {
                             <p className="mt-3 rounded-md bg-brand-soft px-3.5 py-2.5 text-xs text-brand">
                               {t.admin.emailCarrier}: <span className="font-medium">{em.carrier ?? '—'}</span>
                               {em.trackingUrl && <> · <a href={em.trackingUrl} className="font-medium underline" onClick={(e) => e.preventDefault()}>{t.admin.trackOrder}</a></>}
+                            </p>
+                          )}
+                          {(isOrderConfirm || isShipNotice) && (
+                            <p className="mt-3 rounded-md bg-soft px-3.5 py-2.5 text-[11px] leading-relaxed text-ink-3">
+                              {em.locale === 'fa'
+                                ? 'متن کامل این نامه در صف ارسال (Outbox) ذخیره شده است و به‌محض اتصال سرویس ایمیل ارسال می‌شود.'
+                                : 'This mail lives in the transactional outbox and is dispatched as soon as a mail provider is connected.'}
                             </p>
                           )}
                         </>
