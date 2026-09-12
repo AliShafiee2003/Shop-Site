@@ -1,0 +1,902 @@
+// Simorgh Press — bilingual editorial commerce platform
+// SQLite (sandbox) — enums are represented as String unions; JSON payloads as String.
+// NOTE: spec targets PostgreSQL; SQLite chosen for sandbox. Migration notes at bottom.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Identity & customers ─────────────────────────
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String? // null for OAuth-only accounts (e.g. Google sign-in)
+  googleSub        String? @unique // Google's stable subject id (userinfo `sub`)
+  avatarUrl        String? // profile picture URL from the OAuth provider
+  name             String?
+  role             String    @default("CUSTOMER") // CUSTOMER | OWNER | EDITOR | ORDER_SUPPORT
+  status           String    @default("ACTIVE") // ACTIVE | ANONYMIZED | BLOCKED
+  preferredLocale  String    @default("en")
+  emailVerifiedAt  DateTime?
+  marketingConsent Boolean   @default(false)
+  adminNote        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  sessions            Session[]
+  addresses           Address[]
+  orders              Order[]
+  reviews             Review[]
+  tickets             Ticket[]
+  returnReq           ReturnRequest[]
+  savedPaymentMethods SavedPaymentMethod[]
+  wishlist            WishlistItem[]
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt]) // housekeeping sweep of expired sessions
+}
+
+model Address {
+  id                String   @id @default(cuid())
+  userId            String
+  label             String?
+  recipient         String
+  line1             String
+  line2             String?
+  city              String
+  region            String?
+  postalCode        String
+  countryCode       String // ISO 3166-1 alpha-2
+  phone             String?
+  isDefaultShipping Boolean  @default(false)
+  isDefaultBilling  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ConsentRecord {
+  id            String   @id @default(cuid())
+  userId        String?
+  email         String?
+  checkoutRef   String?
+  policyType    String // TERMS | PRIVACY | MARKETING | COOKIES
+  policyVersion String
+  locale        String
+  accepted      Boolean
+  source        String // checkout | account | cookie_banner
+  createdAt     DateTime @default(now())
+
+  @@index([email])
+}
+
+model SavedPaymentMethod {
+  id               String   @id @default(cuid())
+  userId           String
+  provider         String   @default("SIMORGH_SANDBOX")
+  providerMethodId String
+  brand            String
+  last4            String
+  expiryMonth      Int
+  expiryYear       Int
+  isDefault        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────── Catalog ─────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  icon      String? // lucide icon name
+  iconUrl   String? // admin-uploaded custom PNG icon (white glyph on the colored disc)
+  color     String? // hex
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations CategoryTranslation[]
+  products     ProductCategory[]
+}
+
+model CategoryTranslation {
+  id          String  @id @default(cuid())
+  categoryId  String
+  locale      String // en | fa
+  name        String
+  description String?
+  seoTitle    String?
+  seoDesc     String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([locale])
+}
+
+model Person {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  status        String   @default("PUBLISHED") // DRAFT | PUBLISHED | ARCHIVED
+  portraitUrl   String?
+  birthYear     Int?
+  deathYear     Int?
+  nationality   String?
+  profession    String?
+  website       String?
+  socialLinks   String? // JSON [{platform,url}]
+  quoteEn       String?
+  quoteFa       String?
+  quoteSourceEn String?
+  quoteSourceFa String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  translations  PersonTranslation[]
+  contributions ProductContributor[]
+  articleRels   ArticleRelation[]
+}
+
+model PersonTranslation {
+  id       String  @id @default(cuid())
+  personId String
+  locale   String
+  name     String
+  shortBio String?
+  fullBio  String?
+  seoTitle String?
+  seoDesc  String?
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([personId, locale])
+  @@index([locale])
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  status          String    @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
+  publishAt       DateTime?
+  publicationDate DateTime?
+  publisher       String    @default("Simorgh Press")
+  series          String?
+  seriesSlug      String?
+  coverUrl        String?
+  audience        String?
+  safetyNote      String? // GPSR manufacturer / responsible person note
+  fixedPrice      Boolean   @default(false) // German fixed-book-price market flag
+  isFeatured      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  translations ProductTranslation[]
+  variants     Variant[]
+  contributors ProductContributor[]
+  categories   ProductCategory[]
+  media        ProductMedia[]
+  related      RelatedProduct[]     @relation("FromProduct")
+  relatedTo    RelatedProduct[]     @relation("ToProduct")
+  reviews      Review[]
+
+  @@index([status]) // every storefront query filters status = PUBLISHED
+  @@index([isFeatured])
+}
+
+model ProductTranslation {
+  id               String  @id @default(cuid())
+  productId        String
+  locale           String
+  title            String
+  subtitle         String?
+  shortDescription String?
+  longDescription  String? // structured blocks JSON
+  seoTitle         String?
+  seoDesc          String?
+  publishedState   String  @default("READY") // MISSING | INCOMPLETE | READY
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([locale])
+  @@index([locale, title]) // storefront search scans titles per locale
+}
+
+model Variant {
+  id                String  @id @default(cuid())
+  productId         String
+  sku               String  @unique
+  isbn13            String? @unique
+  isbn10            String?
+  barcode           String?
+  format            String // PAPERBACK | HARDCOVER | SPECIAL
+  bookLanguage      String  @default("English")
+  editionLabel      String?
+  pageCount         Int?
+  widthMm           Int?
+  heightMm          Int?
+  depthMm           Int?
+  weightG           Int?
+  countryOfPrinting String?
+  priceMinor        Int // integer minor units
+  currency          String  @default("EUR")
+  taxClass          String  @default("REDUCED_BOOK")
+  stock             Int     @default(0)
+  lowStockThreshold Int     @default(5)
+  soldCount         Int     @default(0)
+  isActive          Boolean @default(true)
+  sortOrder         Int     @default(0)
+
+  product      Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  priceHistory PriceHistory[]
+  stockAlerts  BackInStockSubscriber[]
+
+  @@index([productId])
+  @@index([productId, isActive, stock]) // availability filters on variant lists
+}
+
+model ProductContributor {
+  id           String @id @default(cuid())
+  productId    String
+  personId     String
+  role         String // AUTHOR | TRANSLATOR | EDITOR | ILLUSTRATOR | FOREWORD
+  displayOrder Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, personId, role])
+}
+
+model ProductCategory {
+  id         String  @id @default(cuid())
+  productId  String
+  categoryId String
+  isPrimary  Boolean @default(false)
+
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+}
+
+model ProductMedia {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  mediaType String  @default("IMAGE") // IMAGE | VIDEO
+  altEn     String?
+  altFa     String?
+  sortOrder Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model RelatedProduct {
+  id               String @id @default(cuid())
+  productId        String
+  relatedProductId String
+  sortOrder        Int    @default(0)
+
+  product        Product @relation("FromProduct", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct Product @relation("ToProduct", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedProductId])
+}
+
+model PriceHistory {
+  id            String   @id @default(cuid())
+  variantId     String
+  market        String   @default("EU")
+  oldPriceMinor Int?
+  newPriceMinor Int
+  reason        String?
+  actorEmail    String?
+  effectiveAt   DateTime @default(now())
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+}
+
+// ───────────────────────── Editorial ─────────────────────────
+
+model Article {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  status      String    @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
+  heroUrl     String?
+  byline      String? // editorial byline text
+  personId    String? // optional contributor byline
+  isFeatured  Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  translations  ArticleTranslation[]
+  categoryLinks ArticleCategoryLink[]
+  relations     ArticleRelation[]
+}
+
+model ArticleTranslation {
+  id             String  @id @default(cuid())
+  articleId      String
+  locale         String
+  title          String
+  excerpt        String?
+  body           String? // structured blocks JSON (validated renderer)
+  seoTitle       String?
+  seoDesc        String?
+  readingMinutes Int?
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, locale])
+  @@index([locale])
+}
+
+model ArticleCategory {
+  id        String  @id @default(cuid())
+  slug      String  @unique
+  color     String?
+  sortOrder Int     @default(0)
+
+  translations ArticleCategoryTranslation[]
+  links        ArticleCategoryLink[]
+}
+
+model ArticleCategoryTranslation {
+  id                String @id @default(cuid())
+  articleCategoryId String
+  locale            String
+  name              String
+
+  category ArticleCategory @relation(fields: [articleCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([articleCategoryId, locale])
+}
+
+model ArticleCategoryLink {
+  id                String @id @default(cuid())
+  articleId         String
+  articleCategoryId String
+
+  article  Article         @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  category ArticleCategory @relation(fields: [articleCategoryId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, articleCategoryId])
+}
+
+model ArticleRelation {
+  id         String @id @default(cuid())
+  articleId  String
+  targetType String // PRODUCT | PERSON | ARTICLE
+  targetId   String
+  sortOrder  Int    @default(0)
+
+  article  Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  person   Person? @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId String?
+}
+
+// ───────────────────────── Homepage builder ─────────────────────────
+
+model HomepageVersion {
+  id            String    @id @default(cuid())
+  locale        String
+  status        String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+  publishedBy   String?
+  changeSummary String?
+  createdAt     DateTime  @default(now())
+
+  sections HomepageSection[]
+}
+
+model HomepageSection {
+  id           String  @id @default(cuid())
+  versionId    String
+  type         String // HERO | PRODUCT_SHELF | POSTER_GRID | EDITORIAL_FEATURE | CATEGORY_CAROUSEL
+  sortOrder    Int     @default(0)
+  enabled      Boolean @default(true)
+  settingsJson String // typed per-section config incl. per-locale content
+
+  version HomepageVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@index([versionId])
+}
+
+// ───────────────────────── Commerce ─────────────────────────
+
+model Cart {
+  id        String    @id @default(cuid())
+  token     String    @unique // guest token or "u:{userId}"
+  userId    String?
+  locale    String    @default("en")
+  currency  String    @default("EUR")
+  status    String    @default("ACTIVE") // ACTIVE | CONVERTED | ABANDONED
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  items CartItem[]
+
+  @@index([status, createdAt]) // housekeeping sweep of abandoned carts
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+  addedAt   DateTime @default(now())
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+}
+
+model Order {
+  id                  String   @id @default(cuid())
+  orderNumber         String   @unique // human readable e.g. SP-2025-00041
+  // C6: unguessable guest-tracking reference (PR-<token>). The sequential
+  // order number + email was enumerable; lookups by publicRef need no email.
+  publicRef           String?  @unique
+  userId              String?
+  email               String
+  status              String   @default("PENDING_PAYMENT") // PENDING_PAYMENT | PAID | PROCESSING | SHIPPED | DELIVERED | CANCELLED | REFUNDED | PARTIALLY_REFUNDED
+  paymentStatus       String   @default("PENDING") // PENDING | SUCCEEDED | FAILED | CANCELLED | PARTIALLY_REFUNDED | REFUNDED
+  fulfillmentStatus   String   @default("UNFULFILLED") // UNFULFILLED | PARTIAL | FULFILLED | DELIVERED
+  currency            String   @default("EUR")
+  subtotalMinor       Int
+  shippingMinor       Int
+  taxMinor            Int
+  totalMinor          Int
+  discountMinor       Int      @default(0)
+  discountCode        String? // normalized code string snapshot (not FK, immutable)
+  promoName           String?  // sitewide promotion snapshot at purchase time (attribution)
+  promoSavedMinor     Int      @default(0) // total saved by the sitewide promotion (VAT incl.)
+  giftWrap            Boolean  @default(false) // gift wrap service purchased at checkout
+  giftWrapMinor       Int      @default(0) // fee charged for gift wrap (VAT incl.)
+  giftMessage         String?  // optional hand-written note (max 300 chars)
+  shippingMethodName  String?
+  shippingZone        String?
+  shippingAddressJson String
+  billingAddressJson  String?
+  locale              String   @default("en")
+  customerNote        String?
+  internalNote        String?
+  consentsJson        String? // accepted legal doc versions at purchase
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user      User?           @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  payments  Payment[]
+  shipments Shipment[]
+  events    OrderEvent[]
+  refunds   Refund[]
+  returns   ReturnRequest[]
+  tickets   Ticket[]
+
+  @@index([email])
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  variantId      String?
+  // immutable snapshots
+  titleEn        String
+  titleFa        String
+  sku            String
+  isbn           String?
+  coverUrl       String?
+  format         String?
+  bookLanguage   String?
+  quantity       Int
+  unitPriceMinor Int
+  taxMinor       Int
+  totalMinor     Int
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant     Variant?     @relation(fields: [variantId], references: [id])
+  returnItems ReturnItem[]
+
+  @@index([orderId])
+}
+
+model Payment {
+  id               String   @id @default(cuid())
+  orderId          String
+  provider         String   @default("SIMORGH_SANDBOX")
+  providerIntentId String   @unique
+  amountMinor      Int
+  currency         String   @default("EUR")
+  status           String // REQUIRES_ACTION | PROCESSING | SUCCEEDED | FAILED | CANCELLED
+  cardBrand        String?
+  cardLast4        String?
+  failureReason    String?
+  createdAt        DateTime @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  refunds Refund[]
+}
+
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  providerEventId String   @unique // idempotency guard
+  paymentId       String?
+  type            String
+  payloadRef      String?
+  result          String? // PROCESSED | DUPLICATE | ERROR
+  processedAt     DateTime @default(now())
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  orderId     String
+  paymentId   String?
+  amountMinor Int
+  reason      String?
+  providerRef String?  @unique
+  status      String   @default("SUCCEEDED") // SUCCEEDED | FAILED
+  actorEmail  String?
+  createdAt   DateTime @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id])
+}
+
+model Shipment {
+  id                  String    @id @default(cuid())
+  orderId             String
+  carrier             String
+  trackingNumber      String?
+  trackingUrl         String?
+  status              String    @default("PREPARING") // PREPARING | SHIPPED | DELIVERED
+  shippedAt           DateTime?
+  estimatedDeliveryAt DateTime?
+  noteCustomer        String?
+  noteInternal        String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String // CREATED | PAID | FULFILLED | SHIPPED | NOTE | REFUND | CANCELLED | EMAIL_QUEUED | RETURN
+  message   String
+  actor     String? // email or "system"
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model ReturnRequest {
+  id         String    @id @default(cuid())
+  orderId    String
+  userId     String?
+  status     String    @default("REQUESTED") // REQUESTED | APPROVED | REJECTED | RECEIVED | RESTOCKED | REFUNDED
+  reason     String
+  details    String?
+  resolution String? // REFUND | REPLACEMENT
+  decidedBy  String?
+  decidedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  order Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User?        @relation(fields: [userId], references: [id])
+  items ReturnItem[]
+}
+
+model ReturnItem {
+  id          String  @id @default(cuid())
+  returnId    String
+  orderItemId String
+  quantity    Int
+  condition   String? // NEW | OPENED | DAMAGED
+  restocked   Boolean @default(false)
+
+  returnReq ReturnRequest @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  orderItem OrderItem     @relation(fields: [orderItemId], references: [id])
+}
+
+// ───────────────────────── Reviews & support ─────────────────────────
+
+model Review {
+  id                 String   @id @default(cuid())
+  productId          String
+  userId             String?
+  authorName         String
+  rating             Int // 1..5
+  title              String?
+  body               String
+  locale             String   @default("en")
+  isVerifiedPurchase Boolean  @default(false)
+  moderationState    String   @default("PENDING") // PENDING | APPROVED | REJECTED | SPAM
+  moderationReason   String?
+  reply              String?  // public seller/press response shown under the review
+  repliedAt          DateTime?
+  repliedBy          String?
+  reportedAbuse      Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([productId, moderationState])
+}
+
+model Ticket {
+  id                 String   @id @default(cuid())
+  ticketNumber       String   @unique
+  userId             String?
+  email              String
+  name               String?
+  subject            String
+  category           String   @default("GENERAL") // GENERAL | ORDER | SHIPPING | RETURNS | PRESS
+  relatedOrderNumber String?
+  status             String   @default("OPEN") // OPEN | AWAITING_CUSTOMER | AWAITING_SUPPORT | CLOSED
+  priority           String   @default("NORMAL")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user     User?           @relation(fields: [userId], references: [id])
+  order    Order?          @relation(fields: [relatedOrderNumber], references: [orderNumber])
+  messages TicketMessage[]
+
+  @@index([status])
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String
+  senderType String // CUSTOMER | SUPPORT
+  senderName String
+  body       String
+  createdAt  DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+// ───────────────────────── Legal, audit, settings ─────────────────────────
+
+model LegalDocument {
+  id          String   @id @default(cuid())
+  type        String // PRIVACY | TERMS | WITHDRAWAL | IMPRINT | ACCESSIBILITY | COOKIES
+  locale      String
+  version     String
+  title       String
+  body        String // markdown-ish structured text (counsel review required)
+  effectiveAt DateTime @default(now())
+  isCurrent   Boolean  @default(true)
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+
+  @@unique([type, locale, version])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorEmail String
+  action     String // e.g. PRODUCT_STATUS_CHANGE, REFUND, HOMEPAGE_PUBLISH, STOCK_ADJUST, ORDER_STATUS
+  entityType String
+  entityId   String
+  summary    String
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  valueJson String
+  updatedAt DateTime @updatedAt
+}
+
+// Custom announcement-bar items (admin-authored, rotated with the built-in messages)
+model Announcement {
+  id        String   @id @default(cuid())
+  enabled   Boolean  @default(true)
+  sortOrder Int      @default(0)
+  textEn    String
+  textFa    String
+  href      String?  // optional SPA hash target e.g. /books?sale=1
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([enabled, sortOrder])
+}
+
+// ───────────────────────── Analytics (PRD 30.1, consent-gated) ─────────────────────────
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  type        String // view_product | add_to_cart | begin_checkout | purchase | search | view_article
+  path        String? // hash route path, e.g. /en/books/slug
+  locale      String   @default("en")
+  productSlug String?
+  valueMinor  Int? // optional commerce value (purchase)
+  sessionKey  String? // anonymous client session id (no PII)
+  createdAt   DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@index([productSlug])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  locale    String   @default("en")
+  source    String   @default("footer") // footer | checkout | account
+  status    String   @default("SUBSCRIBED") // SUBSCRIBED | UNSUBSCRIBED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+// ───────────────────────── Marketing: discount codes ─────────────────────────
+
+model DiscountCode {
+  id               String    @id @default(cuid())
+  code             String    @unique // normalized uppercase
+  type             String // PERCENT | FIXED
+  value            Int // PERCENT: percent points (1-90); FIXED: minor units
+  minSubtotalMinor Int       @default(0)
+  maxRedemptions   Int? // null = unlimited
+  timesUsed        Int       @default(0)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  isActive         Boolean   @default(true)
+  noteEn           String?
+  noteFa           String?
+  // Eligibility scope (Task 50): JSON {productIds,categoryIds,publisherNames,
+  // personIds} — empty arrays = the code applies to the whole catalog. A product
+  // is eligible when it matches ANY non-empty list; the discount then computes
+  // on the eligible items' subtotal only.
+  scopeJson        String    @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+// Sitewide auto-applied promotion (season sale) — no code entry required.
+// Only ONE promotion may be active at a time (enforced by the admin API).
+model Promotion {
+  id        String    @id @default(cuid())
+  name      String // admin-facing label
+  type      String // PERCENT | FIXED
+  value     Int // PERCENT: percent points (1-90); FIXED: minor units
+  isActive  Boolean   @default(false)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  noteEn    String? // customer-facing line (e.g. "Autumn sale — 10% off everything")
+  noteFa    String?
+  // JSON array of Product ids exempted from this promotion (fixed-price /
+  // new-arrival titles). Parsed by the pricing helpers, never joined.
+  excludedProductIds String @default("[]")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([isActive])
+}
+
+// ───────────────────────── Back-in-stock alerts ─────────────────────────
+
+// Customer request to be emailed when an out-of-stock variant returns.
+// Sandbox: "notified" is a manual admin action (email outbox preview).
+model BackInStockSubscriber {
+  id         String    @id @default(cuid())
+  variantId  String
+  email      String
+  locale     String    @default("en")
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, email])
+  @@index([variantId])
+}
+
+// ───────────────────────── Wishlist (server-synced favorites) ─────────────────────────
+
+model WishlistItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productSlug String
+  addedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productSlug])
+  @@index([userId])
+}
+
+model Redirect {
+  id         String  @id @default(cuid())
+  sourcePath String  @unique
+  targetPath String
+  statusCode Int     @default(301)
+  active     Boolean @default(true)
+}
+
+// SQLite sandbox notes (vs PRD's PostgreSQL):
+// - Enums → String unions; JSON columns → String w/ validated JSON payloads.
+// - Full-text/pg_trgm → normalized LIKE search in service layer.
+// - All commerce mutations (checkout, stock, refunds) use interactive transactions.
+
+model TasteSignal {
+  id          String   @id @default(cuid())
+  userId      String?
+  sessionKey  String?
+  productSlug String
+  kind        String // view | cart | purchase
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionKey])
+  @@index([productSlug])
+}
+
+/// Append-only cookie-consent log (Level 1, privacy spec §8). `subjectKey`
+/// is the opaque httpOnly `sp_consent_id` value — never a personal
+/// identifier. The newest row per subject = the verified decision.
+model CookieConsent {
+  id              String   @id @default(cuid())
+  subjectKey      String
+  userId          String?
+  policyVersion   String
+  necessary       Boolean  @default(true)
+  preferences     Boolean  @default(false)
+  analytics       Boolean  @default(false)
+  personalization Boolean  @default(false)
+  marketing       Boolean  @default(false)
+  locale          String   @default("en")
+  source          String   @default("banner") // banner | preference_center | footer
+  action          String   @default("custom") // accept_all | reject_optional | custom
+  createdAt       DateTime @default(now())
+
+  @@index([subjectKey, createdAt])
+}

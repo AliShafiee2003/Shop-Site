@@ -1,0 +1,389 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Extra-small breakpoint (416px): between large phones and sm — used by the
+ * product row card basis so mid-size phones fit a touch more per view. */
+@theme {
+  --breakpoint-xs: 26rem;
+}
+
+/* ───────── Self-hosted fonts (PRD 6.3) ───────── */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Vazirmatn-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Vazirmatn-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-app-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* PRD §6.2 brand tokens */
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-orange-accent: var(--orange-accent);
+  --color-orange-dark: var(--orange-dark);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+}
+
+:root {
+  --radius: 0.5rem; /* PRD 6.4 default radius 8px */
+  --font-app-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Brand palette — PRD §6.2 */
+  --brand: #014B74;
+  --brand-hover: #003A5B;
+  --brand-soft: #EAF4F8;
+  --orange-accent: #E87524;
+  --orange-dark: #B94F0A;
+  --ink: #172026;
+  --ink-2: #47545D;
+  --ink-3: #71808A;
+  --line: #D7DEE3;
+  --soft: #F4F7F8;
+  --success: #247A52;
+  --warning: #A65B00;
+  --error: #B42318;
+
+  /* Map shadcn semantics onto brand tokens */
+  --background: #FFFFFF;
+  --foreground: var(--ink);
+  --card: #FFFFFF;
+  --card-foreground: var(--ink);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--ink);
+  --primary: var(--brand);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--soft);
+  --secondary-foreground: var(--ink);
+  --muted: var(--soft);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--brand);
+  --destructive: var(--error);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--brand);
+  --chart-1: var(--brand);
+  --chart-2: var(--orange-accent);
+  --chart-3: #247A52;
+  --chart-4: #A65B00;
+  --chart-5: #71808A;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent-foreground: var(--brand);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
+}
+
+html[lang='fa'] {
+  --font-app-sans: 'Vazirmatn', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  letter-spacing: -0.006em;
+}
+
+html[lang='fa'] body {
+  letter-spacing: 0;
+}
+
+/* Persian CONTENT inside LTR chrome (admin editors, mixed lists): any element
+   tagged lang="fa" must render Vazirmatn — Inter has no Arabic glyphs, so the
+   browser silently falls back to an unsuitable system Arabic face (user report:
+   «فونت فارسیش مناسب نیست»). Negative tracking is also zeroed here because it
+   breaks Arabic-script letter joining. Vazirmatn woff2 files are always
+   preloaded by the root layout, so this never triggers a late font fetch. */
+[lang='fa'] {
+  font-family: 'Vazirmatn', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* ─── Prose blocks (product long description markdown) — readable & bilingual ─── */
+/* Mixed-direction content: each paragraph/list item takes its OWN direction from
+   its first strong character (an English line inside a Persian text stays LTR
+   without breaking the RTL alignment of the block). */
+.prose-blocks :is(p, li, td, th) { unicode-bidi: plaintext; }
+/* Persian prose needs more air: Vazirmatn at 1.75 feels tight for book copy. */
+.prose-blocks[lang='fa'] { line-height: 1.95; }
+.prose-blocks[lang='fa'] :is(h2, h3) { letter-spacing: 0; line-height: 1.6; }
+/* Keep the markdown SOURCE editor (textarea) on Vazirmatn for Persian content —
+   the mono stack has no Arabic glyphs and falls back to an unsuitable system face. */
+[lang='fa'] textarea.font-prose-fa {
+  font-family: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.9;
+}
+
+/* Custom scrollbar (long lists) */
+.scrollbar-slim::-webkit-scrollbar { height: 8px; width: 8px; }
+.scrollbar-slim::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-slim::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+.scrollbar-slim::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+
+/* Hidden scrollbar (mobile shelf rows) */
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Mouse drag-scroll in progress (ProductRow / CategoryRow): CSS scroll-snap
+   fights direct scrollLeft writes (rubber-band stutter), so it is disarmed
+   for the moment; children lose pointer-events so card hover/click cannot
+   fire mid-drag. The class is added on drag start and removed on release. */
+.drag-scrolling { scroll-snap-type: none !important; }
+.drag-scrolling > * { pointer-events: none; }
+
+/* Directional icon mirroring in RTL (PRD 6.5) */
+[dir='rtl'] .mirror-rtl { transform: scaleX(-1); }
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: -4rem;
+  z-index: 100;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  transition: top 150ms ease;
+}
+.skip-link:focus { top: 1rem; }
+
+/* Focus visibility (PRD 22) */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Hero ken-burns, respects reduced motion (PRD 22) */
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+.kenburns { animation: kenburns 9s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .kenburns { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Bidi isolation for mixed-direction fragments (PRD 19.3) */
+.bdi { unicode-bidi: isolate; }
+
+/* Editorial prose measure (PRD 6.3): 60–75ch */
+.prose-measure { max-width: 46rem; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Announcement bar message rotation (vertical slide-fade, RTL-agnostic) */
+@keyframes announce-in {
+  from { opacity: 0; transform: translateY(70%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.announce-item { animation: announce-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Pulsing dot used by "live" promo indicators */
+@keyframes promo-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 117, 36, 0.45); }
+  50% { box-shadow: 0 0 0 4px rgba(232, 117, 36, 0); }
+}
+.promo-dot { animation: promo-dot 2.2s ease-in-out infinite; }
+
+/* Anchored search panel — soft drop-in from the header (RTL-agnostic) */
+@keyframes panel-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.panel-pop { animation: panel-pop 220ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Journal / editorial block — warm paper tone, faint laid-paper grain and a
+   whisper of brand ink rising from the bottom edge. Distinct from the plain
+   white page background (user request) without breaking the minimal system. */
+.journal-bg {
+  background-color: #f6f1e5;
+  background-image:
+    linear-gradient(to top, rgba(1, 75, 116, 0.045) 0%, rgba(1, 75, 116, 0) 34%),
+    repeating-linear-gradient(48deg, rgba(1, 75, 116, 0.014) 0 2px, transparent 2px 7px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-pop { animation: none; }
+}
+
+/* Editorial drop cap for English long-form articles (PRD 6.3 typography) */
+.dropcap > div > p:first-of-type::first-letter {
+  float: inline-start;
+  margin-inline-end: 0.5rem;
+  font-size: 3.2em;
+  font-weight: 700;
+  line-height: 0.85;
+  color: var(--brand);
+}
+
+
+/* Scroll-triggered reveal (Reveal in bits.tsx) — a quiet rise + de-blur.
+   Used two ways: per-block stagger inside the editorial highlight boxes
+   (eyebrow 0ms → headline 100ms → attribution 180ms → body 260ms …) and as a
+   WHOLE-MODULE wrapper (heading + slider/posters/articles rise together as
+   one gentle set — «مجموعه هر ماژول آروم ظاهر بشه»). Armed at SSR, released
+   by IntersectionObserver (threshold 0.15); stagger comes from an inline
+   transition-delay per element. */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(5px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-visible {
+  opacity: 1;
+  /* `none`, not 0 — interpolation from translateY(22px)/blur(5px) to none
+     still plays the full animation (none ≡ identity per spec), but the END
+     state leaves no transform/filter on the element: revealed slider boxes
+     drag, hover-tilt and repaint with zero stacking-context/compositing
+     residue. */
+  transform: none;
+  filter: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ── Pinned scroll story (SCROLL_STORY module → ScrollStory.tsx) ────────────
+   The section is n scenes × per-scene travel tall; the cinematic panel is
+   sticky for the viewport height minus the pinned storefront header. REAL
+   browser scroll is the only engine (no scroll hijacking, no GSAP/Lenis):
+   scroll position → progress → slide morph, fully scrubbed & reversible. */
+.story-wrap {
+  --story-step: var(--story-step-base, 100vh);
+  height: calc(var(--story-n, 4) * var(--story-step) + 100svh - var(--story-head, 0px));
+}
+/* Phones flick farther per gesture — each scene gets 35% more travel, so a
+   single flick has finer resolution and cannot easily stride through several
+   scenes. NO snap correction: parked mid-morph the blend simply stays
+   (pure scrub — see ScrollStory.tsx). */
+@media (max-width: 767px) {
+  .story-wrap { --story-step: calc(var(--story-step-base, 100vh) * 1.35); }
+}
+.story-panel {
+  position: sticky;
+  top: var(--story-head, 0px);
+  height: calc(100svh - var(--story-head, 0px));
+}
+.story-img-layer { will-change: opacity, transform; }

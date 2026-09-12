@@ -1,0 +1,48 @@
+# Sandbox gateway (MUST stay on :81 HTTP for the preview panel / XTransformPort routing).
+:81 {
+        @transform_port_query {
+                query XTransformPort=*
+        }
+
+        handle @transform_port_query {
+                reverse_proxy localhost:{query.XTransformPort} {
+                        header_up Host {host}
+                        header_up X-Forwarded-For {remote_host}
+                        header_up X-Forwarded-Proto {scheme}
+                        header_up X-Real-IP {remote_host}
+                }
+        }
+
+        handle {
+                reverse_proxy localhost:3000 {
+                        header_up Host {host}
+                        header_up X-Forwarded-For {remote_host}
+                        header_up X-Forwarded-Proto {scheme}
+                        header_up X-Real-IP {remote_host}
+                }
+        }
+}
+
+# ── PRODUCTION (C4): replace the block above with a TLS site + HSTS. ─────────
+# Caddy terminates TLS and issues/renews certificates automatically (ACME):
+#
+# persepix.example {
+#         # Force HTTPS: Caddy already redirects :80 → 443 automatically.
+#         header {
+#                 Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+#                 X-Content-Type-Options "nosniff"
+#                 Referrer-Policy "strict-origin-when-cross-origin"
+#                 -Server
+#         }
+#         reverse_proxy localhost:3000 {
+#                 header_up Host {host}
+#                 header_up X-Forwarded-For {remote_host}
+#                 header_up X-Forwarded-Proto {scheme}
+#                 header_up X-Real-IP {remote_host}
+#         }
+# }
+#
+# Notes:
+# - The `?XTransformPort=` proxy is a DEV tool; never expose it in production.
+# - Session/consent/cart cookies flip to `secure` automatically when
+#   NODE_ENV=production (see src/lib/server/auth.ts).
