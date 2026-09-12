@@ -37,6 +37,7 @@ interface DashData {
   activePromotion?: { name: string; badge: string; noteEn: string | null; noteFa: string | null } | null
   promoImpact?: { orders: number; paidOrders: number; savedMinor: number; revenueMinor: number; perPromo: { name: string; orders: number; savedMinor: number; revenueMinor: number }[] }
   giftWrap?: { orders: number; paidOrders: number; feesMinor: number; revenueMinor: number }
+  homepageRestore?: { archived: number; lastPublishedAt: string | null }
 }
 
 // S10 RBAC matrix — `content: true` sections are OWNER/EDITOR only (mirrors
@@ -200,6 +201,7 @@ function AdminDashboard() {
         <div className="space-y-6">
           <PromoImpactCard data={data} />
           <GiftWrapCard data={data} />
+          <RestorePointsCard data={data} />
           <section className="rounded-lg border border-line" aria-label={t.admin.topProducts}>
             <h2 className="border-b border-line px-4 py-3 text-sm font-semibold text-ink">{t.admin.topProducts}</h2>
             <ul className="divide-y divide-line">
@@ -358,6 +360,44 @@ function GiftWrapCard({ data }: { data: DashData }) {
           </div>
         </div>
       )}
+    </section>
+  )
+}
+
+/** R10 (round-9 item d): dashboard teaser for the homepage version history —
+ *  surfaces that restore points exist and deep-links into the panel. */
+function RestorePointsCard({ data }: { data: DashData }) {
+  const locale = useApp((s) => s.locale)
+  const t = getDict(locale)
+  const hr = data.homepageRestore
+  if (!hr) return null
+  return (
+    <section
+      className="overflow-hidden rounded-lg border border-brand/20 bg-gradient-to-br from-brand-soft/40 via-transparent to-brand-soft/20 transition-shadow hover:shadow-[0_0_0_3px_rgba(1,75,116,0.06)]"
+      aria-label={t.admin.restorePointsTitle}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand/10 px-4 py-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-brand/15 text-brand"><History className="h-3.5 w-3.5" aria-hidden /></span>
+          {t.admin.restorePointsTitle}
+        </h2>
+        {hr.archived > 0 && <Badge tone="brand">{locale === 'fa' ? faDigits(hr.archived) : hr.archived}</Badge>}
+      </div>
+      <div className="px-4 py-4">
+        <p className="text-sm text-ink-2">
+          {hr.archived > 0
+            ? tf(t.admin.restorePointsSub, {
+                n: locale === 'fa' ? faDigits(hr.archived) : hr.archived,
+                date: hr.lastPublishedAt ? formatDate(hr.lastPublishedAt, locale) : '—',
+              })
+            : t.admin.restorePointsSubNone}
+        </p>
+        <Button variant="outline" size="sm" className="mt-3 h-8 gap-1.5 text-xs" onClick={() => navigate('/admin/homepage')}>
+          <History className="h-3.5 w-3.5" aria-hidden />
+          {t.admin.restorePointsCta}
+          <span className="text-brand mirror-rtl" aria-hidden>→</span>
+        </Button>
+      </div>
     </section>
   )
 }
@@ -4495,6 +4535,33 @@ function AdminReports() {
   } | null>(null)
 
   const [days, setDays] = useState(30)
+  // R10: manual weekly-digest send (queues through the outbox like the
+  // automatic healthz queueing; ?force=1 bypasses the 7-day guard).
+  const { toast } = useToast()
+  const [digestBusy, setDigestBusy] = useState(false)
+  const [digestStatus, setDigestStatus] = useState<{ lastDigestAt: string | null; lastDigestSent: string | null; lastTo: string | null; queuedUnsent: number } | null>(null)
+  const loadDigestStatus = useCallback(() => {
+    apiGet<NonNullable<typeof digestStatus>>('/api/admin/reports/digest').then(setDigestStatus).catch(() => setDigestStatus(null))
+  }, [])
+  useEffect(() => { loadDigestStatus() }, [loadDigestStatus])
+  const sendDigest = async () => {
+    setDigestBusy(true)
+    try {
+      const r = await apiPost<{ queued: boolean; skipped?: string; to?: string }>('/api/admin/reports/digest?force=1')
+      if (r.queued) {
+        toast({ title: t.admin.digestQueued })
+      } else if (r.skipped === 'no-recipient') {
+        toast({ title: t.admin.digestSkipped, variant: 'destructive' })
+      } else {
+        toast({ title: t.admin.digestSkipped })
+      }
+    } catch (e) {
+      toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' })
+    } finally {
+      setDigestBusy(false)
+      loadDigestStatus()
+    }
+  }
   useEffect(() => { apiGet<typeof data>(`/api/admin/reports?days=${days}`).then(setData).catch(() => setData(null)) }, [days])
 
   if (!data) return <Spinner label={t.common.loading} />
@@ -4514,8 +4581,26 @@ function AdminReports() {
             </button>
           ))}
           <a href={`/api/admin/reports/export?days=${days}`} className="rounded-md border border-line px-3 py-2 text-xs font-medium text-ink-2 hover:bg-soft">{t.admin.exportCsv}</a>
+          <Button size="sm" className="h-8 gap-1.5 text-xs" disabled={digestBusy} onClick={sendDigest} title={t.admin.digestHint}>
+            {digestBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Send className="h-3.5 w-3.5" aria-hidden />}
+            {t.admin.digestSend}
+          </Button>
         </div>
       </div>
+      {digestStatus && (
+        <p className="flex items-center gap-2 text-xs text-ink-3" role="status">
+          <span
+            className={cn('inline-block h-2 w-2 shrink-0 rounded-full', digestStatus.lastDigestSent ? 'bg-success' : digestStatus.lastDigestAt ? 'bg-warning' : 'bg-ink-3/40')}
+            aria-hidden
+          />
+          {digestStatus.lastDigestAt
+            ? tf(digestStatus.lastDigestSent ? t.admin.digestLastSent : t.admin.digestLastQueued, {
+                date: formatDate(digestStatus.lastDigestAt, locale),
+                to: digestStatus.lastTo ?? '—',
+              })
+            : t.admin.digestNever}
+        </p>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card title={t.admin.orders} value={data.totals.orders} />
         <Card title={t.admin.revenue} value={formatMoney(data.totals.revenueMinor, locale)} />
@@ -4779,7 +4864,7 @@ interface BisGroup {
   requests: { id: string; email: string; locale: string; notifiedAt: string | null; createdAt: string }[]
 }
 interface OutboxEmail {
-  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE'
+  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE' | 'SALES_DIGEST'
   locale: string; createdAt: string; subject: string; greeting: string; intro: string
   items: { title: string; qty: number; lineTotalMinor: number }[]
   subtotalMinor: number; discountCode?: string | null; discountMinor?: number
@@ -4787,10 +4872,11 @@ interface OutboxEmail {
   shippingMinor: number; totalMinor: number
   carrier?: string; trackingUrl?: string
   product?: { title: string; titleFa: string; slug: string; sku: string } | null
+  digestText?: string
   footerNote: string
 }
 /** R9 — outbox kind-group filter (mirrors FILTER_KINDS in the API route). */
-type OutboxFilter = 'all' | 'orders' | 'security' | 'newsletter'
+type OutboxFilter = 'all' | 'orders' | 'security' | 'newsletter' | 'reports'
 
 function AdminMarketing() {
   const locale = useApp((s) => s.locale)
@@ -5030,6 +5116,7 @@ function AdminMarketing() {
             ['orders', t.admin.outboxFilterOrders],
             ['security', t.admin.outboxFilterSecurity],
             ['newsletter', t.admin.outboxFilterNewsletter],
+            ['reports', t.admin.outboxFilterReports],
           ] as const).map(([key, label]) => (
             <button
               key={key} type="button" aria-pressed={outboxFilter === key}
@@ -5056,8 +5143,9 @@ function AdminMarketing() {
               const isOrderConfirm = em.kind === 'ORDER_CONFIRMATION'
               const isEmailChange = em.kind === 'EMAIL_CHANGE'
               const isEmailChangeNotice = em.kind === 'EMAIL_CHANGE_NOTICE'
+              const isDigest = em.kind === 'SALES_DIGEST'
               return (
-                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : (isEmailChange || isEmailChangeNotice) && openEmail !== em.id ? 'border-warning/25' : 'border-line')}>
+                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : (isEmailChange || isEmailChangeNotice) && openEmail !== em.id ? 'border-warning/25' : isDigest && openEmail !== em.id ? 'border-brand/25' : 'border-line')}>
                   <button
                     type="button" onClick={() => setOpenEmail(open ? null : em.id)} aria-expanded={open}
                     className={cn('flex w-full flex-wrap items-center gap-2 px-4 py-3 text-start transition hover:bg-soft/60', open && 'bg-brand-soft/40')}
@@ -5079,6 +5167,8 @@ function AdminMarketing() {
                       <Badge tone="warning"><AtSign className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تغییر ایمیل' : 'Email change'}</Badge>
                     ) : isEmailChangeNotice ? (
                       <Badge tone="warning"><Bell className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'اطلاع‌رسانی تغییر ایمیل' : 'Email-changed notice'}</Badge>
+                    ) : isDigest ? (
+                      <Badge tone="brand"><BarChart3 className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxDigest}</Badge>
                     ) : (
                       <Badge tone="success">✓</Badge>
                     )}
@@ -5112,6 +5202,10 @@ function AdminMarketing() {
                         <p className="mt-4 rounded-md bg-soft px-4 py-3 text-xs leading-relaxed text-ink-3">
                           {em.locale === 'fa' ? 'متن کامل این نامه فقط در نسخهٔ گیرنده قرار دارد — پیوند بازنشانی یک‌بارمصرف است و ۳۰ دقیقه اعتبار دارد.' : 'The full body exists only in the recipient’s copy — the reset link is single-use and expires after 30 minutes.'}
                         </p>
+                      ) : em.digestText ? (
+                        <div className="mt-4 rounded-md border border-brand/15 bg-soft/60 px-4 py-3">
+                          <pre dir={em.locale === 'fa' ? 'rtl' : 'ltr'} lang={em.locale} className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink-2">{em.digestText}</pre>
+                        </div>
                       ) : (
                         <>
                           <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-3">{t.admin.emailItems}</p>

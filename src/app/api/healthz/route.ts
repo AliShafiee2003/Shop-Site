@@ -4,6 +4,7 @@
 import { db } from '@/lib/db'
 import { json } from '@/lib/server/utils'
 import { dispatchQueuedMails } from '@/lib/server/mail-dispatch'
+import { queueSalesDigestIfDue } from '@/lib/server/report-mail'
 
 const HOUSEKEEPING_INTERVAL_MS = 6 * 60 * 60 * 1000
 const globalForHousekeeping = globalThis as unknown as { lastSweepAt?: number }
@@ -35,6 +36,10 @@ async function housekeeping(): Promise<void> {
     // Mail dispatch: with SMTP_* configured, drain up to 10 queued mails per
     // sweep. Unconfigured → no-op (rows stay queued). Never throws.
     await dispatchQueuedMails(10).catch(() => undefined)
+    // R10: automatic weekly sales digest — the 7-day freshness guard inside
+    // makes this fire exactly once per week; every other sweep is a cheap
+    // no-op query. Never throws.
+    await queueSalesDigestIfDue()
   } catch {
     // housekeeping must never fail the health probe
   }

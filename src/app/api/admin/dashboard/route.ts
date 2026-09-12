@@ -32,6 +32,8 @@ export async function GET() {
     paidOrdersCount,
     activePromotion,
     giftWrapStats,
+    archivedHomepageVersions,
+    lastHomepagePublish,
   ] = await Promise.all([
     db.order.count({ where: { createdAt: { gte: d7 } } }),
     db.order.aggregate({
@@ -76,6 +78,13 @@ export async function GET() {
       where: { giftWrap: true, paymentStatus: { in: ['SUCCEEDED', 'PARTIALLY_REFUNDED'] } },
       _count: { _all: true },
       _sum: { giftWrapMinor: true, totalMinor: true },
+    }),
+    // R10: homepage restore points (dashboard teaser → version history panel).
+    db.homepageVersion.count({ where: { status: 'ARCHIVED' } }),
+    db.homepageVersion.findFirst({
+      where: { status: 'PUBLISHED' },
+      orderBy: { publishedAt: 'desc' },
+      select: { publishedAt: true },
     }),
   ])
 
@@ -126,6 +135,10 @@ export async function GET() {
       paidOrders: paidOrdersCount,
       feesMinor: giftWrapStats._sum.giftWrapMinor ?? 0,
       revenueMinor: giftWrapStats._sum.totalMinor ?? 0,
+    },
+    homepageRestore: {
+      archived: archivedHomepageVersions,
+      lastPublishedAt: lastHomepagePublish?.publishedAt?.toISOString() ?? null,
     },
     promoImpact: {
       orders: promoOrdersCount,

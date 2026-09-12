@@ -20,7 +20,7 @@ interface RenderedEmail {
   orderId: string | null
   orderNumber: string
   to: string
-  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE'
+  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE' | 'SALES_DIGEST'
   locale: string
   createdAt: string
   subject: string
@@ -39,15 +39,18 @@ interface RenderedEmail {
   trackingUrl?: string
   /** BACK_IN_STOCK only */
   product?: { title: string; titleFa: string; slug: string; sku: string } | null
+  /** SALES_DIGEST only — the full plain-text report body (owner's own data). */
+  digestText?: string
   footerNote: string
 }
 
-const FILTERS = ['all', 'orders', 'security', 'newsletter'] as const
+const FILTERS = ['all', 'orders', 'security', 'newsletter', 'reports'] as const
 const FILTER_KINDS: Record<(typeof FILTERS)[number], string[] | null> = {
   all: null,
   orders: ['ORDER_CONFIRMATION', 'SHIPPING_NOTICE', 'BACK_IN_STOCK'],
   security: ['PASSWORD_RESET', 'EMAIL_VERIFY', 'EMAIL_CHANGE', 'EMAIL_CHANGE_NOTICE'],
   newsletter: ['NEWSLETTER_CONFIRM'],
+  reports: ['SALES_DIGEST'],
 }
 
 export async function GET(req: Request) {
@@ -208,6 +211,8 @@ export async function GET(req: Request) {
         return fa ? 'ایمیل تأیید سفارش در صف ارسال قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The order-confirmation email was queued (preview — the originating order is unavailable).'
       case 'SHIPPING_NOTICE':
         return fa ? 'ایمیل اطلاع‌رسانی ارسال سفارش در صف قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The shipping-notice email was queued (preview — the originating order is unavailable).'
+      case 'SALES_DIGEST':
+        return fa ? 'گزارش خودکار فروش هفتگی برای صندوق فروشگاه (متن کامل در پایین).' : 'The automatic weekly sales digest for the store inbox (full text below).'
       default:
         return fa ? 'یک ایمیل تراکنشی در صف قرار گرفت (پیش‌نمایش).' : 'A transactional email was queued (preview).'
     }
@@ -256,6 +261,8 @@ export async function GET(req: Request) {
       subtotalMinor: 0,
       shippingMinor: 0,
       totalMinor: 0,
+      // R10: the digest is the owner's own report — render the full body.
+      ...(m.kind === 'SALES_DIGEST' ? { digestText: m.bodyText } : {}),
       footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
     })
   }
