@@ -2,10 +2,17 @@
 // Emails are derived from OrderEvent EMAIL_QUEUED rows + order/shipment data, plus
 // back-in-stock restock notices derived from notified BackInStockSubscriber rows, and
 // returned as structured payloads; the admin UI renders them as previews (never raw HTML).
+// R9: the rendered merged list is FILTERABLE (kind groups) + PAGINATED (?page&pageSize
+// &filter) so the outbox stays navigable as the MailMessage queue grows. Each source
+// is fetched into a bounded window (caps below) and the merge/sort/slice happens here,
+// so totals are exact within the window and no single query can balloon memory.
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json, pickLocale } from '@/lib/server/utils'
 import { isMailProviderConfigured } from '@/lib/server/mail-dispatch'
+
+const PAGE_MAX = 50
+const SOURCE_CAPS = { events: 120, notices: 60, mails: 200 } as const
 
 interface EmailLine { title: string; qty: number; lineTotalMinor: number }
 interface RenderedEmail {
@@ -35,15 +42,33 @@ interface RenderedEmail {
   footerNote: string
 }
 
-export async function GET() {
+const FILTERS = ['all', 'orders', 'security', 'newsletter'] as const
+const FILTER_KINDS: Record<(typeof FILTERS)[number], string[] | null> = {
+  all: null,
+  orders: ['ORDER_CONFIRMATION', 'SHIPPING_NOTICE', 'BACK_IN_STOCK'],
+  security: ['PASSWORD_RESET', 'EMAIL_VERIFY', 'EMAIL_CHANGE', 'EMAIL_CHANGE_NOTICE'],
+  newsletter: ['NEWSLETTER_CONFIRM'],
+}
+
+export async function GET(req: Request) {
   const user = await requireAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
+
+  // R9 pagination/filter params (1-based page; pageSize capped at PAGE_MAX).
+  const { searchParams } = new URL(req.url)
+  const page = Math.max(1, Math.floor(Number(searchParams.get('page')) || 1))
+  const pageSize = Math.min(PAGE_MAX, Math.max(1, Math.floor(Number(searchParams.get('pageSize')) || 10)))
+  const filterParam = searchParams.get('filter') ?? 'all'
+  const filter = (FILTERS as readonly string[]).includes(filterParam)
+    ? (filterParam as (typeof FILTERS)[number])
+    : 'all'
+  const kindAllow = FILTER_KINDS[filter]
 
   const [events, notices, mails] = await Promise.all([
     db.orderEvent.findMany({
       where: { type: 'EMAIL_QUEUED' },
       orderBy: { createdAt: 'desc' },
-      take: 24,
+      take: SOURCE_CAPS.events,
       include: {
         order: {
           select: {
@@ -59,7 +84,7 @@ export async function GET() {
     db.backInStockSubscriber.findMany({
       where: { notifiedAt: { not: null } },
       orderBy: { notifiedAt: 'desc' },
-      take: 8,
+      take: SOURCE_CAPS.notices,
       include: { variant: { include: { product: { include: { translations: true } } } } },
     }),
     // R5: real order-lifecycle mails (ORDER_CONFIRMATION / SHIPPING_NOTICE)
@@ -67,7 +92,7 @@ export async function GET() {
     // recipient's copy carries — straight from the row a provider will send.
     db.mailMessage.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 12,
+      take: SOURCE_CAPS.mails,
       include: {
         order: {
           select: {
@@ -236,12 +261,16 @@ export async function GET() {
   }
   const mailEmails = [...orderMailEmails, ...plainMailEmails]
 
-  const items = [...orderEmails, ...bisEmails, ...mailEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const merged = [...orderEmails, ...bisEmails, ...mailEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const filtered = kindAllow ? merged.filter((e) => kindAllow.includes(e.kind)) : merged
+  const total = filtered.length
+  const pages = Math.max(1, Math.ceil(total / pageSize))
+  const items = filtered.slice((page - 1) * pageSize, page * pageSize)
   // Outbox dispatch meta: how many REAL MailMessage rows are still unsent and
   // whether an SMTP provider is configured (drives the admin dispatch bar).
   const [queued, providerConfigured] = await Promise.all([
     db.mailMessage.count({ where: { sentAt: null } }),
     Promise.resolve(isMailProviderConfigured()),
   ])
-  return json({ items, mail: { queued, providerConfigured } })
+  return json({ items, mail: { queued, providerConfigured }, page, pageSize, filter, total, pages })
 }

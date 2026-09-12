@@ -90,5 +90,16 @@ export function HomeView() {
   // ForYouShelf / RecentlyViewed / Articles are admin-placeable HomeSections
   // now (FOR_YOU / RECENTLY_VIEWED / ARTICLES types) — the homepage renders
   // exactly the module list the admin arranged, in the admin's order.
-  return <HomeSections sections={sections} locale={locale} />
+  return (
+    <>
+      {/* SEO/a11y: the hero is a rotating multi-slide slider (per-slide h2s),
+          so the page-level h1 lives here — visually hidden, layout-safe. */}
+      <h1 className="sr-only">
+        {locale === 'fa'
+          ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین'
+          : 'Persepix — Independent books from Tehran & Vienna'}
+      </h1>
+      <HomeSections sections={sections} locale={locale} />
+    </>
+  )
 }

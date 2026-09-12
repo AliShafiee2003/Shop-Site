@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText, AtSign, Bell, Send } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText, AtSign, Bell, Send } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -3357,6 +3357,17 @@ function AdminHomepage() {
   const [busy, setBusy] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
+  // R9: version history (restore points) — list + restore-to-draft.
+  interface VersionRow {
+    id: string; status: string; publishedAt: string | null; publishedBy: string | null
+    changeSummary: string | null; createdAt: string; sectionCount: number; enabledCount: number
+    types: { type: string; count: number; enabled: number }[]
+    preview: { type: string; enabled: boolean; heading: string | null }[]
+  }
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const [history, setHistory] = useState<VersionRow[] | null>(null)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   // Press-&-hold drag reorder (same pattern as the product gallery, Task 49/50):
   // grab the handle → the row becomes draggable → hover the target row → drop.
   const [dragFrom, setDragFrom] = useState<number | null>(null)
@@ -3367,6 +3378,29 @@ function AdminHomepage() {
     apiGet<typeof data>('/api/admin/homepage?locale=' + locale).then((r) => { setData(r as NonNullable<typeof data>); setSummary('') }).catch(() => setData(null))
   }, [locale])
   useEffect(() => { load() }, [load])
+
+  const loadHistory = useCallback(() => {
+    apiGet<{ items: VersionRow[] }>('/api/admin/homepage/versions?locale=' + locale)
+      .then((r) => setHistory(r.items)).catch(() => setHistory([]))
+  }, [locale])
+  const toggleHistory = () => {
+    setHistoryOpen((v) => !v)
+    if (!history) loadHistory()
+  }
+  const restoreVersion = async (row: VersionRow) => {
+    if (!window.confirm(t.admin.homeRestoreConfirm)) return
+    setRestoringId(row.id)
+    try {
+      await apiPost(`/api/admin/homepage/versions/${row.id}/restore`, {})
+      toast({ title: t.admin.homeRestored })
+      load()
+      loadHistory()
+    } catch (e) {
+      toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' })
+    } finally {
+      setRestoringId(null)
+    }
+  }
 
   if (!data) return <Spinner label={t.common.loading} />
   const sections = data.draft?.sections ?? []
@@ -3449,12 +3483,91 @@ function AdminHomepage() {
           <Input placeholder={t.admin.changeSummary} value={summary} onChange={(e) => setSummary(e.target.value)} className="h-9 w-48" />
           <Button variant="outline" className="h-9" disabled={busy} onClick={() => save('draft')}>{t.admin.draft}</Button>
           <Button className="h-9" disabled={busy} onClick={() => save('publish')}>{t.admin.publish}</Button>
+          <Button variant="outline" className="h-9 gap-1.5" aria-expanded={historyOpen} onClick={toggleHistory}>
+            <History className="h-4 w-4 text-brand" aria-hidden />{t.admin.homeHistory}
+          </Button>
         </div>
       </div>
       {data.published && (
         <p className="mb-4 rounded-md bg-success/10 px-3 py-2 text-xs text-success">
           {t.admin.published}: {formatDateTime(data.published.publishedAt, locale)}{data.published.changeSummary ? ` — ${data.published.changeSummary}` : ''}
         </p>
+      )}
+
+      {/* R9: version history — every publish leaves a restore point; restoring
+          copies an old version into the DRAFT (publish stays a manual step). */}
+      {historyOpen && (
+        <div className="mb-5 overflow-hidden rounded-lg border border-line bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-soft/60 px-4 py-2.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+              <History className="h-3.5 w-3.5 text-brand" aria-hidden />{t.admin.homeHistory}
+            </p>
+            <p className="text-[11px] text-ink-3">{t.admin.homeHistoryHint}</p>
+          </div>
+          {!history ? (
+            <div className="px-4 py-6"><Spinner label={t.common.loading} /></div>
+          ) : history.length === 0 ? (
+            <p className="px-4 py-6 text-center text-sm text-ink-3">{t.admin.homeHistoryEmpty}</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {history.map((row) => {
+                const isCurrent = row.status === 'PUBLISHED'
+                const expanded = expandedId === row.id
+                return (
+                  <li key={row.id} className={cn('px-4 py-3', isCurrent && 'bg-success/[0.04]')}>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', isCurrent ? 'bg-success/10 text-success' : 'bg-soft text-ink-3')}>
+                        <Clock className="h-4 w-4" aria-hidden />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="flex flex-wrap items-center gap-2 text-sm">
+                          <span className="font-medium text-ink">{formatDateTime(row.publishedAt ?? row.createdAt, locale)}</span>
+                          {isCurrent ? (
+                            <Badge tone="success"><Check className="me-1 h-3 w-3" aria-hidden />{t.admin.homeHistoryCurrent}</Badge>
+                          ) : (
+                            <Badge tone="default">{locale === 'fa' ? 'آرشیو' : 'Archived'}</Badge>
+                          )}
+                          <span className="text-xs text-ink-3">{tf(t.admin.homeSectionsCount, { n: row.sectionCount })}</span>
+                        </p>
+                        <p className="truncate text-[11px] text-ink-3">
+                          {row.changeSummary || '—'}
+                          {row.publishedBy ? ` · ${tf(t.admin.homeBy, { email: row.publishedBy })}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <Button size="sm" variant="ghost" className="h-8 gap-1 text-xs text-ink-3" aria-expanded={expanded} onClick={() => setExpandedId(expanded ? null : row.id)}>
+                          {expanded ? <ChevronUp className="h-3.5 w-3.5" aria-hidden /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden />}
+                          {locale === 'fa' ? 'بخش‌ها' : 'Sections'}
+                        </Button>
+                        {!isCurrent && (
+                          <Button size="sm" variant="outline" className="h-8 gap-1 text-xs" disabled={restoringId === row.id} onClick={() => restoreVersion(row)}>
+                            {restoringId === row.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <ArrowUp className="h-3.5 w-3.5" aria-hidden />}
+                            {t.admin.homeRestore}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {expanded && (
+                      <ol className="ms-10 mt-2 space-y-1 border-s border-line ps-3">
+                        {row.preview.map((p, i) => (
+                          <li key={i} className="flex items-center gap-2 text-xs text-ink-2">
+                            <span className={cn('h-1.5 w-1.5 rounded-full', p.enabled ? 'bg-brand' : 'bg-line')} aria-hidden />
+                            <span className="font-mono text-[10px] uppercase tracking-wide text-ink-3">{p.type}</span>
+                            {p.heading && <span className="truncate">{p.heading}</span>}
+                            {!p.enabled && <Badge tone="default">{locale === 'fa' ? 'خاموش' : 'off'}</Badge>}
+                          </li>
+                        ))}
+                        {row.sectionCount > row.preview.length && (
+                          <li className="text-[11px] text-ink-3">+{row.sectionCount - row.preview.length} {locale === 'fa' ? 'بخش دیگر' : 'more sections'}</li>
+                        )}
+                      </ol>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
       )}
 
       {/* Add-section menu (audit P1: sections could not be added) */}
@@ -4676,6 +4789,8 @@ interface OutboxEmail {
   product?: { title: string; titleFa: string; slug: string; sku: string } | null
   footerNote: string
 }
+/** R9 — outbox kind-group filter (mirrors FILTER_KINDS in the API route). */
+type OutboxFilter = 'all' | 'orders' | 'security' | 'newsletter'
 
 function AdminMarketing() {
   const locale = useApp((s) => s.locale)
@@ -4688,15 +4803,31 @@ function AdminMarketing() {
   const [bisGroups, setBisGroups] = useState<BisGroup[] | null>(null)
   const [mailMeta, setMailMeta] = useState<{ queued: number; providerConfigured: boolean } | null>(null)
   const [dispatching, setDispatching] = useState(false)
+  // R9: server-side outbox pagination + kind-group filter (queue can grow).
+  const [outboxPage, setOutboxPage] = useState(1)
+  const [outboxFilter, setOutboxFilter] = useState<OutboxFilter>('all')
+  const [outboxMeta, setOutboxMeta] = useState<{ page: number; total: number; pages: number } | null>(null)
+  const OUTBOX_PAGE_SIZE = 10
+
+  const loadEmails = useCallback((page: number, filter: OutboxFilter) => {
+    apiGet<{ items: OutboxEmail[]; mail?: { queued: number; providerConfigured: boolean }; page: number; total: number; pages: number }>(
+      `/api/admin/emails?page=${page}&pageSize=${OUTBOX_PAGE_SIZE}&filter=${filter}`,
+    )
+      .then((r) => {
+        setEmails(r.items)
+        setMailMeta(r.mail ?? null)
+        setOutboxMeta({ page: r.page ?? page, total: r.total ?? r.items.length, pages: r.pages ?? 1 })
+      })
+      .catch(() => { if (page === 1 && filter === 'all') setEmails([]) })
+  }, [])
 
   useEffect(() => {
     apiGet<{ items: Subscriber[]; total: number; subscribedCount: number }>('/api/admin/newsletter')
       .then(setSubs).catch(() => setSubs({ items: [], total: 0, subscribedCount: 0 }))
-    apiGet<{ items: OutboxEmail[]; mail?: { queued: number; providerConfigured: boolean } }>('/api/admin/emails')
-      .then((r) => { setEmails(r.items); setMailMeta(r.mail ?? null) }).catch(() => setEmails([]))
+    loadEmails(1, 'all')
     apiGet<{ variants: BisGroup[] }>('/api/admin/back-in-stock')
       .then((r) => setBisGroups(r.variants)).catch(() => setBisGroups([]))
-  }, [])
+  }, [loadEmails])
 
   const unsubscribe = async (email: string) => {
     await apiDelete(`/api/admin/newsletter?email=${encodeURIComponent(email)}`)
@@ -4736,8 +4867,7 @@ function AdminMarketing() {
   }
 
   const reloadEmails = () => {
-    apiGet<{ items: OutboxEmail[]; mail?: { queued: number; providerConfigured: boolean } }>('/api/admin/emails')
-      .then((r) => { setEmails(r.items); setMailMeta(r.mail ?? null) }).catch(() => undefined)
+    loadEmails(outboxPage, outboxFilter)
   }
 
   const dispatchMails = async () => {
@@ -4892,9 +5022,29 @@ function AdminMarketing() {
             )}
           </div>
         )}
+        {/* R9: kind-group filter chips — ALWAYS visible (even on an empty
+            filter result) so the admin can never get stuck on an empty view. */}
+        <div className="mb-3 flex flex-wrap items-center gap-1.5" role="group" aria-label={t.admin.outbox}>
+          {([
+            ['all', t.admin.outboxFilterAll],
+            ['orders', t.admin.outboxFilterOrders],
+            ['security', t.admin.outboxFilterSecurity],
+            ['newsletter', t.admin.outboxFilterNewsletter],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key} type="button" aria-pressed={outboxFilter === key}
+              onClick={() => { if (key === outboxFilter) return; setOutboxFilter(key); setOutboxPage(1); setOpenEmail(null); loadEmails(1, key) }}
+              className={cn('inline-flex h-7 items-center rounded-full border px-3 text-xs font-medium transition-colors',
+                outboxFilter === key ? 'border-brand/40 bg-brand-soft text-brand' : 'border-line bg-white text-ink-3 hover:border-brand/40 hover:text-brand')}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         {emails.length === 0 ? (
           <EmptyState title={t.admin.outbox} body={t.admin.noEmails} />
         ) : (
+          <>
           <ul className="space-y-2">
             {emails.map((em) => {
               const open = openEmail === em.id
@@ -5012,6 +5162,27 @@ function AdminMarketing() {
               )
             })}
           </ul>
+          {/* R9: pager — total within the source window + prev/next. */}
+          {outboxMeta && outboxMeta.pages > 1 && (
+            <nav className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line bg-soft/50 px-3.5 py-2.5" aria-label={t.admin.outbox}>
+              <p className="text-xs text-ink-3">
+                {tf(t.admin.outboxTotal, { n: locale === 'fa' ? faDigits(String(outboxMeta.total)) : outboxMeta.total })}
+                <span className="mx-1.5 text-line">·</span>
+                {tf(t.admin.outboxPageOf, { p: locale === 'fa' ? faDigits(String(outboxMeta.page)) : outboxMeta.page, n: locale === 'fa' ? faDigits(String(outboxMeta.pages)) : outboxMeta.pages })}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" disabled={outboxMeta.page <= 1}
+                  onClick={() => { const p = outboxPage - 1; setOutboxPage(p); setOpenEmail(null); loadEmails(p, outboxFilter) }}>
+                  <ChevronLeft className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />{locale === 'fa' ? 'قبلی' : 'Prev'}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" disabled={outboxMeta.page >= outboxMeta.pages}
+                  onClick={() => { const p = outboxPage + 1; setOutboxPage(p); setOpenEmail(null); loadEmails(p, outboxFilter) }}>
+                  {locale === 'fa' ? 'بعدی' : 'Next'}<ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
+                </Button>
+              </div>
+            </nav>
+          )}
+          </>
         )}
       </section>
     </div>

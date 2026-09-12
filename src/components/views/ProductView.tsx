@@ -76,6 +76,42 @@ export function ProductView({ slug }: { slug: string }) {
   const [reviewsSort, setReviewsSort] = useState<'recent' | 'helpful'>('recent')
   const [reviewsOverride, setReviewsOverride] = useState<{ items: ReviewWithReply[]; topReviewId: string | null } | null>(null)
   const [sortBusy, setSortBusy] = useState(false)
+  // R9 — review permalinks: /books/{slug}?review={id} deep-links (and the
+  // "jump to most helpful" action) scroll to the card and flash it.
+  const [highlightReviewId, setHighlightReviewId] = useState<string | null>(null)
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const anchorHandled = useRef(false)
+
+  const clearHighlight = () => {
+    if (highlightTimer.current) clearTimeout(highlightTimer.current)
+    highlightTimer.current = null
+  }
+  /** Scroll a review card into view + play the highlight flash. `syncUrl`
+   *  mirrors the target into ?review= so the view stays shareable. */
+  const jumpToReview = (id: string, syncUrl = false) => {
+    const el = document.getElementById(`review-${id}`)
+    if (!el) return
+    if (syncUrl) navigate(`/books/${slug}?review=${encodeURIComponent(id)}`, { replace: true })
+    clearHighlight()
+    setHighlightReviewId(id)
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    highlightTimer.current = setTimeout(() => setHighlightReviewId(null), 2600)
+  }
+  // Deep-link handling: once the product (with its reviews) is on screen,
+  // honor ?review={id} from the URL exactly once per product view.
+  const reviewParam = route.query.review
+  useEffect(() => {
+    if (!product || anchorHandled.current) return
+    if (!reviewParam) return
+    const exists = product.reviews.items.some((r) => r.id === reviewParam)
+    if (!exists) return
+    anchorHandled.current = true
+    const id = reviewParam
+    // Let the review list finish painting before measuring the scroll target.
+    const raf = requestAnimationFrame(() => jumpToReview(id))
+    return () => cancelAnimationFrame(raf)
+  }, [product, reviewParam])
+  useEffect(() => () => clearHighlight(), [])
   /** Hero image — gallery selection first, then cover; empty string → placeholder
    *  (an empty src="" makes the browser re-fetch the whole page — never render that). */
   const heroSrc = product ? product.gallery[activeImg]?.url || product.coverUrl || '' : ''
@@ -144,6 +180,7 @@ export function ProductView({ slug }: { slug: string }) {
     if (loadedSlug.current !== slug) { setProduct(null); setVariantId(null) }
     setFailed(false); setActiveImg(0); setQty(1); setReviewDone(false); setBisDone(false); setBisEmail('')
     setReviewsSort('recent'); setReviewsOverride(null); setSortBusy(false)
+    anchorHandled.current = false
     if (ssrConsumed.current) {
       // SSR boot: the prefetched book is already on screen — no refetch.
       ssrConsumed.current = false
@@ -676,8 +713,9 @@ export function ProductView({ slug }: { slug: string }) {
         {(() => {
           const topId = reviewsOverride?.topReviewId ?? product.reviews.topReviewId ?? null
           if (product.reviews.items.length === 0) return null
+          const topVisible = (reviewsOverride?.items ?? (product.reviews.items as ReviewWithReply[])).some((r) => r.id === topId)
           return (
-            <div className="mb-4 flex items-center gap-2" role="group" aria-label={t.product.reviewSortLabel}>
+            <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label={t.product.reviewSortLabel}>
               <ArrowDownWideNarrow className="h-3.5 w-3.5 text-ink-3" aria-hidden />
               <div className="inline-flex rounded-full border border-line bg-soft/60 p-0.5">
                 {(['helpful', 'recent'] as const).map((s) => (
@@ -693,6 +731,17 @@ export function ProductView({ slug }: { slug: string }) {
                 ))}
               </div>
               {sortBusy && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-3" aria-hidden />}
+              {/* R9: permalink jump — scrolls to the most-helpful review and
+                  mirrors it into ?review= (shareable; card flashes on arrival). */}
+              {topId && topVisible && reviewsSort === 'recent' && (
+                <button
+                  type="button"
+                  onClick={() => jumpToReview(topId, true)}
+                  className="inline-flex h-7 items-center gap-1 rounded-full border border-brand/30 bg-brand-soft/50 px-3 text-xs font-medium text-brand transition-colors hover:bg-brand-soft"
+                >
+                  <Award className="h-3 w-3" aria-hidden />{t.product.jumpToReview}
+                </button>
+              )}
             </div>
           )
         })()}
@@ -703,11 +752,18 @@ export function ProductView({ slug }: { slug: string }) {
             ) : (reviewsOverride?.items ?? (product.reviews.items as ReviewWithReply[])).map((r) => {
               const topId = reviewsOverride?.topReviewId ?? product.reviews.topReviewId ?? null
               const isTop = topId === r.id && (voteState(r).helpfulCount > 0 || r.helpfulCount === undefined)
+              const isHighlighted = highlightReviewId === r.id
               return (
-              <article key={r.id} className={cn('rounded-lg border p-4 transition-colors', isTop ? 'border-brand/40 bg-brand-soft/20 ring-1 ring-brand/15' : 'border-line')}>
+              <article
+                key={r.id}
+                id={`review-${r.id}`}
+                aria-labelledby={`review-${r.id}-title`}
+                className={cn('scroll-mt-24 rounded-lg border p-4 transition-shadow',
+                  isHighlighted ? 'review-highlight border-brand/40' : isTop ? 'border-brand/40 bg-brand-soft/20 ring-1 ring-brand/15' : 'border-line')}
+              >
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <RatingStars value={r.rating} locale={locale} />
-                  <h3 className="text-sm font-semibold text-ink">{r.title}</h3>
+                  <h3 id={`review-${r.id}-title`} className="text-sm font-semibold text-ink">{r.title}</h3>
                   {isTop && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" title={t.product.mostHelpfulBadge}>
                       <Award className="h-3 w-3" aria-hidden />{t.product.mostHelpfulBadge}

@@ -470,3 +470,22 @@ h1, h2, h3, h4 {
 @media (prefers-reduced-motion: reduce) {
   .fade-up { animation: none; }
 }
+
+/* R9 — review permalink highlight: a one-shot brand glow that plays when the
+   user lands on /books/{slug}?review={id} (or jumps to the most-helpful
+   review). Runs twice, then settles into a soft ring until the state clears. */
+@keyframes review-flash {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 0%, transparent); background-color: color-mix(in oklab, var(--brand) 0%, white); }
+  25%  { box-shadow: 0 0 0 5px color-mix(in oklab, var(--brand) 22%, transparent); background-color: color-mix(in oklab, var(--brand) 9%, white); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 0%, transparent); background-color: transparent; }
+}
+.review-highlight {
+  animation: review-flash 1.15s ease-out 2;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 16%, transparent);
+}
+.dark .review-highlight {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--brand) 24%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-highlight { animation: none; }
+}
