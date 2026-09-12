@@ -6,7 +6,7 @@
 // order, so the simple import flow still accepts the sheet; the full fidelity
 // columns after them are extra (import ignores unknown headers by name).
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit } from '@/lib/server/utils'
 
 /** Quote a cell only when needed (commas, quotes, newlines) — RFC-4180 style. */
@@ -16,7 +16,7 @@ function csvCell(value: unknown): string {
 }
 
 export async function GET() {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const products = await db.product.findMany({

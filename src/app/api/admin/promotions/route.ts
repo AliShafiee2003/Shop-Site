@@ -3,7 +3,7 @@
 // deactivates the others: the storefront supports a single sitewide promo.
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 import { parseExcludedIds } from '@/lib/server/promotions'
 
@@ -20,7 +20,7 @@ const createSchema = z.object({
 })
 
 export async function GET() {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const rows = await db.promotion.findMany({ orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }] })
@@ -36,7 +36,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

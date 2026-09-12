@@ -1,7 +1,7 @@
 // POST /api/admin/upload — multipart image upload for admin editors (covers, hero slides, posters, gallery).
 // Writes to public/uploads at runtime (dev sandbox serves /uploads/* straight from disk)
 // and returns the public URL. Images only, ≤5 MB, safe random names — no path traversal.
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json } from '@/lib/server/utils'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -17,7 +17,7 @@ const MIME_EXT: Record<string, string> = {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let form: FormData

@@ -1,7 +1,7 @@
 // GET/PUT /api/admin/homepage?locale= — draft/published versions + upsert/publish flow (audited).
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, normalizeLocale, parseJsonSafe, zodMessage } from '@/lib/server/utils'
 
 type SectionDTO = { id: string; type: string; sortOrder: number; enabled: boolean; settings: Record<string, unknown> }
@@ -24,7 +24,7 @@ async function loadVersion(locale: string, status: string) {
 }
 
 export async function GET(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { searchParams } = new URL(req.url)
@@ -55,7 +55,7 @@ const putSchema = z.object({
 })
 
 export async function PUT(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

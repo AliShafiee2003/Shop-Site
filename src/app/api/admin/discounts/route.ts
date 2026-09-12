@@ -2,7 +2,7 @@
 // POST /api/admin/discounts — create a code (audited).
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { isEmptyScope, normalizeCode, normalizeScope, parseScope, serializeScope } from '@/lib/server/discounts'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
@@ -27,7 +27,7 @@ const createSchema = z.object({
 })
 
 export async function GET() {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const rows = await db.discountCode.findMany({ orderBy: { createdAt: 'desc' } })
@@ -106,7 +106,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

@@ -1,10 +1,10 @@
 // POST /api/admin/products/[id]/duplicate — clone product as DRAFT (no variants).
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json } from '@/lib/server/utils'
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { id } = await ctx.params

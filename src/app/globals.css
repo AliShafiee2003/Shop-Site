@@ -387,3 +387,62 @@ html[lang='fa'] body {
   height: calc(100svh - var(--story-head, 0px));
 }
 .story-img-layer { will-change: opacity, transform; }
+
+/* ── Round-2 polish (self-review) ─────────────────────────────────────────── */
+
+/* Brand-tinted text selection — small detail, big "designed" feel. */
+::selection {
+  background: color-mix(in oklab, var(--brand) 22%, transparent);
+  color: var(--ink);
+}
+
+/* Skeleton shimmer: a directional sweep layered over the soft block. Replaces
+   the flat opacity pulse for data-driven loading blocks. */
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton-shimmer { position: relative; overflow: hidden; }
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--brand) 8%, transparent) 45%,
+    color-mix(in oklab, var(--brand) 14%, transparent) 55%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after { animation: none; }
+}
+
+/* Slim page scrollbar (desktop) tinted with the line color — matches the
+   .scrollbar-slim utility used in panels/lists. */
+@media (min-width: 768px) {
+  body::-webkit-scrollbar { width: 10px; }
+  body::-webkit-scrollbar-track { background: transparent; }
+  body::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 8px;
+    border: 2px solid var(--background, #fff);
+  }
+  body::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+}
+
+/* Consistent keyboard focus for bare links/buttons that opt out of the
+   component-level rings: one visible, brand-colored outline everywhere. */
+:where(a, button, [role='button'], [tabindex]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect reduced motion for the shared entrance animation. */
+@media (prefers-reduced-motion: reduce) {
+  .fade-up { animation: none; }
+}

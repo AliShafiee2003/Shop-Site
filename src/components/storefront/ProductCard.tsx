@@ -74,6 +74,8 @@ export function ProductCard({ p, locale, className, priority }: {
             <img
               src={p.coverUrl}
               alt={`${p.title} — ${t.nav.books}`}
+              width={600}
+              height={800}
               loading={priority ? 'eager' : 'lazy'}
               sizes="(max-width: 640px) 45vw, 220px"
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"

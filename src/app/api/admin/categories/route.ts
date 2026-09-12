@@ -3,7 +3,7 @@
 // from the English name; uniqueness is enforced with a numeric suffix fallback.
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const createSchema = z.object({
@@ -26,7 +26,7 @@ export function slugify(input: string): string {
 }
 
 export async function GET() {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const rows = await db.category.findMany({
@@ -60,7 +60,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

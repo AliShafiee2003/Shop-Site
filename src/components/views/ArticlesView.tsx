@@ -25,7 +25,7 @@ function ArticleCard({ a, locale, featured }: { a: ArticleListItem; locale: Loca
       <div className="overflow-hidden rounded-lg border border-line bg-soft">
         {a.heroUrl ? (
            
-          <img src={a.heroUrl} alt={a.title} loading="lazy" className={cn('w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]', featured ? 'aspect-[7/4]' : 'aspect-[16/10]')} />
+          <img src={a.heroUrl} alt={a.title} width={840} height={480} loading="lazy" className={cn('w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]', featured ? 'aspect-[7/4]' : 'aspect-[16/10]')} />
         ) : (
           <div className="flex aspect-[16/10] items-center justify-center bg-brand-soft text-brand">✎</div>
         )}
@@ -198,7 +198,7 @@ export function ArticleView({ slug }: { slug: string }) {
         {article.heroUrl && (
           <figure className="mt-8">
             { }
-            <img src={article.heroUrl} alt={article.title} className="aspect-[7/4] w-full rounded-lg border border-line object-cover" fetchPriority="high" />
+            <img src={article.heroUrl} alt={article.title} width={1120} height={640} className="aspect-[7/4] w-full rounded-lg border border-line object-cover" fetchPriority="high" />
           </figure>
         )}
 

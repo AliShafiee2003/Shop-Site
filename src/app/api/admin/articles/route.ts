@@ -5,13 +5,13 @@
 //                              body stored as blocks JSON — same contract as the
 //                              product long-description / storefront ProseBlocks).
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 import { slugify } from '@/app/api/admin/categories/route'
 import { articleSchema, bodyPayload, readingMinutesFrom } from '@/lib/server/articles'
 
 export async function GET() {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const [rows, cats] = await Promise.all([
@@ -65,7 +65,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let raw: unknown

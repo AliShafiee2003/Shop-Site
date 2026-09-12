@@ -7,7 +7,7 @@
 // one aggregated BACK_IN_STOCK_NOTIFY audit entry.
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, json, zodMessage } from '@/lib/server/utils'
 
 const bodySchema = z.object({
@@ -20,7 +20,7 @@ const bodySchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

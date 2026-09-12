@@ -4,7 +4,7 @@
 // (status / isFeatured / fixedPrice / stockAdjust / variantPrices / inline translations) working unchanged.
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, parseJsonSafe, zodMessage } from '@/lib/server/utils'
 
 const translationEditSchema = z.object({
@@ -89,7 +89,7 @@ const patchSchema = z.object({
 
 /** GET — full editor payload: variants, translations (incl. longDescription/SEO), media, contributors, related, price history. */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { id } = await ctx.params
@@ -222,7 +222,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { id } = await ctx.params
@@ -749,7 +749,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
  *  goes away through schema cascades in one transaction. Stale promotion
  *  exclusion ids (a JSON column, no FK) are scrubbed in the same tx. */
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { id } = await ctx.params

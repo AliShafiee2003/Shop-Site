@@ -113,6 +113,16 @@ export async function requireAdmin(): Promise<User | null> {
   return requireRole([...ADMIN_ROLES])
 }
 
+/** S10 RBAC matrix — content management roles.
+ *  ORDER_SUPPORT is a SUPPORT role: it can work orders/tickets/customers but
+ *  must not edit catalog content, marketing or legal pages. */
+export const CONTENT_ROLES = ['OWNER', 'EDITOR'] as const
+
+/** Guard for content-management routes (products, articles, homepage, legal…). */
+export async function requireContentAdmin(): Promise<User | null> {
+  return requireRole([...CONTENT_ROLES])
+}
+
 /** Owner-only guard (refunds, settings). */
 export async function requireOwner(): Promise<User | null> {
   return requireRole(['OWNER'])

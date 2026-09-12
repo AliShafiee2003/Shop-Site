@@ -1,10 +1,10 @@
 // GET /api/admin/reviews?state= — moderation queue with product titles.
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, json, pickLocale } from '@/lib/server/utils'
 
 export async function GET(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { searchParams } = new URL(req.url)

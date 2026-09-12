@@ -5,8 +5,10 @@
 // while claiming "anonymized". Everything customer-identifying is now wiped in
 // ONE transaction; only the commercial skeleton of orders (amounts, statuses,
 // item snapshots without recipient data) is retained as required by law.
+// S11: sensitive operation → password re-auth for accounts WITH a local
+// password (Google-only accounts have no password to re-verify).
 import { db } from '@/lib/db'
-import { destroySession, getSessionUser } from '@/lib/server/auth'
+import { destroySession, getSessionUser, verifyPassword } from '@/lib/server/auth'
 import { apiError, json } from '@/lib/server/utils'
 
 const ANON_PLACEHOLDER = JSON.stringify({
@@ -18,9 +20,23 @@ const ANON_PLACEHOLDER = JSON.stringify({
   phone: null,
 })
 
-export async function POST() {
+export async function POST(req: Request) {
   const user = await getSessionUser()
   if (!user) return apiError(401, 'UNAUTHORIZED')
+
+  // S11 re-auth: a stolen session cannot erase an account without the password.
+  let password: string | undefined
+  try {
+    const body = (await req.json()) as { password?: unknown }
+    password = typeof body?.password === 'string' ? body.password : undefined
+  } catch {
+    password = undefined
+  }
+  if (user.passwordHash) {
+    if (!password || !verifyPassword(password, user.passwordHash)) {
+      return apiError(401, 'AUTH_REQUIRED', 'Password confirmation failed')
+    }
+  }
 
   const email = user.email.toLowerCase()
 

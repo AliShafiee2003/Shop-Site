@@ -39,25 +39,27 @@ interface DashData {
   giftWrap?: { orders: number; paidOrders: number; feesMinor: number; revenueMinor: number }
 }
 
+// S10 RBAC matrix — `content: true` sections are OWNER/EDITOR only (mirrors
+// requireContentAdmin on the API routes); ORDER_SUPPORT sees support sections.
 const ADMIN_NAV = [
-  { key: '', label: 'admin.dashboard', icon: LayoutDashboard },
-  { key: 'products', label: 'admin.products', icon: BookOpen },
-  { key: 'orders', label: 'admin.orders', icon: Package },
-  { key: 'discounts', label: 'admin.discounts', icon: TicketPercent },
-  { key: 'categories', label: 'admin.categories', icon: Shapes },
-  { key: 'people', label: 'admin.people', icon: BookUser },
-  { key: 'articles', label: 'admin.articles', icon: Newspaper },
-  { key: 'homepage', label: 'admin.homepage', icon: LayoutTemplate },
-  { key: 'analytics', label: 'admin.analytics', icon: Activity },
-  { key: 'marketing', label: 'admin.marketing', icon: Mail },
-  { key: 'reviews', label: 'admin.reviews', icon: Star },
-  { key: 'tickets', label: 'admin.tickets', icon: LifeBuoy },
-  { key: 'customers', label: 'admin.customers', icon: Users },
-  { key: 'announcements', label: 'admin.announcements', icon: Megaphone },
-  { key: 'legal', label: 'admin.legal', icon: FileText },
-  { key: 'reports', label: 'admin.reports', icon: BarChart3 },
-  { key: 'audit-log', label: 'admin.auditLog', icon: History },
-  { key: 'settings', label: 'admin.settings', icon: Settings2 },
+  { key: '', label: 'admin.dashboard', icon: LayoutDashboard, content: false },
+  { key: 'products', label: 'admin.products', icon: BookOpen, content: true },
+  { key: 'orders', label: 'admin.orders', icon: Package, content: false },
+  { key: 'discounts', label: 'admin.discounts', icon: TicketPercent, content: true },
+  { key: 'categories', label: 'admin.categories', icon: Shapes, content: true },
+  { key: 'people', label: 'admin.people', icon: BookUser, content: true },
+  { key: 'articles', label: 'admin.articles', icon: Newspaper, content: true },
+  { key: 'homepage', label: 'admin.homepage', icon: LayoutTemplate, content: true },
+  { key: 'analytics', label: 'admin.analytics', icon: Activity, content: false },
+  { key: 'marketing', label: 'admin.marketing', icon: Mail, content: true },
+  { key: 'reviews', label: 'admin.reviews', icon: Star, content: true },
+  { key: 'tickets', label: 'admin.tickets', icon: LifeBuoy, content: false },
+  { key: 'customers', label: 'admin.customers', icon: Users, content: false },
+  { key: 'announcements', label: 'admin.announcements', icon: Megaphone, content: true },
+  { key: 'legal', label: 'admin.legal', icon: FileText, content: true },
+  { key: 'reports', label: 'admin.reports', icon: BarChart3, content: false },
+  { key: 'audit-log', label: 'admin.auditLog', icon: History, content: false },
+  { key: 'settings', label: 'admin.settings', icon: Settings2, content: false },
 ] as const
 
 export function AdminView({ section: rawSection }: { section: string }) {
@@ -71,6 +73,8 @@ export function AdminView({ section: rawSection }: { section: string }) {
   const section = rawSection === 'dashboard' ? '' : rawSection
 
   const isAdmin = user && ['OWNER', 'EDITOR', 'ORDER_SUPPORT'].includes(user.role)
+  // Content sections are hidden from ORDER_SUPPORT (server enforces too).
+  const isContentAdmin = user && ['OWNER', 'EDITOR'].includes(user.role)
 
   if (!userLoaded) return <Spinner label={t.common.loading} />
   if (!isAdmin) {
@@ -94,7 +98,7 @@ export function AdminView({ section: rawSection }: { section: string }) {
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[210px_1fr]">
         <nav aria-label={t.admin.title} className="space-y-1">
-          {ADMIN_NAV.map((n) => (
+          {ADMIN_NAV.filter((n) => isContentAdmin || !n.content).map((n) => (
             <button
               key={n.key} type="button"
               onClick={() => navigate(`/admin${n.key ? `/${n.key}` : ''}`)}
@@ -108,26 +112,44 @@ export function AdminView({ section: rawSection }: { section: string }) {
         </nav>
         <div className="min-w-0">
           {section === '' && <AdminDashboard />}
-          {section === 'products' && <AdminProducts />}
+          {section === 'products' && (isContentAdmin ? <AdminProducts /> : <ForbiddenSection />)}
           {section === 'orders' && <AdminOrders />}
-          {section === 'discounts' && <AdminDiscounts />}
-          {section === 'categories' && <AdminCategories />}
-          {section === 'people' && <AdminPeople />}
-          {section === 'articles' && <AdminArticles />}
-          {section === 'homepage' && <AdminHomepage />}
+          {section === 'discounts' && (isContentAdmin ? <AdminDiscounts /> : <ForbiddenSection />)}
+          {section === 'categories' && (isContentAdmin ? <AdminCategories /> : <ForbiddenSection />)}
+          {section === 'people' && (isContentAdmin ? <AdminPeople /> : <ForbiddenSection />)}
+          {section === 'articles' && (isContentAdmin ? <AdminArticles /> : <ForbiddenSection />)}
+          {section === 'homepage' && (isContentAdmin ? <AdminHomepage /> : <ForbiddenSection />)}
           {section === 'analytics' && <AdminAnalytics />}
-          {section === 'marketing' && <AdminMarketing />}
-          {section === 'reviews' && <AdminReviews />}
+          {section === 'marketing' && (isContentAdmin ? <AdminMarketing /> : <ForbiddenSection />)}
+          {section === 'reviews' && (isContentAdmin ? <AdminReviews /> : <ForbiddenSection />)}
           {section === 'tickets' && <AdminTickets />}
           {section === 'customers' && <AdminCustomersTable />}
-          {section === 'announcements' && <AdminAnnouncements />}
-          {section === 'legal' && <AdminLegal />}
+          {section === 'announcements' && (isContentAdmin ? <AdminAnnouncements /> : <ForbiddenSection />)}
+          {section === 'legal' && (isContentAdmin ? <AdminLegal /> : <ForbiddenSection />)}
           {section === 'reports' && <AdminReports />}
           {section === 'audit-log' && <AdminAudit />}
           {section === 'settings' && <AdminSettings />}
         </div>
       </div>
     </main>
+  )
+}
+
+/** S10: rendered when a non-content role (ORDER_SUPPORT) deep-links into a
+ *  content section. The API routes enforce the same matrix server-side. */
+function ForbiddenSection() {
+  const locale = useApp((s) => s.locale)
+  const t = getDict(locale)
+  return (
+    <div className="rounded-lg border border-warning/30 bg-warning/10 p-8 text-center" role="alert">
+      <ShieldAlert className="mx-auto h-8 w-8 text-orange-dark" aria-hidden />
+      <p className="mt-3 text-sm font-semibold text-ink">{t.admin.forbidden}</p>
+      <p className="mt-1 text-xs text-ink-3">
+        {locale === 'fa'
+          ? 'این بخش فقط برای مدیران محتوا (OWNER/EDITOR) در دسترس است.'
+          : 'This section is only available to content managers (OWNER/EDITOR).'}
+      </p>
+    </div>
   )
 }
 

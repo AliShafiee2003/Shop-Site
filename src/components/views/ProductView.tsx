@@ -271,6 +271,8 @@ export function ProductView({ slug }: { slug: string }) {
                 <img
                   src={heroSrc}
                   alt={product.gallery[activeImg]?.alt ?? title}
+                  width={800}
+                  height={1000}
                   className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   fetchPriority="high"
                 />

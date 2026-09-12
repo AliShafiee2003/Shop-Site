@@ -2,7 +2,7 @@
 // PUT /api/admin/legal — publish a NEW version of a legal document; previous versions stay in DB (audit trail).
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const LEGAL_TYPES = ['PRIVACY', 'TERMS', 'WITHDRAWAL', 'IMPRINT', 'ACCESSIBILITY', 'COOKIES'] as const
@@ -67,7 +67,7 @@ function bumpVersion(prev: string | null, taken: Set<string>): string {
 }
 
 export async function GET(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { searchParams } = new URL(req.url)
@@ -94,7 +94,7 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let raw: unknown

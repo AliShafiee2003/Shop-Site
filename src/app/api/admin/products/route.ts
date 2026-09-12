@@ -5,7 +5,7 @@
 import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, normalizeLocale, parseIntParam, zodMessage } from '@/lib/server/utils'
 
 /** kebab-case whatever was typed ("The Nightingale's Atlas" → the-nightingales-atlas). */
@@ -90,7 +90,7 @@ const createSchema = z.object({
 })
 
 export async function GET(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { searchParams } = new URL(req.url)
@@ -167,7 +167,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: unknown

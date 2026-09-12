@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift } from 'lucide-react'
+import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -360,6 +360,19 @@ function OrderDetail({ locale, orderNumber }: { locale: Locale; orderNumber: str
     } finally { setBusy(false) }
   }
 
+  // New: customer self-service cancellation for not-yet-shipped orders.
+  const cancelOrder = async () => {
+    if (!window.confirm(t.account.cancelConfirm)) return
+    setBusy(true)
+    try {
+      await apiPost(`/api/account/orders/${encodeURIComponent(orderNumber)}/cancel`, {})
+      toast({ title: t.account.cancelDone })
+      load()
+    } catch (e) {
+      toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' })
+    } finally { setBusy(false) }
+  }
+
   return (
     <div>
       <button type="button" onClick={() => navigate('/account/orders')} className="mb-4 text-sm font-medium text-brand hover:underline">← {t.account.orders}</button>
@@ -367,6 +380,11 @@ function OrderDetail({ locale, orderNumber }: { locale: Locale; orderNumber: str
         <h2 className="text-lg font-semibold text-ink bdi" dir="ltr">{compactOrderNumber(order.orderNumber)}</h2>
         <div className="flex items-center gap-2">
           <StatusBadge status={order.status} locale={locale} />
+          {(order.status === 'PAID' || order.status === 'PROCESSING') && (
+            <Button variant="outline" size="sm" className="h-9 border-error/40 text-error hover:bg-error/10 hover:text-error" onClick={cancelOrder} disabled={busy}>
+              <Ban className="h-4 w-4" aria-hidden />{t.account.cancelOrder}
+            </Button>
+          )}
           {(order.status === 'PAID' || order.status === 'SHIPPED' || order.status === 'DELIVERED' || order.status === 'PROCESSING') && (
             <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
               <DialogTrigger asChild><Button variant="outline" size="sm" className="h-9">{t.account.requestReturn}</Button></DialogTrigger>
@@ -829,11 +847,28 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
   }
   const deleteAccount = async () => {
     if (!window.confirm(t.account.deleteWarning)) return
+    // S11: password re-auth — a stolen session cookie must not be able to
+    // erase the account. (Google-only accounts leave it empty; the server
+    // skips the check when no local password exists.)
+    const answer = window.prompt(t.account.deletePasswordPrompt)
+    if (answer === null) return
+    const password = answer.trim() || undefined
     setBusy(true)
     try {
-      await apiPost('/api/account/deletion-request')
+      await apiPost('/api/account/deletion-request', { password })
       onUser(null as unknown as UserDTO)
       navigate(`/${locale}`)
+    } catch (e) {
+      const err = e as { code?: string }
+      if (err.code === 'AUTH_REQUIRED') toast({ title: t.account.deletePasswordWrong, variant: 'destructive' })
+    } finally { setBusy(false) }
+  }
+
+  const signOutAllDevices = async () => {
+    setBusy(true)
+    try {
+      await apiDelete('/api/auth/sessions')
+      toast({ title: t.account.signOutAllDone })
     } finally { setBusy(false) }
   }
   const saveConsent = async (v: boolean) => {
@@ -855,7 +890,10 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
         <Button variant="outline" onClick={exportData} disabled={busy} className="h-11 gap-2">
           <Download className="h-4 w-4" aria-hidden />{t.account.exportData}
         </Button>
-        <Button variant="outline" onClick={deleteAccount} disabled={busy} className="h-11 gap-2 border-error/40 text-error hover:bg-error/10 hover:text-error">
+        <Button variant="outline" onClick={signOutAllDevices} disabled={busy} className="h-11 gap-2">
+          <LogOut className="h-4 w-4" aria-hidden />{t.account.signOutAllDevices}
+        </Button>
+        <Button variant="outline" onClick={deleteAccount} disabled={busy} className="h-11 gap-2 border-error/40 text-error hover:bg-error/10 hover:text-error sm:col-span-2">
           <Trash2 className="h-4 w-4" aria-hidden />{t.account.deleteAccount}
         </Button>
       </div>

@@ -8,7 +8,7 @@
 // Valid rows still import when siblings fail — per-row problems are reported so
 // one typo never blocks a whole catalog drop (each import is audited).
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 import { z } from 'zod'
 
@@ -73,7 +73,7 @@ function toKebab(raw: string): string {
 }
 
 export async function POST(req: Request) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   let body: { csv?: unknown }

@@ -1,7 +1,7 @@
 // PATCH /api/admin/reviews/[id] — moderation decision (audited).
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { requireAdmin } from '@/lib/server/auth'
+import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const patchSchema = z.object({
@@ -12,7 +12,7 @@ const patchSchema = z.object({
 })
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const user = await requireAdmin()
+  const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
   const { id } = await ctx.params

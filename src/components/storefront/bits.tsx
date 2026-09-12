@@ -21,7 +21,9 @@ export function Spinner({ label }: { label?: string }) {
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded-md bg-soft', className)} aria-hidden />
+  // Directional shimmer (globals.css) instead of a flat opacity pulse —
+  // reads as "data is on its way" and stays calm under reduced motion.
+  return <div className={cn('skeleton-shimmer rounded-md bg-soft', className)} aria-hidden />
 }
 
 /** Scroll-triggered reveal — the element starts quietly hidden

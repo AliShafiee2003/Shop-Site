@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { DirectionProvider } from '@radix-ui/react-direction'
 import { navigate, useRoute, useScrollTopOnNavigate } from '@/lib/router'
 import { apiGet, normalizeCart } from '@/lib/api'
@@ -22,12 +23,40 @@ import { CartView } from '@/components/views/CartView'
 import { CheckoutView, SuccessPanel } from '@/components/views/CheckoutView'
 import { AuthView } from '@/components/views/AuthView'
 import { AccountView } from '@/components/views/AccountView'
-import { AdminView } from '@/components/views/AdminView'
 import { FavoritesView } from '@/components/views/FavoritesView'
 import { TrackView } from '@/components/views/TrackView'
 import { AboutView, FAQView, ShippingView, ContactView, LegalView } from '@/components/views/StaticView'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/storefront/bits'
 import type { ShippingSettings, StoreSettings, CartDTO, UserDTO } from '@/lib/types'
+
+/**
+ * Code-splitting (audit §6/§11): AdminView (+ its 9.4k-line editor tree) used
+ * to be in the eager bundle every storefront visitor downloaded (~313 KB).
+ * It is noindex, auth-gated and never needed on first paint — load it lazily,
+ * client-only, with a skeleton that keeps the page-shaped layout.
+ */
+const AdminView = dynamic(
+  () => import('@/components/views/AdminView').then((m) => m.AdminView),
+  {
+    ssr: false,
+    loading: () => (
+      <main id="main" className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6" aria-busy="true">
+        <Skeleton className="h-8 w-40" />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-lg" />
+          ))}
+        </div>
+        <div className="mt-6 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-md" />
+          ))}
+        </div>
+      </main>
+    ),
+  },
+)
 
 /**
  * Client SPA shell — dispatched by the path router (real URLs, no hash).
