@@ -12,7 +12,7 @@ interface RenderedEmail {
   orderId: string | null
   orderNumber: string
   to: string
-  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM'
+  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE'
   locale: string
   createdAt: string
   subject: string
@@ -174,6 +174,10 @@ export async function GET() {
         return fa ? 'پیوند یک‌بارمصرف تأیید ایمیل صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A single-use email-verification link was issued (preview — the full body belongs to the recipient).'
       case 'NEWSLETTER_CONFIRM':
         return fa ? 'پیوند تأیید عضویت در خبرنامه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A newsletter double opt-in confirmation link was issued (preview — the full body belongs to the recipient).'
+      case 'EMAIL_CHANGE':
+        return fa ? 'پیوند یک‌بارمصرف تأیید تغییر نشانی ایمیل به نشانی تازه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A single-use email-change confirmation link was issued to the NEW address (preview — the full body belongs to the recipient).'
+      case 'EMAIL_CHANGE_NOTICE':
+        return fa ? 'نامهٔ اطلاع‌رسانی تغییر نشانی ایمیل صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'The email-changed notice was issued (preview — the full body belongs to the recipient).'
       case 'ORDER_CONFIRMATION':
         return fa ? 'ایمیل تأیید سفارش در صف ارسال قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The order-confirmation email was queued (preview — the originating order is unavailable).'
       case 'SHIPPING_NOTICE':

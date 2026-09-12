@@ -30,6 +30,7 @@ import { AboutView, FAQView, ShippingView, ContactView, LegalView } from '@/comp
 import { SeriesView } from '@/components/views/SeriesView'
 import { SeriesIndexView } from '@/components/views/SeriesIndexView'
 import { VerifyEmailView } from '@/components/views/VerifyEmailView'
+import { ConfirmEmailChangeView } from '@/components/views/ConfirmEmailChangeView'
 import { NewsletterConfirmView } from '@/components/views/NewsletterConfirmView'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/storefront/bits'
@@ -180,6 +181,8 @@ export function Shell() {
     view = <SeriesIndexView />
   } else if (root === 'verify-email') {
     view = <VerifyEmailView />
+  } else if (root === 'confirm-email-change') {
+    view = <ConfirmEmailChangeView />
   } else if (root === 'newsletter-confirm') {
     view = <NewsletterConfirmView />
   } else if (root === 'account') {
@@ -198,7 +201,7 @@ export function Shell() {
     || root === 'shipping-returns' || root === 'contact' || root === 'legal'
     || root === 'login' || root === 'register' || root === 'forgot-password' || root === 'reset-password'
     || root === 'series'
-    || root === 'verify-email' || root === 'newsletter-confirm'
+    || root === 'verify-email' || root === 'newsletter-confirm' || root === 'confirm-email-change'
     || root === 'account' || root === 'admin'
   )
 

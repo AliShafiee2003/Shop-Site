@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
   let verified = false
 
   if (user) {
+    // S13 residual — reviews are a public, attributed voice: an unverified
+    // account must not post them (spam/throwaway barrier). Existing users
+    // were grandfathered with emailVerifiedAt at rollout; only accounts that
+    // never confirmed an address hit this.
+    if (!user.emailVerifiedAt) {
+      return apiError(403, 'EMAIL_NOT_VERIFIED', 'Verify your email address before submitting a review.')
+    }
     authorName = user.name ?? 'Persepix reader'
     userId = user.id
     // Verified purchase: a paid order by this user containing a variant of this product.

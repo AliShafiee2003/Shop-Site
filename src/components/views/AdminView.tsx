@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText, AtSign, Bell } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -4666,7 +4666,7 @@ interface BisGroup {
   requests: { id: string; email: string; locale: string; notifiedAt: string | null; createdAt: string }[]
 }
 interface OutboxEmail {
-  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM'
+  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE'
   locale: string; createdAt: string; subject: string; greeting: string; intro: string
   items: { title: string; qty: number; lineTotalMinor: number }[]
   subtotalMinor: number; discountCode?: string | null; discountMinor?: number
@@ -4855,8 +4855,10 @@ function AdminMarketing() {
               const isNlConfirm = em.kind === 'NEWSLETTER_CONFIRM'
               const isShipNotice = em.kind === 'SHIPPING_NOTICE'
               const isOrderConfirm = em.kind === 'ORDER_CONFIRMATION'
+              const isEmailChange = em.kind === 'EMAIL_CHANGE'
+              const isEmailChangeNotice = em.kind === 'EMAIL_CHANGE_NOTICE'
               return (
-                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : 'border-line')}>
+                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : (isEmailChange || isEmailChangeNotice) && openEmail !== em.id ? 'border-warning/25' : 'border-line')}>
                   <button
                     type="button" onClick={() => setOpenEmail(open ? null : em.id)} aria-expanded={open}
                     className={cn('flex w-full flex-wrap items-center gap-2 px-4 py-3 text-start transition hover:bg-soft/60', open && 'bg-brand-soft/40')}
@@ -4874,6 +4876,10 @@ function AdminMarketing() {
                       <Badge tone="brand"><Truck className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'ارسال سفارش' : 'Shipping notice'}</Badge>
                     ) : isOrderConfirm ? (
                       <Badge tone="success"><ReceiptText className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید سفارش' : 'Order confirmation'}</Badge>
+                    ) : isEmailChange ? (
+                      <Badge tone="warning"><AtSign className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تغییر ایمیل' : 'Email change'}</Badge>
+                    ) : isEmailChangeNotice ? (
+                      <Badge tone="warning"><Bell className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'اطلاع‌رسانی تغییر ایمیل' : 'Email-changed notice'}</Badge>
                     ) : (
                       <Badge tone="success">✓</Badge>
                     )}

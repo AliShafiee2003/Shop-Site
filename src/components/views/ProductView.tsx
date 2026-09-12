@@ -205,8 +205,15 @@ export function ProductView({ slug }: { slug: string }) {
       setReviewDone(true)
       setReviewForm({ rating: 5, title: '', body: '', name: '' })
       toast({ title: t.product.reviewPending })
-    } catch {
-      toast({ title: t.common.error, variant: 'destructive' })
+    } catch (err) {
+      const code = (err as { code?: string }).code
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        // S13 residual — the account has not confirmed its address. Point at
+        // the account banner (which can resend the verification mail).
+        toast({ title: t.product.reviewVerifyNeeded, variant: 'destructive', duration: 6000 })
+      } else {
+        toast({ title: t.common.error, variant: 'destructive' })
+      }
     } finally { setReviewBusy(false) }
   }
 

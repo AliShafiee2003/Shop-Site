@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X, BadgeCheck, MailWarning } from 'lucide-react'
+import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X, BadgeCheck, MailWarning, AtSign, MailCheck, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -971,6 +971,7 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
           <span className="text-ink-2">{t.account.marketingConsent}</span>
         </label>
       </div>
+      <EmailCard locale={locale} user={user} />
       <SecurityCard locale={locale} user={user} />
       <SessionsCard locale={locale} />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -987,6 +988,108 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
       <p className="text-xs leading-relaxed text-ink-3">{t.account.deleteWarning}</p>
       <p className="text-xs text-ink-3 bdi" dir="ltr">{user.email}</p>
     </div>
+  )
+}
+
+/** S11 — change the account email: password re-auth here, then the mailed
+ *  link to the NEW address performs the actual swap (proof of ownership).
+ *  The swap signs every device out — communicated in the hint + confirm page. */
+function EmailCard({ locale, user }: { locale: Locale; user: UserDTO }) {
+  const t = getDict(locale)
+  const { toast } = useToast()
+  const [newEmail, setNewEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sentTo, setSentTo] = useState<string | null>(null)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!/.+@.+\..+/.test(newEmail.trim())) {
+      setError(locale === 'fa' ? 'نشانی ایمیل معتبر نیست.' : 'Please enter a valid email address.')
+      return
+    }
+    setBusy(true)
+    try {
+      const r = await apiPost<{ ok: boolean; pendingEmail?: string; confirmUrl?: string }>('/api/account/email/change', {
+        newEmail: newEmail.trim(),
+        password: password || undefined,
+      })
+      setSentTo(r.pendingEmail ?? newEmail.trim())
+      setNewEmail('')
+      setPassword('')
+      toast({ title: locale === 'fa' ? 'پیوند تأیید ارسال شد' : 'Confirmation link sent' })
+      // Sandbox convenience (DEV-only field mirrors the reset flow): follow
+      // the link automatically so the whole flow is testable end-to-end.
+      if (r.confirmUrl) {
+        setTimeout(() => navigate(r.confirmUrl as string), 900)
+      }
+    } catch (err) {
+      const e2 = err as { code?: string }
+      if (e2.code === 'AUTH_REQUIRED') setError(t.account.wrongPassword)
+      else if (e2.code === 'EMAIL_IN_USE') setError(t.account.emailInUse)
+      else if (e2.code === 'SAME_EMAIL') setError(t.account.sameEmail)
+      else if (e2.code === 'NO_LOCAL_PASSWORD') setError(t.account.noLocalPassword)
+      else setError(t.account.changeEmailFailed)
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <section aria-label={t.account.emailCardTitle} className="overflow-hidden rounded-lg border border-line">
+      <header className="flex items-center justify-between gap-2 border-b border-line bg-soft/60 px-4 py-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <AtSign className="h-4 w-4 text-brand" aria-hidden />
+          {t.account.emailCardTitle}
+        </h3>
+        {user.emailVerified !== false ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+            <BadgeCheck className="h-3 w-3" aria-hidden />{t.account.emailVerified}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+            <MailWarning className="h-3 w-3" aria-hidden />{t.account.emailUnverified}
+          </span>
+        )}
+      </header>
+      <div className="p-4">
+        {sentTo ? (
+          <div className="flex items-start gap-3 rounded-md bg-success/5 px-3.5 py-3" role="status">
+            <MailCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden />
+            <p className="text-sm leading-relaxed text-ink-2">
+              {tf(t.account.changeEmailSent, { email: sentTo })}
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="em-current" className="mb-1.5 text-xs">{t.account.currentEmail}</Label>
+              <Input id="em-current" dir="ltr" value={user.email} disabled aria-readonly className="bg-soft/60 text-ink-3" />
+            </div>
+            <div>
+              <Label htmlFor="em-new" className="mb-1.5 text-xs">{t.account.newEmail}</Label>
+              <Input id="em-new" type="email" dir="ltr" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} autoComplete="email" />
+            </div>
+            <div>
+              <Label htmlFor="em-pw" className="mb-1.5 text-xs">{t.account.currentPassword}</Label>
+              <Input id="em-pw" type="password" required autoComplete="current-password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            {error && <p role="alert" className="text-sm text-error sm:col-span-2">{error}</p>}
+            <div className="sm:col-span-2">
+              <Button type="submit" size="sm" disabled={busy} className="h-10 gap-2">
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <AtSign className="h-4 w-4" aria-hidden />}
+                {t.account.changeEmail}
+              </Button>
+              <p className="mt-2 max-w-xl text-xs leading-relaxed text-ink-3">{t.account.changeEmailHint}</p>
+              <p className="mt-1 flex max-w-xl items-start gap-1.5 text-xs leading-relaxed text-ink-3">
+                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+                {t.account.changeEmailNote}
+              </p>
+            </div>
+          </form>
+        )}
+      </div>
+    </section>
   )
 }
 

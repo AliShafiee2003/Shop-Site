@@ -442,6 +442,30 @@ html[lang='fa'] body {
   border-radius: 4px;
 }
 
+/* R6 typography detail — headings balance across lines instead of leaving a
+   lonely word on the last line (harmless no-op in unsupported browsers). */
+h1, h2, h3, h4 {
+  text-wrap: balance;
+}
+
+/* R6 numeric detail — money/quantities align in tables & totals. Apply with
+   `.tabular` next to `bdi` money spans. */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* R6 — current-stage node ring on the order stepper (motion-safe users only
+   get the breathing ring; reduced-motion sees a static node). */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 35%, transparent); }
+  70%  { box-shadow: 0 0 0 7px color-mix(in oklab, var(--brand) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 0%, transparent); }
+}
+.motion-safe\:animate-pulse-ring {
+  animation: pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe\:animate-pulse-ring { animation: none; }
+}
+
 /* Respect reduced motion for the shared entrance animation. */
 @media (prefers-reduced-motion: reduce) {
   .fade-up { animation: none; }

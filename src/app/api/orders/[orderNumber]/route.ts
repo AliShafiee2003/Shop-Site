@@ -9,6 +9,7 @@
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { rateLimit } from '@/lib/server/rate-limit'
+import { getPublicOrderTimeline } from '@/lib/server/order-timeline'
 import { apiError, clientIp, json } from '@/lib/server/utils'
 
 /** PublicRef shape minted by checkout: PR-<base64url token>. */
@@ -38,6 +39,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderNumber
   const email = (req.nextUrl.searchParams.get('email') ?? '').toLowerCase().trim()
 
   let order: {
+    id: string
     orderNumber: string
     publicRef: string | null
     status: string
@@ -76,6 +78,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderNumber
   if (!order) return apiError(404, 'NOT_FOUND', 'Order not found')
 
   const shipment = order.shipments[0] ?? null
+  // Backend-driven lifecycle stages for the /track stepper ({stage, at} only
+  // — internal event messages never cross the guest boundary).
+  const timeline = await getPublicOrderTimeline(order.id)
 
   return json({
     order: {
@@ -91,6 +96,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderNumber
       // C6: giftMessage removed — it is private content, not order status.
       currency: order.currency,
       createdAt: order.createdAt.toISOString(),
+      timeline,
       items: order.items.map((i) => ({
         title: i.titleEn,
         quantity: i.quantity,

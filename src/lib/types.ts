@@ -255,6 +255,7 @@ export interface DiscountPublic {
 
 export interface OrderPublicDTO {
   orderNumber: string
+  publicRef?: string | null
   status: string
   paymentStatus: string
   fulfillmentStatus: string
@@ -265,6 +266,8 @@ export interface OrderPublicDTO {
   giftMessage?: string | null
   currency: string
   createdAt: string
+  /** Backend-driven lifecycle stages for the /track stepper (R6). */
+  timeline?: { stage: string; at: string }[]
   items: { title: string; quantity: number; unitPriceMinor: number; coverUrl?: string | null }[]
   shipment: { carrier: string; trackingNumber?: string | null; trackingUrl?: string | null; status: string; estimatedDeliveryAt?: string | null } | null
 }

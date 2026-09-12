@@ -10,13 +10,23 @@ import { apiGet } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
 import { formatMoney, formatDate, compactOrderNumber } from '@/lib/format'
 import { Breadcrumbs, Badge } from '@/components/storefront/bits'
+import { OrderStepper } from '@/components/storefront/OrderStepper'
 import type { Locale, OrderPublicDTO } from '@/lib/types'
 
 type TrackOrder = OrderPublicDTO & { discountCode?: string | null }
 
-const STATUS_TONE: Record<string, 'success' | 'brand' | 'warning' | 'default'> = {
-  PAID: 'success', PROCESSING: 'brand', SHIPPED: 'brand', DELIVERED: 'success',
-  PENDING_PAYMENT: 'warning', CANCELLED: 'default', REFUNDED: 'default',
+/** Localized status badge — mirrors the AccountView labels so guests and
+ *  account holders see the SAME wording for the same state (FA previously
+ *  leaked a raw English status like "partially refunded" here). */
+const STATUS_LABELS: Record<string, { en: string; fa: string; tone: 'success' | 'brand' | 'warning' | 'error' | 'default' }> = {
+  PENDING_PAYMENT: { en: 'Pending payment', fa: 'در انتظار پرداخت', tone: 'warning' },
+  PAID: { en: 'Paid', fa: 'پرداخت‌شده', tone: 'success' },
+  PROCESSING: { en: 'Processing', fa: 'در حال آماده‌سازی', tone: 'brand' },
+  SHIPPED: { en: 'Shipped', fa: 'ارسال شده', tone: 'brand' },
+  DELIVERED: { en: 'Delivered', fa: 'تحویل شده', tone: 'success' },
+  CANCELLED: { en: 'Cancelled', fa: 'لغو شده', tone: 'error' },
+  REFUNDED: { en: 'Refunded', fa: 'بازپرداخت شده', tone: 'default' },
+  PARTIALLY_REFUNDED: { en: 'Partially refunded', fa: 'بازپرداخت جزئی', tone: 'default' },
 }
 
 export function TrackView() {
@@ -101,8 +111,29 @@ export function TrackView() {
             <div>
               <p className="font-mono text-sm font-bold text-ink bdi" dir="ltr">{compactOrderNumber(order.orderNumber)}</p>
               <p className="mt-0.5 text-xs text-ink-3">{t.track.placedOn}: {formatDate(order.createdAt, locale)}</p>
+              {order.publicRef && (
+                <p className="mt-0.5 text-[11px] text-ink-3">
+                  {isFa ? 'کد پیگیری:' : 'Tracking ref:'}{' '}
+                  <span className="font-mono bdi" dir="ltr">{order.publicRef}</span>
+                </p>
+              )}
             </div>
-            <Badge tone={STATUS_TONE[order.status] ?? 'default'}>{order.status.replaceAll('_', ' ').toLowerCase()}</Badge>
+            {(() => {
+              const s = STATUS_LABELS[order.status]
+              return s
+                ? <Badge tone={s.tone}>{isFa ? s.fa : s.en}</Badge>
+                : <Badge>{order.status.replaceAll('_', ' ').toLowerCase()}</Badge>
+            })()}
+          </div>
+          {/* R6 — backend-driven lifecycle stepper (real OrderEvent rows). */}
+          <div className="border-b border-line px-5">
+            <OrderStepper
+              status={order.status}
+              timeline={order.timeline}
+              createdAt={order.createdAt}
+              eta={order.shipment?.estimatedDeliveryAt ?? null}
+              locale={locale}
+            />
           </div>
           <ul className="divide-y divide-line px-5">
             {order.items.map((item, i) => (
@@ -110,14 +141,14 @@ export function TrackView() {
                 { }
                 <img src={item.coverUrl ?? ''} alt="" className="h-14 w-10 rounded-sm border border-line object-cover" />
                 <span className="min-w-0 flex-1 truncate text-sm text-ink-2">{item.title} × {item.quantity}</span>
-                <span className="text-sm font-medium text-ink bdi">{formatMoney(item.unitPriceMinor, locale)}</span>
+                <span className="tabular text-sm font-medium text-ink bdi">{formatMoney(item.unitPriceMinor, locale)}</span>
               </li>
             ))}
           </ul>
           <div className="grid gap-4 border-t border-line px-5 py-4 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-3">{t.common.total}</p>
-              <p className="mt-1 text-lg font-bold text-ink bdi">{formatMoney(order.totalMinor, locale)}</p>
+              <p className="mt-1 text-lg font-bold text-ink bdi tabular">{formatMoney(order.totalMinor, locale)}</p>
               {order.discountCode && (
                 <p className="mt-1 inline-flex items-center gap-1 rounded bg-success/10 px-1.5 py-0.5 text-[11px] font-medium text-success">
                   <Tag className="h-3 w-3" aria-hidden /><span className="font-mono bdi" dir="ltr">{order.discountCode}</span> · {t.promo.discount}

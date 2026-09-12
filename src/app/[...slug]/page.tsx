@@ -24,7 +24,7 @@ const DEFAULT_OG_IMAGE = '/images/hero-season.png'
 /** Page roots that must NEVER be indexed (private / utility surfaces). */
 const NOINDEX_ROOTS = new Set([
   'search', 'account', 'admin', 'checkout', 'cart', 'favorites', 'track', 'login', 'register',
-  'forgot-password', 'reset-password', 'verify-email', 'newsletter-confirm',
+  'forgot-password', 'reset-password', 'verify-email', 'newsletter-confirm', 'confirm-email-change',
 ])
 
 function absUrl(site: string, path: string): string {

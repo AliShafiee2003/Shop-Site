@@ -39,6 +39,7 @@ model User {
   wishlist            WishlistItem[]
   resetTokens         PasswordResetToken[]
   emailVerifyTokens   EmailVerificationToken[]
+  emailChangeTokens   EmailChangeToken[]
 }
 
 model Session {
@@ -928,6 +929,24 @@ model PasswordResetToken {
 model EmailVerificationToken {
   id        String    @id @default(cuid())
   userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// S11 — pending email-change tokens. Minted AFTER a password re-auth, the
+/// mail goes to the NEW address (proof of ownership) and the confirm route
+/// performs the swap in a transaction (re-checking uniqueness). The pending
+/// address lives on THIS row so nothing about it touches User.email until
+/// the link is consumed. Single-use, 12-hour expiry, one live token per user.
+model EmailChangeToken {
+  id        String    @id @default(cuid())
+  userId    String
+  newEmail  String
   tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?

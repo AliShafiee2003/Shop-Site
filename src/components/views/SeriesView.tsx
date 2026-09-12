@@ -87,13 +87,18 @@ export function SeriesView({ slug }: { slug: string }) {
         </ul>
       )}
 
+      {/* R6 — round-trip internal linking: the catalog's series chips filter
+          to ?series=slug, and every series page sends readers back the same
+          way (deep link straight into the filtered grid). */}
       <p className="mt-10 text-center">
         <button
           type="button"
-          onClick={() => navigate('/books')}
-          className="text-sm font-medium text-brand hover:underline"
+          onClick={() => navigate(`/books?series=${encodeURIComponent(data.slug)}`)}
+          className="inline-flex h-10 items-center gap-2 rounded-md border border-brand/25 bg-brand-soft/50 px-4 text-sm font-medium text-brand transition hover:bg-brand-soft hover:shadow-sm"
         >
-          {t.nav.books} →
+          <BookOpen className="h-4 w-4" aria-hidden />
+          {t.series.browseInCatalog}
+          <span aria-hidden>→</span>
         </button>
       </p>
     </main>
