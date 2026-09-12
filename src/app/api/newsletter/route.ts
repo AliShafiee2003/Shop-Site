@@ -1,11 +1,16 @@
-// POST /api/newsletter — public subscribe (footer). Rate limited 5/10min/IP, idempotent per email.
-// S14: the response carries a signed manageUrl (one-click unsubscribe). A full
-// double opt-in requires transactional email (still a sandbox gap — see worklog).
-import { createHmac } from 'node:crypto'
+// POST /api/newsletter — public subscribe (footer). Rate limited 5/10min/IP.
+// Double opt-in (GDPR best practice, audit §5): a NEW or previously
+// unsubscribed address is stored as PENDING and receives a signed confirmation
+// link (/newsletter-confirm). Only clicking that link flips the row to
+// SUBSCRIBED — nobody can sign third parties up for mail they never confirmed.
+// Legacy rows that were already SUBSCRIBED stay subscribed (grandfathered) and
+// simply get the ordinary success answer. S14: unsubscribe remains a signed
+// one-click link; the confirm signature uses the same HMAC secret.
 import { z } from 'zod'
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { rateLimit } from '@/lib/server/rate-limit'
+import { newsletterSig } from '@/lib/server/newsletter'
 import { apiError, clientIp, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
 
 const bodySchema = z.object({
@@ -31,19 +36,35 @@ export async function POST(req: NextRequest) {
   const email = parsed.data.email.trim().toLowerCase()
   const locale = normalizeLocale(parsed.data.locale)
 
+  const existing = await db.newsletterSubscriber.findUnique({ where: { email } })
+
+  // Grandfathered subscribers re-entering their address: no new confirmation
+  // round — the footer shows the plain "welcome aboard" copy.
+  if (existing?.status === 'SUBSCRIBED') {
+    const origin = req.nextUrl.origin
+    const sig = newsletterSig('unsub', email)
+    const manageUrl = `${origin}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}`
+    return json({ ok: true, alreadySubscribed: true, manageUrl })
+  }
+
   await db.newsletterSubscriber.upsert({
     where: { email },
-    create: { email, locale, source: parsed.data.source ?? 'footer', status: 'SUBSCRIBED' },
-    // Re-subscribing a previously unsubscribed address flips it back.
-    update: { status: 'SUBSCRIBED', locale },
+    create: { email, locale, source: parsed.data.source ?? 'footer', status: 'PENDING' },
+    // Re-subscribing (previously UNSUBSCRIBED) or re-confirming (PENDING):
+    // both go back through the confirmation step.
+    update: { status: 'PENDING', locale, confirmedAt: null },
   })
 
-  // Signed one-click unsubscribe link (S14) — HMAC cannot be forged offline.
-  const origin = req.nextUrl.origin
-  const sig = createHmac('sha256', process.env.STATE_SECRET?.trim() || process.env.GOOGLE_CLIENT_SECRET?.trim() || 'persepix-unsubscribe-key')
-    .update(`unsub:${email}`)
-    .digest('base64url')
-  const manageUrl = `/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}`
+  // Signed double opt-in link → /newsletter-confirm page → POST /api/newsletter/confirm.
+  const sig = newsletterSig('confirm', email)
+  const fa = locale === 'fa'
+  const subject = fa ? 'عضویت در نامهٔ پرس‌پیکس را تأیید کنید' : 'Confirm your Persepix letter subscription'
+  const bodyText = fa
+    ? `برای تأیید عضویت در نامهٔ پرس‌پیکس روی این پیوند کلیک کنید:\n/newsletter-confirm?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}\n\nاگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید — هیچ ایمیلی برایتان فرستاده نمی‌شود.`
+    : `Click the link below to confirm your subscription to the Persepix letter:\n/newsletter-confirm?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}\n\nIf you didn't request this, ignore this email — nothing will be sent to you.`
+  await db.mailMessage.create({
+    data: { to: email, subject, kind: 'NEWSLETTER_CONFIRM', bodyText, locale },
+  })
 
-  return json({ ok: true, manageUrl: `${origin}${manageUrl}` })
+  return json({ ok: true, pending: true })
 }

@@ -5,6 +5,7 @@ import { ServerRouteProvider } from '@/components/storefront/SsrProviders'
 import { routeStateFromParams } from '@/lib/route-state'
 import { siteUrlFrom } from '@/lib/site'
 import { getHomeSections } from '@/lib/server/home-sections'
+import { getSeriesIndex } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,10 +52,16 @@ export default async function HomePage() {
   const route = routeStateFromParams(undefined, undefined)
 
   let home: Awaited<ReturnType<typeof getHomeSections>> | null = null
+  let seriesIndex: Awaited<ReturnType<typeof getSeriesIndex>> | null = null
   try {
     home = await getHomeSections(route.locale)
+    // Same round-trip feeds the homepage SERIES shelf module (when enabled).
+    if (home.some((s) => s.type === 'SERIES' && s.enabled)) {
+      seriesIndex = await getSeriesIndex(route.locale)
+    }
   } catch {
     home = null
+    seriesIndex = null
   }
 
   const brand = 'Persepix'
@@ -80,7 +87,7 @@ export default async function HomePage() {
   ]
 
   return (
-    <ServerRouteProvider route={route} ssrData={{ locale: route.locale, siteOrigin: site, home }}>
+    <ServerRouteProvider route={route} ssrData={{ locale: route.locale, siteOrigin: site, home, seriesIndex }}>
       <Shell />
       <JsonLd payloads={jsonLd} />
     </ServerRouteProvider>

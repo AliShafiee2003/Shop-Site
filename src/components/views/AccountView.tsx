@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X } from 'lucide-react'
+import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X, BadgeCheck, MailWarning } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -137,6 +137,16 @@ export function AccountView({ section, sub }: { section: string; sub?: string })
           <div className="rounded-lg border border-line p-4">
             <p className="text-sm font-semibold text-ink">{tf(t.account.welcome, { name: user.name ?? user.email })}</p>
             <p className="mt-0.5 truncate text-xs text-ink-3 bdi" dir="ltr">{user.email}</p>
+            {user.emailVerified !== false && (
+              <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+                <BadgeCheck className="h-3 w-3" aria-hidden />{t.account.emailVerified}
+              </p>
+            )}
+            {user.emailVerified === false && (
+              <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+                <MailWarning className="h-3 w-3" aria-hidden />{t.account.emailUnverified}
+              </p>
+            )}
             {user.googleLinked && (
               <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-soft px-2 py-0.5 text-[10px] font-medium text-ink-2">
                 <svg viewBox="0 0 48 48" width="10" height="10" aria-hidden>
@@ -171,7 +181,12 @@ export function AccountView({ section, sub }: { section: string; sub?: string })
           </nav>
         </aside>
         <div className="min-w-0">
-          {section === '' && <Dashboard locale={locale} user={user} />}
+          {section === '' && (
+            <div className="space-y-6">
+              <EmailVerifyBanner locale={locale} user={user} />
+              <Dashboard locale={locale} user={user} />
+            </div>
+          )}
           {section === 'orders' && (sub ? <OrderDetail locale={locale} orderNumber={sub} /> : <Orders locale={locale} />)}
           {section === 'addresses' && <Addresses locale={locale} />}
           {section === 'returns' && <Returns locale={locale} />}
@@ -185,6 +200,59 @@ export function AccountView({ section, sub }: { section: string; sub?: string })
 
 function Shield(props: { className?: string }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg>
+}
+
+/** S13 residual — soft nudge for accounts whose email is not verified yet:
+ *  amber banner + one-click (re)send. Hidden entirely once verified. */
+function EmailVerifyBanner({ locale, user }: { locale: Locale; user: UserDTO }) {
+  const t = getDict(locale)
+  const { toast } = useToast()
+  const [busy, setBusy] = useState(false)
+  const [sent, setSent] = useState(false)
+  if (user.emailVerified !== false) return null // undefined = pre-update payload → treat as verified
+
+  const send = async () => {
+    setBusy(true)
+    try {
+      const res = await apiPost<{ ok: boolean; verifyUrl?: string }>('/api/account/email/verification-request', {})
+      setSent(true)
+      // Sandbox convenience only (DEV_EXPOSE_RESET_LINK=1) — mirrors the reset flow.
+      if (res.verifyUrl) {
+        toast({ title: t.account.verifySent, description: undefined, duration: 4000 })
+        navigate(res.verifyUrl)
+        return
+      }
+      toast({ title: t.account.verifySent, duration: 4000 })
+    } catch (err) {
+      const code = (err as { code?: string }).code
+      toast({
+        title: code === 'ALREADY_VERIFIED' ? t.account.verifyAlreadyDone : code === 'RATE_LIMITED' ? t.account.verifySendFailed : t.account.verifySendFailed,
+        variant: 'destructive',
+      })
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <section
+      aria-label={t.account.verifyBannerTitle}
+      className="relative overflow-hidden rounded-xl border border-warning/30 bg-gradient-to-br from-warning/10 via-white to-white p-5"
+    >
+      <div className="pointer-events-none absolute -end-8 -top-10 h-28 w-28 rounded-full bg-warning/10 blur-2xl" aria-hidden />
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-warning/40 bg-white text-warning" aria-hidden>
+          <MailWarning className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-ink">{t.account.verifyBannerTitle}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-ink-2">{t.account.verifyBannerBody}</p>
+        </div>
+        <Button size="sm" variant="outline" disabled={busy || sent} onClick={send} className="shrink-0">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+          {sent ? t.account.verifySent : user.emailVerified === false ? t.account.verifyResend : t.account.verifySend}
+        </Button>
+      </div>
+    </section>
+  )
 }
 
 function Dashboard({ locale, user }: { locale: Locale; user: UserDTO }) {

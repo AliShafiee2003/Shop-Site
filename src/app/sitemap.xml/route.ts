@@ -54,6 +54,7 @@ export async function GET(req: Request) {
     const p = locale === 'fa' ? '/fa' : ''
     urls.push(urlEntry(`${base}${p || '/'}`, now, 'daily', '1.0'))
     urls.push(urlEntry(`${base}${p}/books`, now, 'daily', '0.9'))
+    urls.push(urlEntry(`${base}${p}/series`, now, 'weekly', '0.6'))
     urls.push(urlEntry(`${base}${p}/authors`, now, 'weekly', '0.6'))
     urls.push(urlEntry(`${base}${p}/articles`, now, 'daily', '0.8'))
     for (const c of categories) urls.push(urlEntry(`${base}${p}/categories/${c.slug}`, c.updatedAt, 'weekly', '0.6'))

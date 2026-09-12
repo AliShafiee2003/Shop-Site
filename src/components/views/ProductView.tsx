@@ -152,10 +152,10 @@ export function ProductView({ slug }: { slug: string }) {
   const shortDesc = isFa ? (product.translations?.fa?.shortDescription || product.shortDescription) : product.shortDescription
   const inStock = variant ? variant.stock > 0 : product.inStock
   // Promotion-aware pricing: salePriceMinor is set only while a promo reduces the list price.
-  const effPrice = variant ? (variant.salePriceMinor ?? variant.priceMinor) : product.priceMinor
+  const effPrice = variant ? (variant.salePriceMinor ?? variant.priceMinor) : product.priceMinor ?? null
   const onSale = variant
     ? variant.salePriceMinor != null && variant.salePriceMinor < variant.priceMinor
-    : product.listPriceMinor != null && product.listPriceMinor > product.priceMinor
+    : product.listPriceMinor != null && product.priceMinor != null && product.listPriceMinor > product.priceMinor
 
   const addToCart = async () => {
     if (!variant) return
@@ -164,7 +164,7 @@ export function ProductView({ slug }: { slug: string }) {
       const raw = await apiPost('/api/cart/items', { variantId: variant.id, quantity: qty })
       const res = normalizeCart(raw)
       setCartSummary(res.count, res.subtotalMinor)
-      track('add_to_cart', { productSlug: product.slug, valueMinor: effPrice * qty })
+      track('add_to_cart', { productSlug: product.slug, valueMinor: (effPrice ?? 0) * qty })
       toast({ title: t.common.added, description: `${title} × ${qty}` })
       setMiniCartOpen(true)
     } catch (e) {
@@ -416,7 +416,7 @@ export function ProductView({ slug }: { slug: string }) {
 
             <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
               {variant && onSale ? (
-                <SalePriceTag minor={effPrice} listMinor={variant.priceMinor} locale={locale} className="text-3xl [&>span:nth-child(2)]:text-sm [&>span:nth-child(3)]:text-xs" />
+                <SalePriceTag minor={effPrice ?? variant.priceMinor} listMinor={variant.priceMinor} locale={locale} className="text-3xl [&>span:nth-child(2)]:text-sm [&>span:nth-child(3)]:text-xs" />
               ) : variant ? (
                 <PriceTag minor={variant.priceMinor} locale={locale} className="text-3xl" />
               ) : null}
@@ -621,7 +621,7 @@ export function ProductView({ slug }: { slug: string }) {
                   )}
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-2">{r.body}</p>
-                <p className="mt-2 text-xs text-ink-3">{r.authorName} · {formatDate(r.createdAt, locale)}</p>
+                <p className="mt-2 text-xs text-ink-3">{r.authorName ?? (isFa ? 'خوانندهٔ پرس‌پیکس' : 'Persepix reader')} · {formatDate(r.createdAt, locale)}</p>
                 {/* Press response — visually nested under the review it answers. */}
                 {r.reply ? (
                   <div className="mt-3 ms-3 rounded-e-md border-s-2 border-brand/30 bg-soft/60 px-4 py-3" role="note" aria-label={isFa ? 'پاسخ پرس‌پیکس' : 'Response from Persepix'}>

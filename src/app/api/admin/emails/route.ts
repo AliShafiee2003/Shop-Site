@@ -12,7 +12,7 @@ interface RenderedEmail {
   orderId: string | null
   orderNumber: string
   to: string
-  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET'
+  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM'
   locale: string
   createdAt: string
   subject: string
@@ -141,19 +141,31 @@ export async function GET() {
     orderBy: { createdAt: 'desc' },
     take: 12,
   })
+  // Kind-specific one-line previews (the full body — with its single-use
+  // token — stays only in the recipient's copy).
+  const mailIntro = (kind: string, fa: boolean): string => {
+    switch (kind) {
+      case 'PASSWORD_RESET':
+        return fa ? 'پیوند یک‌بارمصرف بازنشانی گذرواژه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A single-use password-reset link was issued (preview — the full body belongs to the recipient).'
+      case 'EMAIL_VERIFY':
+        return fa ? 'پیوند یک‌بارمصرف تأیید ایمیل صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A single-use email-verification link was issued (preview — the full body belongs to the recipient).'
+      case 'NEWSLETTER_CONFIRM':
+        return fa ? 'پیوند تأیید عضویت در خبرنامه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A newsletter double opt-in confirmation link was issued (preview — the full body belongs to the recipient).'
+      default:
+        return fa ? 'یک ایمیل تراکنشی در صف قرار گرفت (پیش‌نمایش).' : 'A transactional email was queued (preview).'
+    }
+  }
   const mailEmails: RenderedEmail[] = mails.map((m) => ({
     id: `mail-${m.id}`,
     orderId: null,
     orderNumber: '',
     to: m.to,
-    kind: 'PASSWORD_RESET' as const,
+    kind: m.kind as RenderedEmail['kind'],
     locale: m.locale,
     createdAt: m.createdAt.toISOString(),
     subject: m.subject,
     greeting: '',
-    intro: m.locale === 'fa'
-      ? 'پیوند یک‌بارمصرف بازنشانی گذرواژه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).'
-      : 'A single-use password-reset link was issued (preview — the full body belongs to the recipient).',
+    intro: mailIntro(m.kind, m.locale === 'fa'),
     items: [],
     subtotalMinor: 0,
     shippingMinor: 0,

@@ -16,8 +16,8 @@
 //     skips its initial client fetch.
 import { createContext, useContext, type ReactNode } from 'react'
 import type { RouteState } from '@/lib/route-state'
-import type { ArticleDetail, ArticleListItem, HomeSection, ProductCardDTO, ProductDetail } from '@/lib/types'
-import type { SeriesDetail } from '@/lib/server/series'
+import type { ArticleDetail, ArticleListItem, HomeSection, ProductCard as ProductCardDTO, ProductDetail } from '@/lib/types'
+import type { SeriesDetail, SeriesIndexEntry } from '@/lib/server/series'
 
 export const ServerRouteContext = createContext<RouteState | null>(null)
 
@@ -35,6 +35,8 @@ export type SsrPageData = {
   articlesCategory?: string | null
   /** /series/[slug] payload (CollectionPage shelf) */
   series?: SeriesDetail | null
+  /** /series index payload (also feeds the homepage SERIES shelf module) */
+  seriesIndex?: SeriesIndexEntry[] | null
 }
 
 export const SsrPageDataContext = createContext<SsrPageData | null>(null)

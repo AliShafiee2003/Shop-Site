@@ -28,6 +28,9 @@ import { FavoritesView } from '@/components/views/FavoritesView'
 import { TrackView } from '@/components/views/TrackView'
 import { AboutView, FAQView, ShippingView, ContactView, LegalView } from '@/components/views/StaticView'
 import { SeriesView } from '@/components/views/SeriesView'
+import { SeriesIndexView } from '@/components/views/SeriesIndexView'
+import { VerifyEmailView } from '@/components/views/VerifyEmailView'
+import { NewsletterConfirmView } from '@/components/views/NewsletterConfirmView'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/storefront/bits'
 import type { ShippingSettings, StoreSettings, CartDTO, UserDTO } from '@/lib/types'
@@ -173,6 +176,12 @@ export function Shell() {
     view = <PasswordResetView />
   } else if (root === 'series' && second) {
     view = <SeriesView slug={second} />
+  } else if (root === 'series') {
+    view = <SeriesIndexView />
+  } else if (root === 'verify-email') {
+    view = <VerifyEmailView />
+  } else if (root === 'newsletter-confirm') {
+    view = <NewsletterConfirmView />
   } else if (root === 'account') {
     view = <AccountView section={second ?? ''} sub={third} />
   } else if (root === 'admin') {
@@ -188,7 +197,8 @@ export function Shell() {
     || root === 'cart' || root === 'checkout' || root === 'about' || root === 'faq' || root === 'favorites' || root === 'track'
     || root === 'shipping-returns' || root === 'contact' || root === 'legal'
     || root === 'login' || root === 'register' || root === 'forgot-password' || root === 'reset-password'
-    || (root === 'series' && Boolean(second))
+    || root === 'series'
+    || root === 'verify-email' || root === 'newsletter-confirm'
     || root === 'account' || root === 'admin'
   )
 

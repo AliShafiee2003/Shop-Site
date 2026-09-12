@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -3342,6 +3342,7 @@ const SECTION_DEFAULTS: Record<string, { slides?: Record<string, unknown>[]; pos
   FOR_YOU: { headingEn: '', headingFa: '', limit: 12 },
   RECENTLY_VIEWED: { headingEn: '', headingFa: '', limit: 12 },
   ARTICLES: { headingEn: 'From the journal', headingFa: 'از مجلهٔ پرس‌پیکس', descriptionEn: '', descriptionFa: '', limit: 3, bg: 'white', ctaEn: 'All articles', ctaFa: 'همهٔ مقاله‌ها', ctaHref: '/articles' },
+  SERIES: { headingEn: '', headingFa: '', descriptionEn: '', descriptionFa: '', layout: 'cards', ctaEn: 'All series', ctaFa: 'همهٔ مجموعه‌ها', ctaHref: '/series' },
   SCROLL_STORY: { eyebrowEn: 'Book spotlight', eyebrowFa: 'معرفی کتاب', ctaEn: 'Get the book', ctaFa: 'خرید کتاب', ctaHref: '/books', heightPreset: 'classic', layout: 'split', slides: [{ image: '', eyebrowEn: 'Part I', eyebrowFa: 'دفتر نخست', titleEn: '', titleFa: '', textEn: '', textFa: '' }] },
 }
 
@@ -3437,6 +3438,7 @@ function AdminHomepage() {
     RECENTLY_VIEWED: locale === 'fa' ? 'بازدیدهای اخیر' : 'Recently viewed',
     ARTICLES: locale === 'fa' ? 'معرفی مقاله‌ها' : 'Articles teaser',
     SCROLL_STORY: locale === 'fa' ? 'قصّهٔ اسکرولی (سنجاق‌شده)' : 'Scroll story (pinned)',
+    SERIES: locale === 'fa' ? 'قفسهٔ مجموعه‌ها' : 'Series shelf',
   }
 
   return (
@@ -3481,6 +3483,7 @@ function AdminHomepage() {
             s.type === 'CATEGORY_CAROUSEL' ? ((s.settings.slugs as string[] | undefined) ?? []).join(', ') :
             s.type === 'FOR_YOU' || s.type === 'RECENTLY_VIEWED' ? `${s.settings.limit ?? 12} books` :
             s.type === 'ARTICLES' ? `${s.settings.limit ?? 3} articles${s.settings.bg && s.settings.bg !== 'white' ? ` · ${String(s.settings.bg)}` : ''}` :
+            s.type === 'SERIES' ? `${String(s.settings.layout ?? 'cards')} · ${String(s.settings.ctaHref ?? '/series')}` :
             s.type === 'EDITORIAL_FEATURE' ? `${String(s.settings.layout ?? 'image-left')} · ${Number(s.settings.minH ?? 600)}px` :
             s.type === 'SCROLL_STORY' ? `${((s.settings.slides as unknown[] | undefined) ?? []).length} scenes · ${String(s.settings.layout ?? 'split')}${s.settings.coverImage ? ' · cover' : ''} · ${String(s.settings.heightPreset ?? 'classic')}` :
             String(s.settings.layout ?? '')
@@ -3558,6 +3561,7 @@ function AdminHomepage() {
                   {s.type === 'PRODUCT_SHELF' && <ShelfSectionEditor section={s} onPatch={patchSettings} locale={locale} />}
                   {s.type === 'CATEGORY_CAROUSEL' && <CarouselSectionEditor section={s} onPatch={patchSettings} />}
                   {(s.type === 'FOR_YOU' || s.type === 'RECENTLY_VIEWED') && <SimpleShelfSectionEditor section={s} onPatch={patchSettings} />}
+                  {s.type === 'SERIES' && <SeriesSectionEditor section={s} onPatch={patchSettings} locale={locale} />}
                   {s.type === 'ARTICLES' && <ArticlesSectionEditor section={s} onPatch={patchSettings} locale={locale} />}
                   {s.type === 'EDITORIAL_FEATURE' && <EditorialSectionEditor section={s} onPatch={patchSettings} locale={locale} />}
                   {s.type === 'SCROLL_STORY' && <ScrollStorySectionEditor section={s} onPatch={patchSettings} locale={locale} />}
@@ -3875,6 +3879,49 @@ function SimpleShelfSectionEditor({ section, onPatch }: { section: SectionRec; o
   )
 }
 
+/** SERIES — bilingual heading/description overrides, card vs chips layout,
+ *  optional CTA. The shelf itself is data-driven from published series, so
+ *  the editor only tunes the presentation (nothing to hand-curate). */
+function SeriesSectionEditor({ section, onPatch, locale }: { section: SectionRec; onPatch: (id: string, patch: Record<string, unknown>) => void; locale: Locale }) {
+  const t = getDict(locale)
+  const s = section.settings
+  const layout = String(s.layout ?? 'cards')
+  return (
+    <div className="space-y-3">
+      <BilingualPair
+        labelEn="Heading (EN) — empty = default" labelFa="عنوان (فارسی) — خالی = پیش‌فرض"
+        valueEn={String(s.headingEn ?? '')} valueFa={String(s.headingFa ?? '')}
+        onChangeEn={(v) => onPatch(section.id, { headingEn: v })} onChangeFa={(v) => onPatch(section.id, { headingFa: v })}
+      />
+      <BilingualPair
+        labelEn="Description (EN) — empty = default" labelFa="توضیح (فارسی) — خالی = پیش‌فرض"
+        valueEn={String(s.descriptionEn ?? '')} valueFa={String(s.descriptionFa ?? '')}
+        onChangeEn={(v) => onPatch(section.id, { descriptionEn: v })} onChangeFa={(v) => onPatch(section.id, { descriptionFa: v })}
+      />
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Field label="Layout">
+          <select
+            value={layout}
+            onChange={(e) => onPatch(section.id, { layout: e.target.value })}
+            className="flex h-9 w-full rounded-md border border-line bg-white px-2 text-sm"
+            aria-label="Layout"
+          >
+            <option value="cards">Cards (cover + count)</option>
+            <option value="chips">Chips (compact)</option>
+          </select>
+        </Field>
+        <Field label={locale === 'fa' ? 'متن دکمه (انگلیسی)' : 'CTA label (EN)'}>
+          <Input dir="ltr" value={String(s.ctaEn ?? '')} onChange={(e) => onPatch(section.id, { ctaEn: e.target.value })} className="h-9 bg-white" placeholder={t.series.title} />
+        </Field>
+        <Field label={locale === 'fa' ? 'متن دکمه (فارسی)' : 'CTA label (FA)'}>
+          <Input dir="rtl" value={String(s.ctaFa ?? '')} onChange={(e) => onPatch(section.id, { ctaFa: e.target.value })} className="h-9 bg-white" placeholder={t.series.title} />
+        </Field>
+      </div>
+      <p className="text-[11px] text-ink-3">Data-driven: shows every published series with its volume count — hides itself while no series is published.</p>
+    </div>
+  )
+}
+
 /** ARTICLES — headings/description + count (2–4) + background + CTA.
  *  Hides itself when the journal is empty. The rendered grid always adapts
  *  to the real article count; this select caps how many are pulled. */
@@ -4067,7 +4114,7 @@ function EditorialSectionEditor({ section, onPatch, locale }: { section: Section
   )
 }
 
-interface AdminReview { id: string; productTitle: string; authorName: string; rating: number; title?: string; body: string; moderationState: string; moderationReason?: string | null; reply?: string | null; repliedAt?: string | null; createdAt: string; locale: string }
+interface AdminReview { id: string; productTitle: string; authorName?: string | null; rating: number; title?: string; body: string; moderationState: string; moderationReason?: string | null; reply?: string | null; repliedAt?: string | null; createdAt: string; locale: string }
 
 function AdminReviews() {
   const locale = useApp((s) => s.locale)
@@ -4129,7 +4176,7 @@ function AdminReviews() {
                 <span className="text-orange-accent" aria-hidden>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                 <p className="text-sm font-semibold text-ink">{r.title}</p>
                 <Badge tone={r.moderationState === 'APPROVED' ? 'success' : r.moderationState === 'PENDING' ? 'warning' : 'default'}>{r.moderationState}</Badge>
-                <span className="ms-auto text-xs text-ink-3">{r.authorName} · {formatDate(r.createdAt, locale)}</span>
+                <span className="ms-auto text-xs text-ink-3">{r.authorName ?? '—'} · {formatDate(r.createdAt, locale)}</span>
               </div>
               <p className="mt-1 text-xs text-ink-3">{r.productTitle} · <span className="bdi" dir="ltr">{r.locale}</span></p>
               <p className="mt-2 text-sm text-ink-2">{r.body}</p>
@@ -4619,7 +4666,7 @@ interface BisGroup {
   requests: { id: string; email: string; locale: string; notifiedAt: string | null; createdAt: string }[]
 }
 interface OutboxEmail {
-  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET'
+  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM'
   locale: string; createdAt: string; subject: string; greeting: string; intro: string
   items: { title: string; qty: number; lineTotalMinor: number }[]
   subtotalMinor: number; discountCode?: string | null; discountMinor?: number
@@ -4804,8 +4851,10 @@ function AdminMarketing() {
               const open = openEmail === em.id
               const isBis = em.kind === 'BACK_IN_STOCK'
               const isReset = em.kind === 'PASSWORD_RESET'
+              const isVerify = em.kind === 'EMAIL_VERIFY'
+              const isNlConfirm = em.kind === 'NEWSLETTER_CONFIRM'
               return (
-                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : 'border-line')}>
+                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : 'border-line')}>
                   <button
                     type="button" onClick={() => setOpenEmail(open ? null : em.id)} aria-expanded={open}
                     className={cn('flex w-full flex-wrap items-center gap-2 px-4 py-3 text-start transition hover:bg-soft/60', open && 'bg-brand-soft/40')}
@@ -4815,6 +4864,10 @@ function AdminMarketing() {
                       <Badge tone="warning"><BellRing className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxBis}</Badge>
                     ) : isReset ? (
                       <Badge tone="default"><KeyRound className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxReset}</Badge>
+                    ) : isVerify ? (
+                      <Badge tone="success"><MailCheck className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید ایمیل' : 'Verify email'}</Badge>
+                    ) : isNlConfirm ? (
+                      <Badge tone="brand"><MailPlus className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'تأیید خبرنامه' : 'Newsletter opt-in'}</Badge>
                     ) : (
                       <Badge tone={em.kind === 'SHIPPING_NOTICE' ? 'brand' : 'success'}>{em.kind === 'SHIPPING_NOTICE' ? t.account.shipped : '✓'}</Badge>
                     )}

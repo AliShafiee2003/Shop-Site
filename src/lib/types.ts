@@ -11,10 +11,11 @@ export interface ProductCard {
   subtitle?: string | null
   shortDescription?: string | null
   coverUrl?: string | null
-  priceMinor: number
+  /** catalog DTOs null this when a book has no purchasable variant */
+  priceMinor: number | null
   /** original list price — present only while a sitewide promotion reduces this price */
   listPriceMinor?: number | null
-  format?: string
+  format?: string | null
   isFeatured?: boolean
   inStock: boolean
   isLowStock?: boolean
@@ -53,7 +54,7 @@ export interface ReviewDTO {
   rating: number
   title?: string | null
   body: string
-  authorName: string
+  authorName: string | null
   createdAt: string
   isVerifiedPurchase: boolean
   locale: string
@@ -179,6 +180,7 @@ export type HomeSection =
   | { id: string; type: 'FOR_YOU'; sortOrder: number; enabled: boolean; settings: { headingEn?: string; headingFa?: string; limit?: number } }
   | { id: string; type: 'RECENTLY_VIEWED'; sortOrder: number; enabled: boolean; settings: { headingEn?: string; headingFa?: string; limit?: number } }
   | { id: string; type: 'ARTICLES'; sortOrder: number; enabled: boolean; settings: { headingEn: string; headingFa: string; descriptionEn?: string; descriptionFa?: string; limit?: number; bg?: string; ctaEn?: string; ctaFa?: string; ctaHref?: string } }
+  | { id: string; type: 'SERIES'; sortOrder: number; enabled: boolean; settings: { headingEn?: string; headingFa?: string; descriptionEn?: string; descriptionFa?: string; layout?: 'cards' | 'chips'; ctaEn?: string; ctaFa?: string; ctaHref?: string } }
   | { id: string; type: 'SCROLL_STORY'; sortOrder: number; enabled: boolean; settings: { eyebrowEn?: string; eyebrowFa?: string; /** optional shorter module eyebrow for phones; empty = web eyebrow */ eyebrowMobileEn?: string; eyebrowMobileFa?: string; ctaEn?: string; ctaFa?: string; ctaHref?: string; heightPreset?: 'compact' | 'classic' | 'cinematic'; /** split = text beside image (classic); backdrop = full-bleed scene background + overlaid text + small floating cover */ layout?: 'split' | 'backdrop'; /** backdrop layout only — the ONE book's small cover image floating over the morphing scenes */ coverImage?: string; /** mobile variant of the floating cover (<768px); falls back to coverImage */ coverImageMobile?: string; slides: { image: string; /** mobile-only image (portrait 9:16) — shown <768px; falls back to `image` when empty */ imageMobile?: string; eyebrowEn?: string; eyebrowFa?: string; titleEn?: string; titleFa?: string; textEn?: string; textFa?: string; /** optional mobile text overrides — shorter copy for phones; empty = web text */ eyebrowMobileEn?: string; eyebrowMobileFa?: string; titleMobileEn?: string; titleMobileFa?: string; textMobileEn?: string; textMobileFa?: string }[] } }
 
 /* Cart */
@@ -267,7 +269,7 @@ export interface OrderPublicDTO {
   shipment: { carrier: string; trackingNumber?: string | null; trackingUrl?: string | null; status: string; estimatedDeliveryAt?: string | null } | null
 }
 
-export interface UserDTO { id: string; email: string; name?: string | null; role: string; preferredLocale: string; avatarUrl?: string | null; googleLinked?: boolean }
+export interface UserDTO { id: string; email: string; name?: string | null; role: string; preferredLocale: string; avatarUrl?: string | null; googleLinked?: boolean; emailVerified?: boolean }
 
 export interface AddressDTO {
   id: string

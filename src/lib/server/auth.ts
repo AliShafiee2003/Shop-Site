@@ -138,6 +138,7 @@ export function publicUser(user: User): {
   marketingConsent: boolean
   avatarUrl: string | null
   googleLinked: boolean
+  emailVerified: boolean
 } {
   return {
     id: user.id,
@@ -148,5 +149,6 @@ export function publicUser(user: User): {
     marketingConsent: user.marketingConsent,
     avatarUrl: user.avatarUrl,
     googleLinked: Boolean(user.googleSub),
+    emailVerified: Boolean(user.emailVerifiedAt),
   }
 }

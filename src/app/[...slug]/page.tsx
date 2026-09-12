@@ -3,7 +3,7 @@ import { permanentRedirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { Shell, JsonLd } from '@/components/storefront/Shell'
-import { ServerRouteProvider } from '@/components/storefront/SsrProviders'
+import { ServerRouteProvider, type SsrPageData } from '@/components/storefront/SsrProviders'
 import { routeStateFromParams } from '@/lib/route-state'
 import { siteUrlFrom } from '@/lib/site'
 import { getProductDetail } from '@/lib/server/product-detail'
@@ -12,7 +12,7 @@ import { getArticleList } from '@/lib/server/article-list'
 import { getHomeSections } from '@/lib/server/home-sections'
 import { queryStorefrontProducts } from '@/lib/server/product-list'
 import { getSetting } from '@/lib/server/utils'
-import { getSeriesDetail, seriesMeta } from '@/lib/server/series'
+import { getSeriesDetail, seriesMeta, getSeriesIndex } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +24,7 @@ const DEFAULT_OG_IMAGE = '/images/hero-season.png'
 /** Page roots that must NEVER be indexed (private / utility surfaces). */
 const NOINDEX_ROOTS = new Set([
   'search', 'account', 'admin', 'checkout', 'cart', 'favorites', 'track', 'login', 'register',
-  'forgot-password', 'reset-password',
+  'forgot-password', 'reset-password', 'verify-email', 'newsletter-confirm',
 ])
 
 function absUrl(site: string, path: string): string {
@@ -109,6 +109,11 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
       const s = await seriesMeta(second)
       title = s?.name ?? (fa ? 'مجموعه‌ها' : 'Series')
       description = s?.description ?? homeDesc
+    } else if (root === 'series') {
+      title = fa ? 'مجموعه‌های کتاب' : 'Book series'
+      description = fa
+        ? 'مجموعه‌های کتاب پرس‌پیکس — از تاریخ مصور ایران تا نثر معاصر فارسی. همهٔ جلدهای هر مجموعه در یک نگاه.'
+        : 'The Persepix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.'
     } else if (root === 'books' || root === 'categories') {
       title = fa ? 'همه کتاب‌ها' : 'All books'
     } else if (root === 'articles') {
@@ -336,6 +341,34 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
     }
     // Index pages get a two-step breadcrumb (Home → section).
     if (root === 'books' && !second) payloads.push(crumb([{ name: fa ? 'خانه' : 'Home', path: localePath(locale, '') }, { name: fa ? 'همه کتاب‌ها' : 'All books', path: localePath(locale, '/books') }]))
+    if (root === 'series' && !second) {
+      const idx = await getSeriesIndex(locale)
+      payloads.push({
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: fa ? 'مجموعه‌های کتاب' : 'Book series',
+        url: absUrl(site, localePath(locale, '/series')),
+        isPartOf: { '@type': 'WebSite', name: brand, url: absUrl(site, localePath(locale, '')) },
+        ...(idx.length
+          ? {
+              mainEntity: {
+                '@type': 'ItemList',
+                itemListElement: idx.map((s, i) => ({
+                  '@type': 'ListItem',
+                  position: i + 1,
+                  name: s.name,
+                  url: absUrl(site, localePath(locale, `/series/${s.slug}`)),
+                })),
+              },
+            }
+          : {}),
+      })
+      payloads.push(crumb([
+        { name: fa ? 'خانه' : 'Home', path: localePath(locale, '') },
+        { name: fa ? 'همه کتاب‌ها' : 'All books', path: localePath(locale, '/books') },
+        { name: fa ? 'مجموعه‌ها' : 'Series', path: localePath(locale, '/series') },
+      ]))
+    }
     if (root === 'series' && second) {
       const s = await seriesMeta(second)
       if (s) {
@@ -380,14 +413,26 @@ function parseSocials(raw: string | null | undefined): (string | null)[] {
  *  loaders the API routes use — the SSR HTML carries REAL CONTENT, not a
  *  client-rendered skeleton. Best-effort: any failure degrades to the
  *  client-side fetch path, never to a broken page. */
-async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: Record<string, string>) {
+async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: Record<string, string>): Promise<SsrPageData> {
   const [root, second, third] = segments
   try {
     if (segments.length === 0) {
-      return { locale, home: await getHomeSections(locale) }
+      const home = await getHomeSections(locale)
+      // Feed the homepage SERIES shelf module in the same server round-trip
+      // (only when the module is actually on the page).
+      const seriesIndex = home.some((s) => s.type === 'SERIES' && s.enabled)
+        ? await getSeriesIndex(locale)
+        : null
+      return { locale, home, seriesIndex }
     }
     if (root === 'books' && second) {
-      return { locale, product: await getProductDetail(second, locale) }
+      return {
+        locale,
+        // The loader is the SAME source /api/products/[slug] serializes — its
+        // structural shape is the wire format lib/types documents. The cast
+        // marks that the TS declaration (not the data) lags the API.
+        product: (await getProductDetail(second, locale)) as unknown as SsrPageData['product'],
+      }
     }
     if ((root === 'books' && !second) || root === 'categories') {
       // The dispatcher hands CatalogView `{category}` for category routes and
@@ -404,7 +449,10 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
       return { locale, catalog: { items: page.items, total: page.total, query: effectiveQuery } }
     }
     if (root === 'articles' && second && second !== 'categories') {
-      return { locale, article: await getArticleDetail(second, locale) }
+      return {
+        locale,
+        article: (await getArticleDetail(second, locale)) as unknown as SsrPageData['article'],
+      }
     }
     if (root === 'articles' && second === 'categories' && third) {
       return { locale, articles: await getArticleList(locale, third), articlesCategory: third }
@@ -414,6 +462,9 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
     }
     if (root === 'series' && second) {
       return { locale, series: await getSeriesDetail(second, locale) }
+    }
+    if (root === 'series') {
+      return { locale, seriesIndex: await getSeriesIndex(locale) }
     }
     return { locale }
   } catch {

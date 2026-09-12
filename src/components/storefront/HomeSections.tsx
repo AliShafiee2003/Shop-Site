@@ -1,12 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getShelfMark, TiltCircle } from './shelf-icons'
 import { navigate } from '@/lib/router'
 import { apiGet } from '@/lib/api'
-import { getDict } from '@/lib/i18n'
+import { getDict, tf } from '@/lib/i18n'
+import { useSsrPageData } from './SsrProviders'
+import type { SeriesIndexEntry } from '@/lib/server/series'
 import { faDigits } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from './ProductCard'
@@ -736,6 +738,7 @@ export function HomeSections({ sections, locale }: { sections: HomeSection[]; lo
           case 'FOR_YOU': return <ForYouSection key={s.id} section={s} locale={locale} />
           case 'RECENTLY_VIEWED': return <RecentlyViewedSection key={s.id} section={s} locale={locale} />
           case 'ARTICLES': return <ArticlesSection key={s.id} section={s} locale={locale} />
+          case 'SERIES': return <SeriesShelfSection key={s.id} section={s} locale={locale} />
           case 'SCROLL_STORY': return <ScrollStory key={s.id} section={s} locale={locale} fullBleed={s.id === firstId} />
           default: return null
         }
@@ -746,4 +749,113 @@ export function HomeSections({ sections, locale }: { sections: HomeSection[]; lo
 
 function HeroWrapper({ section, locale }: { section: Extract<HomeSection, { type: 'HERO' }>; locale: Locale }) {
   return <HeroSlider slides={section.settings.slides ?? []} locale={locale} heightPreset={section.settings.heightPreset} autoplayMs={section.settings.autoplayMs} />
+}
+
+/** SERIES — the homepage series shelf (round 4). Data seeds from the SSR
+ *  prefetch (ssr.seriesIndex, fetched in the same RSC pass as the section
+ *  list) and refetches per-locale on client navigation — the same hybrid the
+ *  other shelves use. Two layouts: rich cards (cover fan) or quiet chips. */
+function SeriesShelfSection({ section, locale }: { section: Extract<HomeSection, { type: 'SERIES' }>; locale: Locale }) {
+  const s = section.settings
+  const isFa = locale === 'fa'
+  const t = getDict(locale)
+  const dig = (n: number) => (isFa ? faDigits(String(n)) : String(n))
+
+  const ssr = useSsrPageData()
+  const ssrIndex = ssr && ssr.locale === locale && Array.isArray(ssr.seriesIndex) ? ssr.seriesIndex : null
+  const [series, setSeries] = useState<SeriesIndexEntry[] | null>(ssrIndex)
+  const ssrConsumed = useRef(Boolean(ssrIndex))
+
+  useEffect(() => {
+    if (ssrConsumed.current) {
+      ssrConsumed.current = false
+      return
+    }
+    let live = true
+    apiGet<{ series: SeriesIndexEntry[] }>(`/api/series?locale=${locale}`)
+      .then((r) => { if (live) setSeries(r.series) })
+      .catch(() => { if (live) setSeries([]) })
+    return () => { live = false }
+  }, [locale])
+
+  const heading = isFa ? (s.headingFa || s.headingEn || t.series.indexTitle) : (s.headingEn || t.series.indexTitle)
+  const description = isFa ? (s.descriptionFa || s.descriptionEn) : (s.descriptionEn || t.series.indexSubtitle)
+  const ctaLabel = isFa ? (s.ctaFa || s.ctaEn) : s.ctaEn
+  const ctaHref = s.ctaHref ?? '/series'
+
+  if (series && series.length === 0) return null // nothing published yet
+
+  return (
+    <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8" aria-label={heading}>
+      <Reveal>
+        <SectionHeading title={heading} description={description} ctaLabel={ctaLabel} ctaHref={ctaHref} locale={locale} />
+        {!series ? (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full rounded-2xl sm:h-44" />
+            ))}
+          </div>
+        ) : s.layout === 'chips' ? (
+          <div className="flex flex-wrap gap-2">
+            {series.map((x) => (
+              <button
+                key={x.slug}
+                type="button"
+                onClick={() => navigate(`/series/${x.slug}`)}
+                className="group inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm transition-all hover:border-brand/40 hover:text-brand focus-visible:outline-brand"
+              >
+                {x.cover ? <img src={x.cover} alt="" width={24} height={32} loading="lazy" className="h-8 w-6 rounded-[2px] border border-line/60 object-cover" /> : null}
+                {isFa ? x.nameFa || x.name : x.nameEn || x.name}
+                <span className="rounded-full bg-soft px-1.5 text-[11px] font-semibold text-ink-3 group-hover:text-brand">{dig(x.count)}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2">
+            {series.map((x) => (
+              <button
+                key={x.slug}
+                type="button"
+                onClick={() => navigate(`/series/${x.slug}`)}
+                className="group relative flex h-full items-center gap-5 overflow-hidden rounded-2xl border border-line bg-white p-5 text-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/30 hover:shadow-xl focus-visible:outline-brand"
+                aria-label={isFa ? x.nameFa || x.name : x.nameEn || x.name}
+              >
+                <div className="relative flex h-28 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-b from-brand-soft/80 to-white" aria-hidden>
+                  {x.cover ? (
+                    <img
+                      src={x.cover}
+                      alt=""
+                      width={96}
+                      height={128}
+                      loading="lazy"
+                      className="h-24 w-[72px] rounded-[3px] border border-line/60 object-cover shadow-md transition-transform duration-500 group-hover:-translate-y-1 group-hover:rotate-[-2deg]"
+                    />
+                  ) : (
+                    <BookOpen className="h-8 w-8 text-ink-3" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="truncate text-base font-bold tracking-tight text-ink transition-colors group-hover:text-brand">
+                      {isFa ? x.nameFa || x.name : x.nameEn || x.name}
+                    </h3>
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-line bg-soft px-2 py-0.5 text-[11px] font-semibold text-ink-2">
+                      {dig(x.count)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm text-ink-2">
+                    {x.count === 1 ? t.series.booksInOne : tf(t.series.booksIn, { n: dig(x.count) })}
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand">
+                    {t.series.explore}
+                    <span className="transition-transform duration-300 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" aria-hidden>→</span>
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </Reveal>
+    </section>
+  )
 }

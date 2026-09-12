@@ -9,9 +9,10 @@ import { faDigits } from '@/lib/format'
 import { useSsrPageData } from '@/components/storefront/SsrProviders'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
-import type { Locale, ProductCard as ProductCardDTO } from '@/lib/types'
+import type { Locale } from '@/lib/types'
+import type { SeriesDetail } from '@/lib/server/series'
 
-type SeriesData = { slug: string; name: string; count: number; books: ProductCardDTO[] }
+type SeriesData = SeriesDetail
 
 /** Public series landing page — /series/[slug] (audit §8.10).
  *  SSR: the RSC entry prefetches the full payload (getSeriesDetail) so the

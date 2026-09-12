@@ -63,15 +63,19 @@ export function Footer({ settings, series = [] }: { settings?: FooterSettings; s
   const switchLocale = useLocaleSwitch()
 
   const [nlEmail, setNlEmail] = useState('')
-  const [nlState, setNlState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle')
+  // 'done' = already-subscribed (plain welcome) · 'pending' = double opt-in mail queued
+  const [nlState, setNlState] = useState<'idle' | 'busy' | 'done' | 'pending' | 'error'>('idle')
 
   const subscribe = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!/.+@.+\..+/.test(nlEmail.trim())) { setNlState('error'); return }
     setNlState('busy')
     try {
-      await apiPost('/api/newsletter', { email: nlEmail.trim(), locale, source: 'footer' })
-      setNlState('done')
+      const res = await apiPost<{ ok: boolean; pending?: boolean; alreadySubscribed?: boolean }>(
+        '/api/newsletter',
+        { email: nlEmail.trim(), locale, source: 'footer' },
+      )
+      setNlState(res.pending ? 'pending' : 'done')
       setNlEmail('')
     } catch {
       setNlState('error')
@@ -85,6 +89,7 @@ export function Footer({ settings, series = [] }: { settings?: FooterSettings; s
       title: t.footer.shop,
       links: [
         { label: t.nav.books, href: '/books' },
+        { label: t.series.title, href: '/series' },
         ...series.slice(0, 3).map((s) => ({ label: locale === 'fa' ? s.nameFa || s.name : s.name, href: `/series/${s.slug}` })),
         { label: t.authors.title, href: '/authors' },
         { label: t.articles.title, href: '/articles' },
@@ -133,9 +138,20 @@ export function Footer({ settings, series = [] }: { settings?: FooterSettings; s
                 <Mail className="h-4 w-4 text-brand" aria-hidden />{t.newsletter.title}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-ink-3">{t.newsletter.body}</p>
-              {nlState === 'done' ? (
-                <p className="mt-3 flex items-center gap-1.5 rounded-md bg-success/10 px-3 py-2 text-xs font-medium text-success" role="status">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />{t.newsletter.subscribed}
+              {nlState === 'done' || nlState === 'pending' ? (
+                <p
+                  className={cn(
+                    'mt-3 flex items-start gap-1.5 rounded-md px-3 py-2 text-xs font-medium',
+                    nlState === 'pending' ? 'bg-brand-soft text-brand' : 'bg-success/10 text-success',
+                  )}
+                  role="status"
+                >
+                  {nlState === 'pending' ? (
+                    <Mail className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  ) : (
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                  )}
+                  {nlState === 'pending' ? t.newsletter.checkInbox : t.newsletter.subscribed}
                 </p>
               ) : (
                 <form onSubmit={subscribe} className="mt-3 flex gap-2" noValidate>

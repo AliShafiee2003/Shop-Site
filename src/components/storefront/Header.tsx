@@ -185,7 +185,7 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
                     <span className="block truncate text-sm font-medium text-ink">{p.title}</span>
                     <span className="block text-xs text-ink-3">{p.contributors?.[0]?.name}</span>
                   </span>
-                  <span className="ms-auto text-xs font-semibold text-ink bdi">{formatMoney(p.priceMinor, locale)}</span>
+                  <span className="ms-auto text-xs font-semibold text-ink bdi">{p.priceMinor != null ? formatMoney(p.priceMinor, locale) : '—'}</span>
                 </button>
               ))}
               {results.people.slice(0, 3).map((p) => (

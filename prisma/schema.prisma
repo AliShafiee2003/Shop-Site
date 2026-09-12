@@ -38,6 +38,7 @@ model User {
   savedPaymentMethods SavedPaymentMethod[]
   wishlist            WishlistItem[]
   resetTokens         PasswordResetToken[]
+  emailVerifyTokens   EmailVerificationToken[]
 }
 
 model Session {
@@ -643,7 +644,7 @@ model Review {
   id                 String   @id @default(cuid())
   productId          String
   userId             String?
-  authorName         String
+  authorName         String? // null after GDPR anonymization (display name scrubbed)
   rating             Int // 1..5
   title              String?
   body               String
@@ -769,7 +770,8 @@ model NewsletterSubscriber {
   email     String   @unique
   locale    String   @default("en")
   source    String   @default("footer") // footer | checkout | account
-  status    String   @default("SUBSCRIBED") // SUBSCRIBED | UNSUBSCRIBED
+  status    String   @default("SUBSCRIBED") // SUBSCRIBED | PENDING (double opt-in) | UNSUBSCRIBED
+  confirmedAt DateTime? // stamped when the double opt-in link is clicked (null = legacy/pre-opt-in row)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -917,6 +919,21 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+/// S13 residual — email-verification tokens. Same shape as the password-reset
+/// tokens: only sha256(token) is persisted, single-use, 24-hour expiry. The
+/// account's `emailVerifiedAt` is stamped when one is consumed.
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 /// Sandbox transactional mail outbox. Real deployments hand this row to the
 /// email provider (SES/Postmark) and stamp `sentAt`; the admin outbox renders
 /// previews. Password-reset mails are recorded here so the flow is auditable.
@@ -924,7 +941,7 @@ model MailMessage {
   id        String    @id @default(cuid())
   to        String
   subject   String
-  kind      String // PASSWORD_RESET | (future: ORDER_CONFIRMATION, VERIFY_EMAIL…)
+  kind      String // PASSWORD_RESET | EMAIL_VERIFY | NEWSLETTER_CONFIRM | (future: ORDER_CONFIRMATION, …)
   bodyText  String
   locale    String    @default("en")
   sentAt    DateTime?
