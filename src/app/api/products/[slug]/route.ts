@@ -148,6 +148,20 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { votes: true } } },
   })
+  // Review sort (R8): `helpful` orders by vote count (recency tie-break) BEFORE
+  // the top-20 slice; `recent` (default) preserves the historical order.
+  const reviewsSort = searchParams.get('reviewsSort') === 'helpful' ? 'helpful' : 'recent'
+  const orderedReviews =
+    reviewsSort === 'helpful'
+      ? [...allReviews].sort((a, b) => b._count.votes - a._count.votes || +b.createdAt - +a.createdAt)
+      : allReviews
+  // The single most-helpful review (≥1 vote) is flagged regardless of sort so
+  // the PDP can pin a "Most helpful" badge on it.
+  let topReviewId: string | null = null
+  let topVotes = 0
+  for (const r of allReviews) {
+    if (r._count.votes > topVotes) { topVotes = r._count.votes; topReviewId = r.id }
+  }
   // Helpfulness votes: fresh counts come from the include; `voted` is only
   // resolved when a session exists (guests get the button in signed-out mode).
   const viewer = await getSessionUser()
@@ -188,7 +202,8 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     reviews: {
       avg,
       count: allReviews.length,
-      items: allReviews.slice(0, 20).map((r) => ({
+      topReviewId,
+      items: orderedReviews.slice(0, 20).map((r) => ({
         id: r.id,
         rating: r.rating,
         title: r.title,

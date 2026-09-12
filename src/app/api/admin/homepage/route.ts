@@ -111,6 +111,19 @@ export async function PUT(req: Request) {
     })
     published = { id: newPublished.id, publishedAt: now.toISOString(), changeSummary: newPublished.changeSummary }
     await audit(user.email, 'HOMEPAGE_PUBLISH', 'HomepageVersion', newPublished.id, `Published homepage (${locale}) with ${sections.length} sections`)
+    // Retention cap: every publish leaves an ARCHIVED version row — keep the
+    // newest 20 per locale and hard-delete older ones (sections cascade).
+    const kept = await db.homepageVersion.findMany({
+      where: { locale, status: 'ARCHIVED' },
+      orderBy: { publishedAt: 'desc' },
+      take: 20,
+      select: { id: true },
+    })
+    if (kept.length === 20) {
+      await db.homepageVersion.deleteMany({
+        where: { locale, status: 'ARCHIVED', id: { notIn: kept.map((v) => v.id) } },
+      })
+    }
   }
 
   const draftDto = {

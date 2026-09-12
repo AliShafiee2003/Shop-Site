@@ -431,7 +431,10 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
         // The loader is the SAME source /api/products/[slug] serializes — its
         // structural shape is the wire format lib/types documents. The cast
         // marks that the TS declaration (not the data) lags the API.
-        product: (await getProductDetail(second, locale)) as unknown as SsrPageData['product'],
+        product: (await getProductDetail(second, locale, {
+          // R8: keep SSR in sync with the client's review sort param.
+          reviewsSort: query.reviewsSort === 'helpful' ? 'helpful' : 'recent',
+        })) as unknown as SsrPageData['product'],
       }
     }
     if ((root === 'books' && !second) || root === 'categories') {

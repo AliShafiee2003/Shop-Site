@@ -5,6 +5,7 @@
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json, pickLocale } from '@/lib/server/utils'
+import { isMailProviderConfigured } from '@/lib/server/mail-dispatch'
 
 interface EmailLine { title: string; qty: number; lineTotalMinor: number }
 interface RenderedEmail {
@@ -236,5 +237,11 @@ export async function GET() {
   const mailEmails = [...orderMailEmails, ...plainMailEmails]
 
   const items = [...orderEmails, ...bisEmails, ...mailEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  return json({ items })
+  // Outbox dispatch meta: how many REAL MailMessage rows are still unsent and
+  // whether an SMTP provider is configured (drives the admin dispatch bar).
+  const [queued, providerConfigured] = await Promise.all([
+    db.mailMessage.count({ where: { sentAt: null } }),
+    Promise.resolve(isMailProviderConfigured()),
+  ])
+  return json({ items, mail: { queued, providerConfigured } })
 }

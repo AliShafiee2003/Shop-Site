@@ -1,8 +1,9 @@
 # PostgreSQL Migration Plan (Persepix)
 
-> Status: **plan** — the sandbox still runs SQLite (`db/custom.db`) with
-> `prisma db push`. This is the runbook for the production cutover the audit
-> recommends (finding: "no migrations dir; SQLite + db push").
+> Status: **step 0 DONE (sandbox)** — `prisma/migrations/0_init` is baselined
+> on SQLite and marked applied (`migrate status` clean; drift diff empty).
+> `db push` is removed from package.json — schema changes go through
+> `prisma migrate dev`. Remaining: provider switch + ETL + cutover (below).
 
 ## Why
 

@@ -71,7 +71,7 @@ export interface ProductDetail extends ProductCard {
   categories: { slug: string; name: string }[]
   gallery: { url: string; alt?: string | null }[]
   related: ProductCard[]
-  reviews: { avg: number; count: number; items: ReviewDTO[] }
+  reviews: { avg: number; count: number; topReviewId?: string | null; items: ReviewDTO[] }
   safetyNote?: string | null
   fixedPrice?: boolean
   audience?: string | null

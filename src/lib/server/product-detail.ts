@@ -12,7 +12,11 @@ import { parseJsonSafe, pickLocale } from '@/lib/server/utils'
 import { getSessionUser } from '@/lib/server/auth'
 import type { Locale } from '@/lib/types'
 
-export async function getProductDetail(slug: string, locale: Locale) {
+export async function getProductDetail(
+  slug: string,
+  locale: Locale,
+  opts?: { reviewsSort?: 'recent' | 'helpful' },
+) {
   const p = await db.product.findFirst({
     where: { slug, status: 'PUBLISHED' },
     include: {
@@ -146,6 +150,17 @@ export async function getProductDetail(slug: string, locale: Locale) {
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { votes: true } } },
   })
+  // Review sort parity with GET /api/products/[slug]: `helpful` orders by
+  // votes (recency tie-break) before the top-20 slice; default is `recent`.
+  const orderedReviews =
+    opts?.reviewsSort === 'helpful'
+      ? [...allReviews].sort((a, b) => b._count.votes - a._count.votes || +b.createdAt - +a.createdAt)
+      : allReviews
+  let topReviewId: string | null = null
+  let topVotes = 0
+  for (const r of allReviews) {
+    if (r._count.votes > topVotes) { topVotes = r._count.votes; topReviewId = r.id }
+  }
   // Helpfulness votes for the viewer — best-effort: getSessionUser needs the
   // cookie jar, which every caller (RSC + route) provides.
   const viewer = await getSessionUser().catch(() => null)
@@ -190,7 +205,8 @@ export async function getProductDetail(slug: string, locale: Locale) {
     reviews: {
       avg,
       count: allReviews.length,
-      items: allReviews.slice(0, 20).map((r) => ({
+      topReviewId,
+      items: orderedReviews.slice(0, 20).map((r) => ({
         id: r.id,
         rating: r.rating,
         title: r.title,

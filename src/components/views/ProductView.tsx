@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Star, Truck, RotateCcw, ShieldCheck, ZoomIn, BadgeCheck, Heart, Share2, Link2, Check, Tag, BellRing, ChevronLeft, ChevronRight, ThumbsUp } from 'lucide-react'
+import { Star, Truck, RotateCcw, ShieldCheck, ZoomIn, BadgeCheck, Heart, Share2, Link2, Check, Tag, BellRing, ChevronLeft, ChevronRight, ThumbsUp, Award, ArrowDownWideNarrow, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { navigate, useRoute } from '@/lib/router'
 import { apiGet, apiPost, normalizeCart } from '@/lib/api'
@@ -70,6 +70,12 @@ export function ProductView({ slug }: { slug: string }) {
   const [variantId, setVariantId] = useState<string | null>(null)
   const [qty, setQty] = useState(1)
   const [activeImg, setActiveImg] = useState(0)
+  // R8 — review sort + server-flagged "most helpful" review. `reviewsOverride`
+  // is set only after an explicit sort switch (client refetch); before that the
+  // SSR/client detail payload order (recent) is used untouched.
+  const [reviewsSort, setReviewsSort] = useState<'recent' | 'helpful'>('recent')
+  const [reviewsOverride, setReviewsOverride] = useState<{ items: ReviewWithReply[]; topReviewId: string | null } | null>(null)
+  const [sortBusy, setSortBusy] = useState(false)
   /** Hero image — gallery selection first, then cover; empty string → placeholder
    *  (an empty src="" makes the browser re-fetch the whole page — never render that). */
   const heroSrc = product ? product.gallery[activeImg]?.url || product.coverUrl || '' : ''
@@ -111,6 +117,24 @@ export function ProductView({ slug }: { slug: string }) {
     } finally { setVoteBusy(null) }
   }
 
+  /** R8 — switch the review ordering. Re-queries the SAME detail endpoint with
+   *  `reviewsSort` (server orders BEFORE its top-20 slice) and overrides only
+   *  the review list, so the rest of the PDP stays untouched. */
+  const changeReviewSort = async (next: 'recent' | 'helpful') => {
+    if (next === reviewsSort || sortBusy) return
+    setReviewsSort(next)
+    setSortBusy(true)
+    try {
+      const r = await apiGet<ProductDetail>(`/api/products/${encodeURIComponent(slug)}?locale=${locale}&reviewsSort=${next}`)
+      setReviewsOverride({ items: r.reviews.items as ReviewWithReply[], topReviewId: r.reviews.topReviewId ?? null })
+    } catch {
+      // Keep the current list on failure; the control stays on the new sort —
+      // a retry (clicking the other pill and back) re-fetches cleanly.
+    } finally {
+      setSortBusy(false)
+    }
+  }
+
   useEffect(() => {
     let alive = true
     // Keep the previous book rendered while a DIFFERENT slug loads; but when only
@@ -119,6 +143,7 @@ export function ProductView({ slug }: { slug: string }) {
     // locale-specific extras (related, reviews). No blank flash on language switch.
     if (loadedSlug.current !== slug) { setProduct(null); setVariantId(null) }
     setFailed(false); setActiveImg(0); setQty(1); setReviewDone(false); setBisDone(false); setBisEmail('')
+    setReviewsSort('recent'); setReviewsOverride(null); setSortBusy(false)
     if (ssrConsumed.current) {
       // SSR boot: the prefetched book is already on screen — no refetch.
       ssrConsumed.current = false
@@ -648,15 +673,46 @@ export function ProductView({ slug }: { slug: string }) {
           <h2 className="text-lg font-semibold text-ink">{t.common.reviews} {product.rating && product.rating.count > 0 ? `(${product.rating.count})` : ''}</h2>
           {product.rating && product.rating.count > 0 && <RatingStars value={product.rating.avg} count={product.rating.count} size="md" locale={locale} />}
         </div>
+        {(() => {
+          const topId = reviewsOverride?.topReviewId ?? product.reviews.topReviewId ?? null
+          if (product.reviews.items.length === 0) return null
+          return (
+            <div className="mb-4 flex items-center gap-2" role="group" aria-label={t.product.reviewSortLabel}>
+              <ArrowDownWideNarrow className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+              <div className="inline-flex rounded-full border border-line bg-soft/60 p-0.5">
+                {(['helpful', 'recent'] as const).map((s) => (
+                  <button
+                    key={s} type="button" aria-pressed={reviewsSort === s}
+                    onClick={() => changeReviewSort(s)}
+                    className={cn('inline-flex h-7 items-center gap-1 rounded-full px-3 text-xs font-medium transition-colors',
+                      reviewsSort === s ? 'bg-brand-soft text-brand ring-1 ring-brand/30' : 'text-ink-3 hover:text-brand')}
+                  >
+                    {s === 'helpful' && <ThumbsUp className={cn('h-3 w-3', reviewsSort === s && 'fill-current')} aria-hidden />}
+                    {s === 'helpful' ? t.product.sortHelpful : t.product.sortRecent}
+                  </button>
+                ))}
+              </div>
+              {sortBusy && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-3" aria-hidden />}
+            </div>
+          )
+        })()}
         <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
             {product.reviews.items.length === 0 ? (
               <p className="rounded-lg border border-dashed border-line px-4 py-8 text-center text-sm text-ink-3">{t.common.empty}</p>
-            ) : (product.reviews.items as ReviewWithReply[]).map((r) => (
-              <article key={r.id} className="rounded-lg border border-line p-4">
+            ) : (reviewsOverride?.items ?? (product.reviews.items as ReviewWithReply[])).map((r) => {
+              const topId = reviewsOverride?.topReviewId ?? product.reviews.topReviewId ?? null
+              const isTop = topId === r.id && (voteState(r).helpfulCount > 0 || r.helpfulCount === undefined)
+              return (
+              <article key={r.id} className={cn('rounded-lg border p-4 transition-colors', isTop ? 'border-brand/40 bg-brand-soft/20 ring-1 ring-brand/15' : 'border-line')}>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <RatingStars value={r.rating} locale={locale} />
                   <h3 className="text-sm font-semibold text-ink">{r.title}</h3>
+                  {isTop && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white" title={t.product.mostHelpfulBadge}>
+                      <Award className="h-3 w-3" aria-hidden />{t.product.mostHelpfulBadge}
+                    </span>
+                  )}
                   {r.isVerifiedPurchase && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
                       <BadgeCheck className="h-3 w-3" aria-hidden />{t.common.verifiedPurchase}
@@ -694,7 +750,8 @@ export function ProductView({ slug }: { slug: string }) {
                   </div>
                 ) : null}
               </article>
-            ))}
+              )
+            })}
           </div>
           <div>
             {reviewDone ? (

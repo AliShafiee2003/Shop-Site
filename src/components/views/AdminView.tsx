@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText, AtSign, Bell } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound, MailCheck, MailPlus, ReceiptText, AtSign, Bell, Send } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -4681,16 +4681,19 @@ function AdminMarketing() {
   const locale = useApp((s) => s.locale)
   const t = getDict(locale)
   const { toast } = useToast()
+  const isOwner = useApp((s) => s.user?.role) === 'OWNER'
   const [subs, setSubs] = useState<{ items: Subscriber[]; total: number; subscribedCount: number } | null>(null)
   const [emails, setEmails] = useState<OutboxEmail[] | null>(null)
   const [openEmail, setOpenEmail] = useState<string | null>(null)
   const [bisGroups, setBisGroups] = useState<BisGroup[] | null>(null)
+  const [mailMeta, setMailMeta] = useState<{ queued: number; providerConfigured: boolean } | null>(null)
+  const [dispatching, setDispatching] = useState(false)
 
   useEffect(() => {
     apiGet<{ items: Subscriber[]; total: number; subscribedCount: number }>('/api/admin/newsletter')
       .then(setSubs).catch(() => setSubs({ items: [], total: 0, subscribedCount: 0 }))
-    apiGet<{ items: OutboxEmail[] }>('/api/admin/emails')
-      .then((r) => setEmails(r.items)).catch(() => setEmails([]))
+    apiGet<{ items: OutboxEmail[]; mail?: { queued: number; providerConfigured: boolean } }>('/api/admin/emails')
+      .then((r) => { setEmails(r.items); setMailMeta(r.mail ?? null) }).catch(() => setEmails([]))
     apiGet<{ variants: BisGroup[] }>('/api/admin/back-in-stock')
       .then((r) => setBisGroups(r.variants)).catch(() => setBisGroups([]))
   }, [])
@@ -4729,6 +4732,30 @@ function AdminMarketing() {
       reloadBis()
     } catch (e) {
       toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' })
+    }
+  }
+
+  const reloadEmails = () => {
+    apiGet<{ items: OutboxEmail[]; mail?: { queued: number; providerConfigured: boolean } }>('/api/admin/emails')
+      .then((r) => { setEmails(r.items); setMailMeta(r.mail ?? null) }).catch(() => undefined)
+  }
+
+  const dispatchMails = async () => {
+    setDispatching(true)
+    try {
+      const r = await apiPost<{ configured: boolean; sent: number; failed: number; remaining: number }>('/api/admin/emails/dispatch')
+      if (!r.configured) {
+        toast({ title: t.admin.outboxNoProvider, variant: 'destructive' })
+      } else if (r.sent === 0 && r.remaining === 0) {
+        toast({ title: t.admin.outboxDispatchedNone })
+      } else {
+        toast({ title: tf(t.admin.outboxDispatched, { n: r.sent, f: r.failed, r: r.remaining }), variant: r.failed > 0 ? 'destructive' : 'default' })
+      }
+    } catch (e) {
+      toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' })
+    } finally {
+      setDispatching(false)
+      reloadEmails()
     }
   }
 
@@ -4843,6 +4870,28 @@ function AdminMarketing() {
           </h3>
           <p className="text-[11px] text-ink-3">{t.admin.demoMailNote}</p>
         </div>
+        {/* Dispatch bar: provider status + queued count + OWNER-only drain action */}
+        {mailMeta && (
+          <div className="mb-3 flex flex-wrap items-center gap-2.5 rounded-lg border border-line bg-soft/50 px-3.5 py-2.5">
+            <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', mailMeta.providerConfigured ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning')}>
+              <Send className="h-4 w-4" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-ink">{t.admin.outboxDispatchTitle}</p>
+              <p className="text-[11px] leading-snug text-ink-3">
+                {mailMeta.providerConfigured ? t.admin.outboxProviderOn : t.admin.outboxProviderOff}
+                {mailMeta.queued > 0 && <> · <span className="font-medium text-brand">{tf(t.admin.outboxQueued, { n: mailMeta.queued })}</span></>}
+              </p>
+            </div>
+            {isOwner && (
+              <Button size="sm" className="h-8 shrink-0 gap-1.5 text-xs" disabled={dispatching || mailMeta.queued === 0} onClick={dispatchMails}
+                title={mailMeta.providerConfigured ? undefined : t.admin.outboxNoProvider}>
+                {dispatching ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Send className="h-3.5 w-3.5" aria-hidden />}
+                {t.admin.outboxDispatch}
+              </Button>
+            )}
+          </div>
+        )}
         {emails.length === 0 ? (
           <EmptyState title={t.admin.outbox} body={t.admin.noEmails} />
         ) : (

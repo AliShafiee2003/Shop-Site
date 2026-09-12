@@ -89,7 +89,7 @@ async function main() {
 
   // ── Users ────────────────────────────────────────────────────────────
   const admin = await db.user.create({ data: {
-    email: 'admin@simorghpress.example', passwordHash: hashPassword(seedPassword('SEED_ADMIN_PASSWORD')),
+    email: 'owner@persepix.ir', passwordHash: hashPassword(seedPassword('SEED_ADMIN_PASSWORD')),
     name: 'Parisa Bahrami', role: 'OWNER', preferredLocale: 'en', emailVerifiedAt: new Date(),
   }})
   const customer = await db.user.create({ data: {
