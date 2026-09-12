@@ -1,0 +1,50 @@
+# ── Docker build context hygiene (task 1-c, OPS-002) ────────────────────────
+# The image build needs ONLY: package.json, bun.lock, prisma/, src/, public/
+# (minus uploads), and the next/tailwind/postcss/tsconfig configs.
+# Everything else is excluded to keep the context small and secret-free.
+
+# Dependencies & build output (rebuilt inside the image)
+node_modules
+.next
+.next-standalone
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Secrets — NEVER bake env files into the image (audit SEC-001).
+# NEXT_PUBLIC_* values are passed as build/runtime ENV instead.
+.env*
+!.env.example
+
+# SQLite databases (sandbox dev DB + any WAL/shm sidecars) — the runtime
+# database lives on a volume, never in the image.
+db
+db/*.db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Uploaded media — served from the persistent volume at runtime
+# (OPS-003: /app/.next/standalone/public/uploads). Baked-in copies would go
+# stale and bloat the image.
+public/uploads
+upload
+uploads
+
+# Dev/ops artifacts not needed inside the image
+dev.log
+server.log
+backups
+worklog.md
+docs
+deploy
+scripts
+.github
+
+# Misc local tooling
+*.local
+.DS_Store

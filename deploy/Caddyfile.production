@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Persepix — PRODUCTION reverse proxy template (task 1-c, audit OPS-002 / C4)
+#
+# ⚠ NEVER put the sandbox dev mechanism in this file:
+#   The `?XTransformPort=` query-based port switch from the repo-root Caddyfile
+#   is a PREVIEW-PANEL DEV TOOL ONLY. It lets anyone reach arbitrary local
+#   ports through the proxy — it must NEVER exist in a production Caddyfile.
+#
+# Run with:   SITE_DOMAIN=books.example.com caddy run --config deploy/Caddyfile.production
+# (or export SITE_DOMAIN in the Caddy systemd unit / container env).
+#
+# What Caddy gives you out of the box here:
+#   • Automatic HTTPS — ACME certificate issue + renewal for {$SITE_DOMAIN}.
+#   • Automatic HTTP→HTTPS redirect on :80.
+#   • HTTP/2 / HTTP/3.
+#
+# Header ownership (avoid drift):
+#   • This file sets: HSTS, X-Content-Type-Options, Referrer-Policy,
+#     Permissions-Policy, strips Server. Values mirror next.config.ts.
+#   • next.config.ts ALSO sets X-Content-Type-Options / Referrer-Policy /
+#     Permissions-Policy / CSP / X-Frame-Options on every app response. The
+#     edge duplicates only the cheap static ones; CSP and X-Frame-Options are
+#     deliberately NOT duplicated here (single source of truth in the app).
+# ═══════════════════════════════════════════════════════════════════════════════
+
+{
+	# Don't expose Caddy's admin API on a production host.
+	admin off
+
+	# SEC-003 pairing — when Caddy sits BEHIND a real load balancer / CDN, tell
+	# Caddy which peers are allowed to set X-Forwarded-* on its behalf:
+	#
+	# servers {
+	# 	trusted_proxies static 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+	# }
+	#
+	# Then set TRUST_PROXY=1 in the app env (see docs/production-deploy.md).
+	# If Caddy terminates connections from the internet directly, leave this
+	# commented and run the app with TRUST_PROXY=1 too — the app must trust
+	# Caddy (its immediate peer on 127.0.0.1), never raw client headers.
+}
+
+{$SITE_DOMAIN} {
+	# Compress text responses (zstd preferred, gzip fallback).
+	encode zstd gzip
+
+	header {
+		# HSTS — 1 year, subdomains included. Only append "; preload" after a
+		# full subdomain audit (preload is effectively irreversible).
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+		# Mirrors next.config.ts securityHeaders.
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+
+		# Hide the server banner (app already disables X-Powered-By via
+		# poweredByHeader=false in next.config.ts).
+		-Server
+	}
+
+	# Next.js standalone server (Dockerfile runtime stage) on the same host.
+	reverse_proxy 127.0.0.1:3000 {
+		header_up Host {host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+		# NOTE: Caddy ≥2.7 already sets X-Forwarded-For/Proto correctly on its
+		# own; the explicit header_up lines are kept to mirror the repo's
+		# working sandbox Caddyfile and pin the behaviour on older versions.
+	}
+}

@@ -41,7 +41,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     .filter((v) => v.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder || a.priceMinor - b.priceMinor)
     .map((v) => {
-      const priced = promoPriceFor(promo, v.priceMinor, p.id)
+      const priced = promoPriceFor(promo, v.priceMinor, p.id, p.fixedPrice)
       return {
       id: v.id,
       sku: v.sku,

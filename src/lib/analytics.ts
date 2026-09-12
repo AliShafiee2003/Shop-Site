@@ -2,7 +2,8 @@
 
 /**
  * First-party analytics tracker (PRD 30.1) — strictly consent-gated.
- * - No events are sent unless the visitor accepted the cookie notice.
+ * - No events are sent unless the server-verified consent decision is DECIDED
+ *   and its granular `analytics` category is ON (audit PRIV-001).
  * - No cookies, no PII: an anonymous random session key is kept in localStorage
  *   and rotated every 24h. Failures are swallowed (analytics must never break UX).
  */
@@ -39,8 +40,11 @@ export function track(
   payload: { productSlug?: string; valueMinor?: number } = {},
 ): void {
   if (typeof window === 'undefined') return
-  // Consent gate (PRD 30.1: no measurement without consent).
-  if (!useApp.getState().consentAccepted) return
+  // Granular consent gate (PRD 30.1 + audit PRIV-001): measurement requires a
+  // DECIDED, server-verified consent whose analytics category is enabled —
+  // the legacy consentAccepted boolean alone is NOT sufficient.
+  const c = useApp.getState().consent
+  if (!(c?.decided === true && c?.categories?.analytics === true)) return
   const body = JSON.stringify({
     type,
     path: window.location.pathname + window.location.search || '/',

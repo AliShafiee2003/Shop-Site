@@ -57,9 +57,12 @@ export function CookiePreferencesDialog() {
       await saveConsentDecision(action, cats, 'preference_center')
       setResult('saved')
       // Keep the quick-decision surfaces consistent: a verified server
-      // decision means the bottom banner never needs to come back.
-      try { window.localStorage.setItem('sp_consent_v1', '1') } catch { /* private mode */ }
-      useApp.getState().setConsentAccepted(true)
+      // decision means the bottom banner never needs to come back. PRIV-001:
+      // the tracking flag mirrors the analytics category (either localStorage
+      // value counts as "decided" for hiding the banner).
+      const analyticsOk = cats.analytics === true
+      try { window.localStorage.setItem('sp_consent_v1', analyticsOk ? '1' : '0') } catch { /* private mode */ }
+      useApp.getState().setConsentAccepted(analyticsOk)
       window.setTimeout(() => setOpen(false), 600)
     } catch {
       setResult('failed')

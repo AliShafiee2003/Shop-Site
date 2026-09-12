@@ -1,9 +1,14 @@
-// Simorgh Press — bilingual editorial commerce platform
+// Persepix — bilingual editorial commerce platform
 // SQLite (sandbox) — enums are represented as String unions; JSON payloads as String.
 // NOTE: spec targets PostgreSQL; SQLite chosen for sandbox. Migration notes at bottom.
 
 generator client {
   provider = "prisma-client-js"
+  // Task 1-c (Dockerfile runtime stage): the production image runs on
+  // node:22-alpine (musl), while `bunx prisma generate` runs on the Debian
+  // based oven/bun image. Shipping both engines lets the client pick the
+  // right one per platform; local dev still uses "native".
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -96,7 +101,7 @@ model ConsentRecord {
 model SavedPaymentMethod {
   id               String   @id @default(cuid())
   userId           String
-  provider         String   @default("SIMORGH_SANDBOX")
+  provider         String   @default("PERSEPIX_SANDBOX")
   providerMethodId String
   brand            String
   last4            String
@@ -184,7 +189,7 @@ model Product {
   status          String    @default("DRAFT") // DRAFT | SCHEDULED | PUBLISHED | ARCHIVED
   publishAt       DateTime?
   publicationDate DateTime?
-  publisher       String    @default("Simorgh Press")
+  publisher       String    @default("Persepix")
   series          String?
   seriesSlug      String?
   coverUrl        String?
@@ -513,6 +518,7 @@ model Order {
 
   @@index([email])
   @@index([status])
+  @@index([status, createdAt]) // admin order queue pages (status filter + recency)
   @@index([userId])
   @@index([createdAt])
 }
@@ -544,7 +550,7 @@ model OrderItem {
 model Payment {
   id               String   @id @default(cuid())
   orderId          String
-  provider         String   @default("SIMORGH_SANDBOX")
+  provider         String   @default("PERSEPIX_SANDBOX")
   providerIntentId String   @unique
   amountMinor      Int
   currency         String   @default("EUR")
@@ -899,7 +905,9 @@ model TasteSignal {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+  @@index([userId, createdAt]) // for-you taste profile scans (newest signals first)
   @@index([sessionKey])
+  @@index([sessionKey, createdAt]) // anonymous (guest) taste profile scans
   @@index([productSlug])
 }
 
@@ -991,6 +999,7 @@ model MailMessage {
   createdAt DateTime  @default(now())
 
   @@index([createdAt])
+  @@index([sentAt, createdAt]) // dispatch/outbox sweeps filter on sentAt freshness
   @@index([orderId])
 }
 

@@ -4,7 +4,8 @@ import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json, zodMessage } from '@/lib/server/utils'
 
-const bodySchema = z.object({ body: z.string().min(1) })
+// BUG-004: cap the reply body the same way the contact form is capped.
+const bodySchema = z.object({ body: z.string().min(1).max(5000) })
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const user = await requireAdmin()

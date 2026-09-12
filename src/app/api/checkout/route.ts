@@ -104,6 +104,16 @@ export async function POST(req: NextRequest) {
   const rl = rateLimit(`${ip}:checkout`, 5, 60_000)
   if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many checkout attempts. Please wait a minute.')
 
+  // COM-001: the simulation below accepts ANY 16-digit number — acceptable in
+  // the sandbox only. Fail closed when a real provider is configured but not
+  // integrated: PAYMENT_PROVIDER unset/'' defaults to 'SANDBOX' (historic
+  // behaviour); production MUST set PAYMENT_PROVIDER (e.g. stripe) and wire
+  // the PSP before this endpoint may take money.
+  const paymentProvider = (process.env.PAYMENT_PROVIDER ?? 'SANDBOX').trim().toUpperCase()
+  if (paymentProvider !== 'SANDBOX') {
+    return apiError(503, 'PAYMENT_PROVIDER_UNAVAILABLE', `Payment provider "${paymentProvider}" is not integrated — checkout is disabled until the PSP is wired`)
+  }
+
   // Idempotency: header first, body field as fallback (both accepted).
   const idemKeyRaw = req.headers.get('idempotency-key')?.trim()
 
@@ -271,7 +281,7 @@ export async function POST(req: NextRequest) {
       await tx.payment.create({
         data: {
           orderId: order.id,
-          provider: 'SIMORGH_SANDBOX',
+          provider: 'PERSEPIX_SANDBOX',
           providerIntentId: `pi_sbx_${randomUUID()}`,
           amountMinor: totalMinor,
           currency: 'EUR',
@@ -318,8 +328,22 @@ export async function POST(req: NextRequest) {
           if (updated.count === 0) throw new Error('OUT_OF_STOCK')
         }
         // Discount redemption counter (inside the same tx — rolls back with the order).
+        // COM-002: the increment is guarded by `timesUsed < maxRedemptions` re-read
+        // INSIDE the tx, so two concurrent checkouts can never both pass the cap
+        // (the loser's updateMany matches 0 rows → tx aborts with DISCOUNT_EXHAUSTED).
         if (discountCode) {
-          await tx.discountCode.updateMany({ where: { code: discountCode }, data: { timesUsed: { increment: 1 } } })
+          const dc = await tx.discountCode.findUnique({
+            where: { code: discountCode },
+            select: { maxRedemptions: true },
+          })
+          const bumped = await tx.discountCode.updateMany({
+            where: {
+              code: discountCode,
+              ...(dc?.maxRedemptions != null ? { timesUsed: { lt: dc.maxRedemptions } } : {}),
+            },
+            data: { timesUsed: { increment: 1 } },
+          })
+          if (bumped.count === 0) throw new Error('DISCOUNT_EXHAUSTED')
         }
         // ── h. Convert cart ──
         await tx.cart.update({ where: { id: cartRow.id }, data: { status: 'CONVERTED' } })
@@ -412,6 +436,12 @@ export async function POST(req: NextRequest) {
     if ((err as Error)?.message === 'PRICE_CHANGED') {
       if (idemKey) idempotencyRemember(idemKey, 409, { error: 'PRICE_CHANGED' })
       return apiError(409, 'PRICE_CHANGED', 'Prices changed while placing your order — please review your cart and retry')
+    }
+    if ((err as Error)?.message === 'DISCOUNT_EXHAUSTED') {
+      // COM-002: redemption cap hit between validation and the tx — same 422
+      // contract (and message) as the other DISCOUNT_* failures above.
+      if (idemKey) idempotencyRemember(idemKey, 422, { error: 'DISCOUNT_EXHAUSTED' })
+      return apiError(422, 'DISCOUNT_EXHAUSTED', 'The discount code is no longer valid — please remove it and try again.')
     }
     console.error('checkout failed', err)
     return apiError(500, 'INTERNAL_ERROR', 'Could not place the order')

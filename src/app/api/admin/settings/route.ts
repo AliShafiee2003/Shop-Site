@@ -9,6 +9,24 @@ import { requireOwner } from '@/lib/server/auth'
 import { apiError, audit, getSetting, json, setSetting, zodMessage } from '@/lib/server/utils'
 import { GIFT_WRAP_DEFAULTS } from '@/lib/server/giftwrap'
 
+/** SEC-012: a social profile must be an absolute http(s) URL — the value is
+ *  rendered as a raw href in the Footer, so `javascript:`/data: URIs and
+ *  protocol-relative garbage must never reach the storefront. '' clears the
+ *  field (existing Task-50 behaviour). */
+function isHttpUrl(v: string): boolean {
+  try {
+    const u = new URL(v)
+    return u.protocol === 'http:' || u.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+const socialUrlSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => v === '' || isHttpUrl(v), { message: 'Social links must be absolute http(s) URLs' })
+
 export async function GET() {
   const user = await requireOwner()
   if (!user) return apiError(403, 'FORBIDDEN')
@@ -38,10 +56,10 @@ const bodySchema = z.object({
     // free-shipping announcement + progress bar threshold, 0–€2,000
     freeShippingThresholdMinor: z.number().int().min(0).max(200_000).optional(),
     // social profiles (Task 50) — rendered in the footer + contact page only
-    // when non-empty; '' clears a field.
-    instagram: z.string().trim().max(200).optional(),
-    x: z.string().trim().max(200).optional(),
-    youtube: z.string().trim().max(200).optional(),
+    // when non-empty; '' clears a field. SEC-012: absolute http(s) URLs only.
+    instagram: socialUrlSchema.optional(),
+    x: socialUrlSchema.optional(),
+    youtube: socialUrlSchema.optional(),
   }).optional(),
 })
 

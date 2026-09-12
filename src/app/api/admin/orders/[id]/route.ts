@@ -1,4 +1,5 @@
 // GET/PATCH /api/admin/orders/[id] — full detail + validated status transitions (audited).
+import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
@@ -133,46 +134,109 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     }
   }
 
-  const updated = await db.order.update({
-    where: { id },
-    data: {
-      ...(status ? { status } : {}),
-      ...(fulfillmentStatus ? { fulfillmentStatus } : {}),
-      ...(noteInternal !== undefined ? { internalNote: noteInternal } : {}),
-    },
-  })
-
-  if (status && status !== order.status) {
-    // Structured type (STATUS_<TO>) lets the CUSTOMER timeline render a
-    // localized stepper stage — the raw message stays for the admin log.
-    // (Legacy rows before this change carry type NOTE; the client falls back
-    // to parsing "Status changed X → Y" messages for those.)
-    await db.orderEvent.create({
-      data: {
-        orderId: order.id,
-        type: `STATUS_${status}`,
-        message: `Status changed ${order.status} → ${status}`,
-        actor: user.email,
-      },
-    })
-    await audit(user.email, 'ORDER_STATUS', 'Order', order.id, `Status ${order.status} → ${status} (${order.orderNumber})`)
+  const patchData = {
+    ...(status ? { status } : {}),
+    ...(fulfillmentStatus ? { fulfillmentStatus } : {}),
+    ...(noteInternal !== undefined ? { internalNote: noteInternal } : {}),
   }
 
-  // Cancelling an order puts its units back on the shelf (audit P1: stock was
-  // silently lost on cancellation). Items without a live variant (deleted) skip.
+  type UpdatedOrder = { id: string; status: string; fulfillmentStatus: string }
+  let updated: UpdatedOrder
+
   if (status === 'CANCELLED' && order.status !== 'CANCELLED') {
-    const items = await db.orderItem.findMany({ where: { orderId: order.id, variantId: { not: null } } })
-    for (const item of items) {
-      if (!item.variantId) continue
-      const variant = await db.variant.findUnique({ where: { id: item.variantId } })
-      if (!variant) continue
-      await db.variant.update({
-        where: { id: variant.id },
-        data: { stock: { increment: item.quantity } },
+    // COM-004: an admin cancellation now mirrors the customer-cancel path —
+    // status flip + restock + a FULL refund of the remaining refundable amount
+    // all run in ONE transaction, so a failure mid-way can never leave a
+    // CANCELLED order with paymentStatus stuck on SUCCEEDED.
+    const result = await db.$transaction(async (tx) => {
+      const o = await tx.order.update({ where: { id }, data: patchData })
+
+      await tx.orderEvent.create({
+        data: {
+          orderId: order.id,
+          type: `STATUS_${status}`,
+          message: `Status changed ${order.status} → ${status}`,
+          actor: user.email,
+        },
       })
+
+      // Restock: put the cancelled units back on the shelf (same behaviour as
+      // before — items without a live variant skip).
+      const items = await tx.orderItem.findMany({ where: { orderId: order.id, variantId: { not: null } } })
+      for (const item of items) {
+        if (!item.variantId) continue
+        const variant = await tx.variant.findUnique({ where: { id: item.variantId } })
+        if (!variant) continue
+        await tx.variant.update({
+          where: { id: variant.id },
+          data: { stock: { increment: item.quantity } },
+        })
+      }
+
+      // Full refund when a successful payment exists (ceiling recomputed from
+      // fresh SUCCEEDED refund rows inside the tx — mirrors the owner refund
+      // route so a prior partial refund is honoured, never over-refunded).
+      let refundedMinor = 0
+      const payment = (
+        await tx.payment.findMany({ where: { orderId: order.id }, orderBy: { createdAt: 'desc' }, take: 1 })
+      )[0]
+      if (payment && (payment.status === 'SUCCEEDED' || payment.status === 'PARTIALLY_REFUNDED')) {
+        const succeededRefunds = await tx.refund.findMany({ where: { orderId: order.id, status: 'SUCCEEDED' } })
+        const alreadyRefunded = succeededRefunds.reduce((s, r) => s + r.amountMinor, 0)
+        refundedMinor = Math.max(0, order.totalMinor - alreadyRefunded)
+        if (refundedMinor > 0) {
+          await tx.refund.create({
+            data: {
+              orderId: order.id,
+              paymentId: payment.id,
+              amountMinor: refundedMinor,
+              reason: 'ADMIN_CANCELLATION',
+              providerRef: `re_adm_cxl_${randomUUID()}`,
+              status: 'SUCCEEDED',
+              actorEmail: user.email,
+            },
+          })
+          await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } })
+          await tx.order.update({ where: { id: order.id }, data: { paymentStatus: 'REFUNDED' } })
+          await tx.orderEvent.create({
+            data: {
+              orderId: order.id,
+              type: 'REFUND',
+              message: `Refund of ${refundedMinor} minor units (order cancelled by admin)`,
+              actor: user.email,
+            },
+          })
+        }
+      }
+
+      return { order: o as UpdatedOrder, items, refundedMinor }
+    })
+    updated = result.order
+
+    await audit(user.email, 'ORDER_STATUS', 'Order', order.id, `Status ${order.status} → ${status} (${order.orderNumber})`)
+    if (result.items.length > 0) {
+      await audit(user.email, 'STOCK_RESTORE', 'Order', order.id, `Cancel restored stock for ${result.items.length} line item(s) (${order.orderNumber})`)
     }
-    if (items.length > 0) {
-      await audit(user.email, 'STOCK_RESTORE', 'Order', order.id, `Cancel restored stock for ${items.length} line item(s) (${order.orderNumber})`)
+    if (result.refundedMinor > 0) {
+      await audit(user.email, 'REFUND', 'Order', order.id, `Full refund ${result.refundedMinor} on ${order.orderNumber}: ADMIN_CANCELLATION`)
+    }
+  } else {
+    updated = await db.order.update({ where: { id }, data: patchData })
+
+    if (status && status !== order.status) {
+      // Structured type (STATUS_<TO>) lets the CUSTOMER timeline render a
+      // localized stepper stage — the raw message stays for the admin log.
+      // (Legacy rows before this change carry type NOTE; the client falls back
+      // to parsing "Status changed X → Y" messages for those.)
+      await db.orderEvent.create({
+        data: {
+          orderId: order.id,
+          type: `STATUS_${status}`,
+          message: `Status changed ${order.status} → ${status}`,
+          actor: user.email,
+        },
+      })
+      await audit(user.email, 'ORDER_STATUS', 'Order', order.id, `Status ${order.status} → ${status} (${order.orderNumber})`)
     }
   }
 

@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CI — Persepix bookstore (task 1-c, audit OPS-002)
+#
+# Gate → audit-finding map:
+#   • typecheck ........ QUALITY-001 (build ignored type errors; a seeded type
+#                        error must fail the pipeline, not ship)
+#   • lint ............. QUALITY-002/003 (eslint core rules re-enabled by the
+#                        quality-config task; CI must stay green with them on)
+#   • prisma generate .. catches client/schema drift before build
+#   • migrate deploy ... proves the migration chain applies cleanly to a fresh
+#                        DB (audit 07-A "DB migration deploy: not a CI hook")
+#   • build ............ OPS-002 — the Next.js standalone bundle must compile
+#                        (next build + static/public copy into .next/standalone)
+#   • bun audit ........ DEP-001 — dependency CVE scan; non-blocking for now
+#                        (gates KNOWN CVEs without blocking day-to-day merges;
+#                        flip continue-on-error to false once baseline is clean)
+#   • smoke tests ...... QA-001 (future): register → checkout → track e2e plugs
+#                        in as a step after "build" — placeholder noted below
+#
+# Single job by design: four jobs would re-checkout + re-install 4× for a
+# ~2 min pipeline; the gates stay individually visible as named steps.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      # Throwaway SQLite DB for the pipeline; `prisma migrate deploy` creates
+      # the file from prisma/migrations — no service container needed.
+      DATABASE_URL: file:/tmp/ci.db
+    steps:
+      # ── setup ────────────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      # ── verify ───────────────────────────────────────────────────────────────
+      - name: Prisma generate
+        run: bunx prisma generate
+
+      - name: Typecheck (QUALITY-001)
+        run: bun run typecheck
+
+      - name: Lint (QUALITY-002/003)
+        run: bun run lint
+
+      # ── build (OPS-002) ──────────────────────────────────────────────────────
+      - name: Apply migrations to fresh CI DB
+        run: bunx prisma migrate deploy
+
+      - name: Build standalone bundle
+        run: bun run build
+
+      # QA-001 placeholder — smoke tests (register → checkout → track) belong
+      # here once written; keep this slot reserved so the gate lands visibly.
+
+      # ── audit (DEP-001) ──────────────────────────────────────────────────────
+      - name: Dependency audit (production deps only)
+        run: bun audit --production
+        # Non-blocking by policy (DEP-001): surfaces known CVEs without
+        # blocking merges. Review the log each run; make this blocking once
+        # the known-CVE baseline is resolved.
+        continue-on-error: true

@@ -86,11 +86,31 @@ export function nextTicketNumber(count: number): string {
   return `TK-${String(count + 1).padStart(4, '0')}`
 }
 
-/** Best-effort client IP for rate limiting. */
+/** IPv4 (strict octets) / IPv6 (hex groups incl. :: compression) shape check —
+ *  garbage in proxy headers must never become a rate-limit key (audit SEC-003). */
+const IPV4_RE = /^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/
+const IPV6_RE = /^(?:[0-9A-Fa-f]{0,4}:){1,7}[0-9A-Fa-f]{0,4}$/
+
+/** Best-effort client IP for rate limiting.
+ *  SEC-003: X-Forwarded-For is client-spoofable unless a TRUSTED proxy overwrites
+ *  it. TRUST_PROXY=0 (direct exposure, no proxy) → XFF is never read; the socket
+ *  peer (`req.ip` when available) or the stable 'direct' key is used instead.
+ *  Default (sandbox sits behind Caddy, which overwrites XFF): only the FIRST XFF
+ *  entry — the one our own proxy appended — is considered, and only when it
+ *  parses as an IP; otherwise fall back to x-real-ip, else 'unknown'. */
 export function clientIp(req: NextRequest): string {
+  if (process.env.TRUST_PROXY === '0') {
+    const peer = (req as Request & { ip?: string }).ip?.trim()
+    return peer || 'direct'
+  }
   const fwd = req.headers.get('x-forwarded-for')
-  if (fwd) return fwd.split(',')[0].trim()
-  return req.headers.get('x-real-ip') ?? '127.0.0.1'
+  if (fwd) {
+    const first = fwd.split(',')[0].trim()
+    if (IPV4_RE.test(first) || IPV6_RE.test(first)) return first
+  }
+  const real = req.headers.get('x-real-ip')?.trim()
+  if (real && (IPV4_RE.test(real) || IPV6_RE.test(real))) return real
+  return 'unknown'
 }
 
 /** Write an audit log row (never throws — auditing must not break requests). */

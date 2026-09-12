@@ -22,7 +22,13 @@ export async function GET(req: Request) {
     if (v) hdrs.set(h, v)
   })
   const base = siteUrlFrom({ headers: hdrs })
-  const now = new Date()
+
+  // SEO-002: index entries carry a REAL freshness signal — the max row
+  // updatedAt of the section they list — instead of `new Date()` (which faked
+  // "changed today" on every request). `new Date()` remains only as the
+  // fallback for an EMPTY section (nothing fresher exists to point at).
+  const maxOf = (dates: (Date | null | undefined)[]): Date | undefined =>
+    dates.reduce<Date | undefined>((m, d) => (d && (!m || d > m) ? d : m), undefined)
 
   const [products, articles, people, categories, series, legalDocs] = await Promise.all([
     db.product.findMany({ where: { status: 'PUBLISHED' }, select: { slug: true, updatedAt: true } }),
@@ -35,6 +41,11 @@ export async function GET(req: Request) {
     db.legalDocument.groupBy({ by: ['type'], where: { isCurrent: true }, _max: { effectiveAt: true } }),
   ])
   const legalLastmod = new Map(legalDocs.map((g) => [g.type, g._max.effectiveAt ?? undefined]))
+  const booksLastmod = maxOf(products.map((pr) => pr.updatedAt))
+  const articlesLastmod = maxOf(articles.map((a) => a.updatedAt))
+  const seriesLastmod = maxOf(series.map((s) => s.updatedAt))
+  const authorsLastmod = maxOf(people.map((pe) => pe.updatedAt))
+  const homeLastmod = maxOf([booksLastmod, articlesLastmod, seriesLastmod, authorsLastmod])
 
   // Static, always-indexable pages (audit §8.6). /search stays out: noindex.
   // legalType: documented type → lastmod source (R10).
@@ -57,11 +68,11 @@ export async function GET(req: Request) {
   // so exactly one crawlable URL per page.
   for (const locale of ['en', 'fa'] as const) {
     const p = locale === 'fa' ? '/fa' : ''
-    urls.push(urlEntry(`${base}${p || '/'}`, now, 'daily', '1.0'))
-    urls.push(urlEntry(`${base}${p}/books`, now, 'daily', '0.9'))
-    urls.push(urlEntry(`${base}${p}/series`, now, 'weekly', '0.6'))
-    urls.push(urlEntry(`${base}${p}/authors`, now, 'weekly', '0.6'))
-    urls.push(urlEntry(`${base}${p}/articles`, now, 'daily', '0.8'))
+    urls.push(urlEntry(`${base}${p || '/'}`, homeLastmod ?? new Date(), 'daily', '1.0'))
+    urls.push(urlEntry(`${base}${p}/books`, booksLastmod ?? new Date(), 'daily', '0.9'))
+    urls.push(urlEntry(`${base}${p}/series`, seriesLastmod ?? new Date(), 'weekly', '0.6'))
+    urls.push(urlEntry(`${base}${p}/authors`, authorsLastmod ?? new Date(), 'weekly', '0.6'))
+    urls.push(urlEntry(`${base}${p}/articles`, articlesLastmod ?? new Date(), 'daily', '0.8'))
     for (const c of categories) urls.push(urlEntry(`${base}${p}/categories/${c.slug}`, c.updatedAt, 'weekly', '0.6'))
     for (const pr of products) urls.push(urlEntry(`${base}${p}/books/${pr.slug}`, pr.updatedAt, 'weekly', '0.9'))
     for (const s of series) urls.push(urlEntry(`${base}${p}/series/${s.slug}`, s.updatedAt, 'weekly', '0.7'))

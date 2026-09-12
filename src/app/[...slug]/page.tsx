@@ -13,6 +13,7 @@ import { getHomeSections } from '@/lib/server/home-sections'
 import { queryStorefrontProducts } from '@/lib/server/product-list'
 import { getSetting } from '@/lib/server/utils'
 import { getSeriesDetail, seriesMeta, getSeriesIndex } from '@/lib/server/series'
+import { loadShippingSettings } from '@/lib/server/shipping'
 
 export const dynamic = 'force-dynamic'
 
@@ -189,7 +190,13 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
   try {
     if (segments.length === 0) {
       // Richer Organization entity (GEO §9: logo/sameAs/contactPoint).
-      const store = await getSetting<{ name?: string; email?: string; phone?: string; address?: string }>('store', {})
+      const store = await getSetting<{ name?: string; email?: string; phone?: string; address?: string; instagram?: string; x?: string; youtube?: string }>('store', {})
+      // GEO: sameAs ties the Organization entity to its social profiles —
+      // stored on the 'store' settings row (written through SEC-012's
+      // http(s)-only validation) and re-filtered to absolute http(s) at read.
+      const sameAs = [store.instagram, store.x, store.youtube]
+        .filter((u): u is string => typeof u === 'string' && /^https?:\/\//i.test(u.trim()))
+        .map((u) => u.trim())
       payloads.push({
         '@context': 'https://schema.org',
         '@type': 'Organization',
@@ -197,6 +204,7 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
         url: absUrl(site, localePath(locale, '')),
         logo: absUrl(site, '/logo.svg'),
         ...(store.email ? { contactPoint: { '@type': 'ContactPoint', email: store.email, contactType: 'customer service' } } : {}),
+        ...(sameAs.length ? { sameAs } : {}),
       })
       payloads.push({
         '@context': 'https://schema.org',
@@ -223,6 +231,27 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
         const t = p.translations.find((x) => x.locale === locale) ?? p.translations.find((x) => x.locale === 'en')
         const v = p.variants.filter((x) => x.isActive).sort((a, b) => a.priceMinor - b.priceMinor)[0]
         const avg = p.reviews.length ? p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length : undefined
+        // ── GEO/AEO Offer enrichment (audit §B P1) ──
+        // Everything below mirrors facts the storefront itself states
+        // (settings + published policy) — never data the page doesn't show.
+        const priceValidUntil = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10)
+        // Return window: the published withdrawal policy (legal doc + FAQ)
+        // grants EU consumers 14 days and there is no settings field for a
+        // configurable window — so 14, NOT the audit template's 30, keeping
+        // the structured data consistent with the visible legal text.
+        const hasMerchantReturnPolicy = {
+          '@type': 'MerchantReturnPolicy',
+          applicableCountry: 'AT',
+          returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          merchantReturnDays: 14,
+          returnMethod: 'https://schema.org/ReturnByMail',
+          returnFees: 'https://schema.org/FreeReturn',
+        }
+        // Shipping: the cheapest settings method serving AT (the store's home
+        // market). Skipped entirely when settings define no such method.
+        const atMethod = (await loadShippingSettings()).methods
+          .filter((m) => Array.isArray(m.countries) && (m.countries.includes('AT') || m.countries.includes('*')))
+          .sort((a, b) => a.priceMinor - b.priceMinor)[0]
         payloads.push({
           '@context': 'https://schema.org',
           '@type': 'Book',
@@ -248,6 +277,17 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
                   availability: v.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                   itemCondition: 'https://schema.org/NewCondition',
                   url: `${site}${localePath(locale, `/books/${p.slug}`)}`,
+                  priceValidUntil,
+                  hasMerchantReturnPolicy,
+                  ...(atMethod
+                    ? {
+                        shippingDetails: {
+                          '@type': 'OfferShippingDetails',
+                          shippingRate: { '@type': 'MonetaryAmount', value: (atMethod.priceMinor / 100).toFixed(2), currency: 'EUR' },
+                          shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'AT' },
+                        },
+                      }
+                    : {}),
                 },
               }
             : {}),

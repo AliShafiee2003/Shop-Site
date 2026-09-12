@@ -1,6 +1,9 @@
 // GET/PATCH /api/admin/customers/[id] — customer detail for the admin table dialog (Task 27-d).
 // GET   → profile + addresses + latest 10 orders + aggregate stats (404 unless the user exists).
-// PATCH → internal admin note ONLY ({ adminNote?: string|null }) — role/status changes are out of scope.
+// PATCH → internal admin note ({ adminNote }) AND account actions (SEC-013):
+//         { action: 'BLOCK' | 'UNBLOCK' } kills sessions immediately; role
+//         changes ({ role }) are OWNER-only. Owner accounts can never be
+//         blocked or role-changed; you cannot target your own account.
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
@@ -13,6 +16,9 @@ function isPaid(paymentStatus: string): boolean {
 
 const patchSchema = z.object({
   adminNote: z.string().max(2000).nullable().optional(),
+  // SEC-013: account actions. User.status is ACTIVE | ANONYMIZED | BLOCKED.
+  action: z.enum(['BLOCK', 'UNBLOCK']).optional(),
+  role: z.enum(['CUSTOMER', 'EDITOR', 'ORDER_SUPPORT', 'OWNER']).optional(),
 })
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -105,25 +111,73 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return apiError(400, 'VALIDATION_ERROR', zodMessage(parsed.error))
-  if (parsed.data.adminNote === undefined) {
-    return apiError(400, 'VALIDATION_ERROR', 'Nothing to update: only adminNote is supported')
+  const { adminNote, action, role } = parsed.data
+  if (adminNote === undefined && action === undefined && role === undefined) {
+    return apiError(400, 'VALIDATION_ERROR', 'Nothing to update: supported fields are adminNote, action, role')
   }
 
-  const existing = await db.user.findUnique({ where: { id }, select: { id: true, email: true } })
+  const existing = await db.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, role: true, status: true },
+  })
   if (!existing) return apiError(404, 'NOT_FOUND')
 
-  // Empty/whitespace notes are stored as null (cleared) rather than empty strings.
-  const note = parsed.data.adminNote === null ? null : parsed.data.adminNote.trim() === '' ? null : parsed.data.adminNote.trim()
+  // ── SEC-013: block/unblock + role change ──────────────────────────────────
+  if (action || role) {
+    // Guard rails shared by both actions: never target yourself, never touch
+    // an OWNER account (the store must always keep its owner).
+    if (id === user.id) {
+      return apiError(400, 'VALIDATION_ERROR', 'You cannot block, unblock or re-role your own account')
+    }
+    if (existing.role === 'OWNER') {
+      return apiError(400, 'PROTECTED_ACCOUNT', 'Owner accounts cannot be blocked or reassigned')
+    }
+    // Role changes are OWNER-only (same guard level as refunds/settings).
+    if (role && role !== existing.role && user.role !== 'OWNER') {
+      return apiError(403, 'FORBIDDEN', 'Only the store owner can change roles')
+    }
 
-  const updated = await db.user.update({
-    where: { id },
-    data: { adminNote: note },
-    select: {
-      id: true, email: true, name: true, role: true, status: true,
-      preferredLocale: true, marketingConsent: true, adminNote: true, createdAt: true,
-    },
-  })
+    if (action === 'BLOCK' && existing.status !== 'BLOCKED') {
+      // Status flip + immediate session revocation in one transaction, so a
+      // blocked account cannot keep using an already-issued session cookie.
+      await db.$transaction([
+        db.user.update({ where: { id }, data: { status: 'BLOCKED' } }),
+        db.session.deleteMany({ where: { userId: id } }),
+      ])
+      await audit(user.email, 'CUSTOMER_BLOCKED', 'User', id, `Blocked ${existing.email} (all sessions revoked)`)
+    } else if (action === 'UNBLOCK' && existing.status !== 'ACTIVE') {
+      await db.user.update({ where: { id }, data: { status: 'ACTIVE' } })
+      await audit(user.email, 'CUSTOMER_UNBLOCKED', 'User', id, `Unblocked ${existing.email}`)
+    }
 
-  await audit(user.email, 'CUSTOMER_NOTE', 'User', id, `Internal note ${note === null ? 'cleared' : 'updated'} for ${existing.email}`)
-  return json({ customer: { ...updated, createdAt: updated.createdAt.toISOString() } })
+    if (role && role !== existing.role) {
+      await db.user.update({ where: { id }, data: { role } })
+      await audit(user.email, 'CUSTOMER_ROLE', 'User', id, `Role ${existing.role} → ${role} for ${existing.email}`)
+    }
+  }
+
+  // ── Task 27-d: internal admin note (unchanged behaviour; may be combined
+  // with the account actions above) ─────────────────────────────────────────
+  if (adminNote !== undefined) {
+    // Empty/whitespace notes are stored as null (cleared) rather than empty strings.
+    const note = adminNote === null ? null : adminNote.trim() === '' ? null : adminNote.trim()
+
+    const updated = await db.user.update({
+      where: { id },
+      data: { adminNote: note },
+      select: {
+        id: true, email: true, name: true, role: true, status: true,
+        preferredLocale: true, marketingConsent: true, adminNote: true, createdAt: true,
+      },
+    })
+
+    await audit(user.email, 'CUSTOMER_NOTE', 'User', id, `Internal note ${note === null ? 'cleared' : 'updated'} for ${existing.email}`)
+    // Legacy note-only response shape (the admin dialog reads customer.adminNote);
+    // when combined with account actions the compact { ok: true } shape is used.
+    if (!action && !role) {
+      return json({ customer: { ...updated, createdAt: updated.createdAt.toISOString() } })
+    }
+  }
+
+  return json({ ok: true })
 }

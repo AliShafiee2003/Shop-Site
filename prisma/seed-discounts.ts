@@ -8,7 +8,7 @@ const YEAR = 365 * 24 * 3600 * 1000
 async function main() {
   const end = new Date(Date.now() + YEAR)
   const rows = [
-    { code: 'SIMORGH10', type: 'PERCENT', value: 10, minSubtotalMinor: 0, maxRedemptions: null, noteEn: '10% off any order', noteFa: '۱۰٪ تخفیف برای هر سفارش' },
+    { code: 'PERSEPIX10', type: 'PERCENT', value: 10, minSubtotalMinor: 0, maxRedemptions: null, noteEn: '10% off any order', noteFa: '۱۰٪ تخفیف برای هر سفارش' },
     { code: 'WELCOME5', type: 'FIXED', value: 500, minSubtotalMinor: 2500, maxRedemptions: null, noteEn: '€5 off orders over €25', noteFa: '۵ یورو تخفیف برای سفارش‌های بالای ۲۵ یورو' },
     { code: 'AUTUMN15', type: 'PERCENT', value: 15, minSubtotalMinor: 4000, maxRedemptions: 50, noteEn: '15% off orders over €40 — first 50 readers', noteFa: '۱۵٪ تخفیف برای سفارش‌های بالای ۴۰ یورو — ۵۰ خوانندهٔ اول' },
   ] as const

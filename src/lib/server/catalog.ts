@@ -54,7 +54,7 @@ export function toProductCard(
   const cheapest = active.length
     ? active.reduce((a, b) => (b.priceMinor < a.priceMinor ? b : a))
     : null
-  const priced = cheapest ? promoPriceFor(promo ?? null, cheapest.priceMinor, p.id) : null
+  const priced = cheapest ? promoPriceFor(promo ?? null, cheapest.priceMinor, p.id, p.fixedPrice) : null
   const ratings = p.reviews.map((r) => r.rating)
   const avg = ratings.length
     ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10

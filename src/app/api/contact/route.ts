@@ -7,11 +7,13 @@ import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, clientIp, json, nextTicketNumber, zodMessage } from '@/lib/server/utils'
 
 const bodySchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  subject: z.string().min(1),
-  message: z.string().min(1),
-  orderNumber: z.string().optional().nullable(),
+  // BUG-004: length caps mirror the DB columns and stop multi-MB bodies from
+  // being validated, stored and rendered (min rules unchanged).
+  name: z.string().min(1).max(120),
+  email: z.string().email().max(320),
+  subject: z.string().min(1).max(200),
+  message: z.string().min(1).max(5000),
+  orderNumber: z.string().max(40).optional().nullable(),
 })
 
 export async function POST(req: NextRequest) {

@@ -76,11 +76,22 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const [matchedProducts, promo] = await Promise.all([
+  // PERF-001: the catalog read is bounded (take 200) and the exact total comes
+  // from a parallel count — a runaway query ("a" matches everything) can no
+  // longer load the whole table. SQL pre-orders by the same 'featured'
+  // relevance signal (isFeatured desc, then publication date desc — SQLite
+  // sorts NULLs last on DESC, matching the in-memory nulls-last rule) so the
+  // bounded read keeps the best candidates; the final in-memory sortCards pass
+  // keeps its exact ordering semantics on that (≤200-row) candidate set.
+  const SEARCH_TAKE = 200
+  const [matchedProducts, totalProducts, promo] = await Promise.all([
     db.product.findMany({
       where: { status: 'PUBLISHED', OR: productOr },
       include: productCardInclude,
+      orderBy: [{ isFeatured: 'desc' }, { publicationDate: 'desc' }],
+      take: SEARCH_TAKE,
     }),
+    db.product.count({ where: { status: 'PUBLISHED', OR: productOr } }),
     getActivePromotion(),
   ])
   const productCards = sortCards(matchedProducts.map((p) => toProductCard(p, locale, promo)), 'featured')
@@ -131,7 +142,7 @@ export async function GET(req: NextRequest) {
     people,
     articles,
     counts: {
-      products: productCards.length,
+      products: totalProducts,
       people: matchedPeople.length,
       articles: matchedArticles.length,
     },

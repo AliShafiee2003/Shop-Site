@@ -1,56 +1,24 @@
 // GET /api/healthz — liveness + DB readiness probe (DevOps gap in the audit).
-// Also doubles as the lazy housekeeping tick: expired sessions and long
-// abandoned carts are swept at most once every 6 hours, bounded and safe.
+// OPS-004: the probe is now PURE — the housekeeping/scheduler body moved to
+// src/lib/server/housekeeping.ts (runHousekeeping) and the real scheduler is
+// GET /api/cron/tick (Bearer CRON_SECRET). The legacy side-effect behaviour is
+// retained only behind HEALTHZ_OPS for single-process deployments that have no
+// cron: UNSET/'' defaults to '1' (sandbox keeps working exactly as before);
+// production sets HEALTHZ_OPS=0 so probes stay free of side effects.
 import { db } from '@/lib/db'
 import { json } from '@/lib/server/utils'
-import { dispatchQueuedMails } from '@/lib/server/mail-dispatch'
-import { queueSalesDigestIfDue } from '@/lib/server/report-mail'
-
-const HOUSEKEEPING_INTERVAL_MS = 6 * 60 * 60 * 1000
-const globalForHousekeeping = globalThis as unknown as { lastSweepAt?: number }
-
-async function housekeeping(): Promise<void> {
-  const now = Date.now()
-  if (globalForHousekeeping.lastSweepAt && now - globalForHousekeeping.lastSweepAt < HOUSEKEEPING_INTERVAL_MS) return
-  globalForHousekeeping.lastSweepAt = now
-  try {
-    // Sessions expired more than 7 days ago → delete (kept briefly for forensics).
-    await db.session.deleteMany({ where: { expiresAt: { lt: new Date(now - 7 * 24 * 3600 * 1000) } } })
-    // Guest carts idle >60 days → ABANDONED (no longer counted as active state).
-    await db.cart.updateMany({
-      where: { status: 'ACTIVE', userId: null, updatedAt: { lt: new Date(now - 60 * 24 * 3600 * 1000) } },
-      data: { status: 'ABANDONED' },
-    })
-    // R8: EMPTY guest carts are pure clutter (one row is created per visitor —
-    // 300+ accumulated in the sandbox in two days). Drop ones idle >7 days.
-    await db.cart.deleteMany({
-      where: { status: 'ACTIVE', userId: null, updatedAt: { lt: new Date(now - 7 * 24 * 3600 * 1000) }, items: { none: {} } },
-    })
-    // Password-reset tokens: expired ones are useless (single-use, 30 min) —
-    // keep them 7 days for forensics, then delete.
-    await db.passwordResetToken.deleteMany({ where: { expiresAt: { lt: new Date(now - 7 * 24 * 3600 * 1000) } } })
-    // Login throttles: entries not touched for 30 days (released locks included).
-    await db.loginThrottle.deleteMany({ where: { lastFailAt: { lt: new Date(now - 30 * 24 * 3600 * 1000) } } })
-    // Sandbox outbox: delivered mail older than 30 days.
-    await db.mailMessage.deleteMany({ where: { sentAt: { lt: new Date(now - 30 * 24 * 3600 * 1000) } } })
-    // Mail dispatch: with SMTP_* configured, drain up to 10 queued mails per
-    // sweep. Unconfigured → no-op (rows stay queued). Never throws.
-    await dispatchQueuedMails(10).catch(() => undefined)
-    // R10: automatic weekly sales digest — the 7-day freshness guard inside
-    // makes this fire exactly once per week; every other sweep is a cheap
-    // no-op query. Never throws.
-    await queueSalesDigestIfDue()
-  } catch {
-    // housekeeping must never fail the health probe
-  }
-}
+import { runHousekeeping } from '@/lib/server/housekeeping'
 
 export async function GET() {
   const startedAt = Date.now()
   let dbOk = true
   try {
     await db.$queryRaw`SELECT 1`
-    void housekeeping()
+    // Fire-and-forget so probe latency stays low (never awaited, never throws).
+    // Sandbox default: when HEALTHZ_OPS is UNSET we keep the historic
+    // behaviour ('1') so nothing regresses; production should set '0'.
+    const ops = process.env.HEALTHZ_OPS ?? '1'
+    if (ops === '1') void runHousekeeping()
   } catch {
     dbOk = false
   }

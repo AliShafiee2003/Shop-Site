@@ -4,8 +4,11 @@
 // link (/newsletter-confirm). Only clicking that link flips the row to
 // SUBSCRIBED — nobody can sign third parties up for mail they never confirmed.
 // Legacy rows that were already SUBSCRIBED stay subscribed (grandfathered) and
-// simply get the ordinary success answer. S14: unsubscribe remains a signed
-// one-click link; the confirm signature uses the same HMAC secret.
+// get their manage link by EMAIL ONLY. SEC-009: every successful submit returns
+// the SAME response `{ ok: true }` — no alreadySubscribed/pending distinction
+// (enumeration oracle) and no manageUrl in the API (it must never leave the
+// private email channel). S14: unsubscribe remains a signed one-click link; the
+// confirm signature uses the same HMAC secret.
 import { z } from 'zod'
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
@@ -39,12 +42,20 @@ export async function POST(req: NextRequest) {
   const existing = await db.newsletterSubscriber.findUnique({ where: { email } })
 
   // Grandfathered subscribers re-entering their address: no new confirmation
-  // round — the footer shows the plain "welcome aboard" copy.
+  // round — their signed manage (unsubscribe) link goes to THEIR inbox only.
   if (existing?.status === 'SUBSCRIBED') {
     const origin = req.nextUrl.origin
     const sig = newsletterSig('unsub', email)
     const manageUrl = `${origin}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}`
-    return json({ ok: true, alreadySubscribed: true, manageUrl })
+    const fa = locale === 'fa'
+    const subject = fa ? 'مدیریت عضویت شما در نامهٔ پرس‌پیکس' : 'Manage your Persepix letter subscription'
+    const bodyText = fa
+      ? `شما پیش‌تر عضو نامهٔ پرس‌پیکس هستید. برای خروج از نامه از این پیوند یک‌کلیکی استفاده کنید:\n${manageUrl}\n\nاگر شما این درخواست را نداده‌اید، کافیست این ایمیل را نادیده بگیرید — عضویت‌تان بدون تغییر می‌ماند.`
+      : `You are already subscribed to the Persepix letter. To leave it, use this one-click link:\n${manageUrl}\n\nIf you didn't request this, simply ignore this email — your subscription stays unchanged.`
+    await db.mailMessage.create({
+      data: { to: email, subject, kind: 'NEWSLETTER_CONFIRM', bodyText, locale },
+    })
+    return json({ ok: true })
   }
 
   await db.newsletterSubscriber.upsert({
@@ -66,5 +77,6 @@ export async function POST(req: NextRequest) {
     data: { to: email, subject, kind: 'NEWSLETTER_CONFIRM', bodyText, locale },
   })
 
-  return json({ ok: true, pending: true })
+  // Identical success response for ALL submits (SEC-009 — no oracle).
+  return json({ ok: true })
 }

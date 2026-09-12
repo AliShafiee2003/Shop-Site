@@ -115,7 +115,9 @@ export async function GET(req: NextRequest) {
     return fail(locale, 'userinfo_failed')
   }
   if (!profile.sub || !profile.email) return fail(locale, 'userinfo_failed')
-  if (profile.email_verified === false) return fail(locale, 'unverified_email')
+  // SEC-010: only an EXPLICITLY verified address is accepted — a missing
+  // email_verified claim is treated as unverified, not verified.
+  if (profile.email_verified !== true) return fail(locale, 'unverified_email')
 
   const email = profile.email.toLowerCase().trim()
 

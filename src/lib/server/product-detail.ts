@@ -43,7 +43,7 @@ export async function getProductDetail(
     .filter((v) => v.isActive)
     .sort((a, b) => a.sortOrder - b.sortOrder || a.priceMinor - b.priceMinor)
     .map((v) => {
-      const priced = promoPriceFor(promo, v.priceMinor, p.id)
+      const priced = promoPriceFor(promo, v.priceMinor, p.id, p.fixedPrice)
       return {
       id: v.id,
       sku: v.sku,
@@ -98,58 +98,71 @@ export async function getProductDetail(
   }
   push(p.related.map((r) => r.relatedProduct))
 
-  if (related.length < 4 && (p.seriesSlug || p.series)) {
-    const sameSeries = await db.product.findMany({
-      where: {
-        status: 'PUBLISHED',
-        id: { not: p.id },
-        OR: [
-          ...(p.seriesSlug ? [{ seriesSlug: p.seriesSlug }] : []),
-          ...(p.series ? [{ series: p.series }] : []),
-        ],
-      },
-      include: productCardInclude,
-      take: 8,
-    })
-    push(sameSeries)
-  }
-  if (related.length < 4) {
-    const personIds = p.contributors.map((c) => c.personId)
-    if (personIds.length > 0) {
-      const byContributor = await db.product.findMany({
-        where: {
-          status: 'PUBLISHED',
-          id: { not: p.id },
-          contributors: { some: { personId: { in: personIds } } },
-        },
-        include: productCardInclude,
-        take: 8,
-      })
-      push(byContributor)
-    }
-  }
-  if (related.length < 4) {
-    const categoryIds = p.categories.map((pc) => pc.categoryId)
-    if (categoryIds.length > 0) {
-      const byCategory = await db.product.findMany({
-        where: {
-          status: 'PUBLISHED',
-          id: { not: p.id },
-          categories: { some: { categoryId: { in: categoryIds } } },
-        },
-        include: productCardInclude,
-        take: 8,
-      })
-      push(byCategory)
-    }
-  }
+  // PERF-002: the up-to-three fallback lookups used to run serially — a single
+  // Promise.all instead. Rows are pushed in the SAME priority order (series →
+  // contributors → categories) and push() dedupes + caps at 4, so the returned
+  // `related` content is identical to the old short-circuit behaviour.
+  const personIds = p.contributors.map((c) => c.personId)
+  const categoryIds = p.categories.map((pc) => pc.categoryId)
+  const [sameSeriesRows, byContributorRows, byCategoryRows] = await Promise.all([
+    p.seriesSlug || p.series
+      ? db.product.findMany({
+          where: {
+            status: 'PUBLISHED',
+            id: { not: p.id },
+            OR: [
+              ...(p.seriesSlug ? [{ seriesSlug: p.seriesSlug }] : []),
+              ...(p.series ? [{ series: p.series }] : []),
+            ],
+          },
+          include: productCardInclude,
+          take: 8,
+        })
+      : Promise.resolve([]),
+    personIds.length > 0
+      ? db.product.findMany({
+          where: {
+            status: 'PUBLISHED',
+            id: { not: p.id },
+            contributors: { some: { personId: { in: personIds } } },
+          },
+          include: productCardInclude,
+          take: 8,
+        })
+      : Promise.resolve([]),
+    categoryIds.length > 0
+      ? db.product.findMany({
+          where: {
+            status: 'PUBLISHED',
+            id: { not: p.id },
+            categories: { some: { categoryId: { in: categoryIds } } },
+          },
+          include: productCardInclude,
+          take: 8,
+        })
+      : Promise.resolve([]),
+  ])
+  push(sameSeriesRows)
+  push(byContributorRows)
+  push(byCategoryRows)
 
   // ── Reviews (approved only) ──
-  const allReviews = await db.review.findMany({
-    where: { productId: p.id, moderationState: 'APPROVED' },
-    orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { votes: true } } },
-  })
+  // PERF-002: the read is bounded to the 50 most recent approved reviews while
+  // a parallel aggregate keeps avg/count exact over ALL approved reviews. The
+  // UI renders at most 20 items (slice below), so nothing visible changes.
+  const [allReviews, reviewAgg] = await Promise.all([
+    db.review.findMany({
+      where: { productId: p.id, moderationState: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { _count: { select: { votes: true } } },
+    }),
+    db.review.aggregate({
+      where: { productId: p.id, moderationState: 'APPROVED' },
+      _count: { _all: true },
+      _avg: { rating: true },
+    }),
+  ])
   // Review sort parity with GET /api/products/[slug]: `helpful` orders by
   // votes (recency tie-break) before the top-20 slice; default is `recent`.
   const orderedReviews =
@@ -176,8 +189,8 @@ export async function getProductDetail(
         ).map((v) => v.reviewId),
       )
     : new Set<string>()
-  const avg = allReviews.length
-    ? Math.round((allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length) * 10) / 10
+  const avg = reviewAgg._avg.rating != null
+    ? Math.round(reviewAgg._avg.rating * 10) / 10
     : 0
 
   const card = toProductCard(p, locale, promo)
@@ -204,7 +217,7 @@ export async function getProductDetail(
     promoExcluded: isPromoExcluded(promo, p.id),
     reviews: {
       avg,
-      count: allReviews.length,
+      count: reviewAgg._count._all,
       topReviewId,
       items: orderedReviews.slice(0, 20).map((r) => ({
         id: r.id,

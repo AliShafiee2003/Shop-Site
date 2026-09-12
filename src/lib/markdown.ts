@@ -54,9 +54,14 @@ export function blocksToText(raw: string | null | undefined): string {
     return raw // plain text was stored as-is → keep it plain
   }
   if (!Array.isArray(parsed)) return raw
-  const lines: string[] = []
+  // Per-block line groups: lines INSIDE one block (list items, table rows) stay
+  // on adjacent rows — the parser consumes consecutive `- `/`N.`/pipe lines as
+  // a SINGLE block, so a blank line between them would split each item/row into
+  // its own paragraph (BUG-001). Different blocks keep the blank-line separator.
+  const groups: string[][] = []
   for (const b of parsed as MdBlock[]) {
     if (!b || typeof b !== 'object') continue
+    const lines: string[] = []
     switch (b.type) {
       case 'p':
         lines.push(b.text ?? '')
@@ -101,8 +106,9 @@ export function blocksToText(raw: string | null | undefined): string {
       default:
         break
     }
+    if (lines.length > 0) groups.push(lines)
   }
-  return lines.join('\n\n')
+  return groups.map((g) => g.join('\n')).filter((s) => s !== '').join('\n\n')
 }
 
 /** Editable markdown → ProseBlocks (inverse of blocksToText). */

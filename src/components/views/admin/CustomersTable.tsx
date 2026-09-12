@@ -63,6 +63,7 @@ function serverMessage(e: unknown): string {
 
 export function AdminCustomersTable() {
   const locale = useApp((s) => s.locale)
+  const viewer = useApp((s) => s.user)
   const { toast } = useToast()
   const fa = locale === 'fa'
 
@@ -115,6 +116,13 @@ export function AdminCustomersTable() {
     cancel: 'انصراف',
     memberSince: 'تاریخ عضویت',
     sortHint: (c: string) => `مرتب‌سازی بر اساس ${c}`,
+    // account actions (SEC-013)
+    account: 'حساب',
+    role: 'نقش',
+    block: 'مسدودسازی',
+    unblock: 'رفع مسدودی',
+    actionSaved: 'حساب به‌روزرسانی شد.',
+    actionError: 'عملیات ناموفق بود',
   }) : ({
     title: 'Customers',
     search: 'Search name or email…',
@@ -162,6 +170,13 @@ export function AdminCustomersTable() {
     cancel: 'Cancel',
     memberSince: 'Member since',
     sortHint: (c: string) => `Sort by ${c}`,
+    // account actions (SEC-013)
+    account: 'Account',
+    role: 'Role',
+    block: 'Block',
+    unblock: 'Unblock',
+    actionSaved: 'Account updated.',
+    actionError: 'Action failed',
   })
 
   const fmtNum = (n: number) => (fa ? faDigits(n) : String(n))
@@ -270,6 +285,33 @@ export function AdminCustomersTable() {
   }, [detailId])
 
   const noteDirty = detail !== null && note !== (detail.adminNote ?? '')
+
+  // ── Account actions (SEC-013): block/unblock (+ role change for OWNERs) ──
+  const [savingAction, setSavingAction] = useState(false)
+  const isOwner = viewer?.role === 'OWNER'
+  const ACCOUNT_ROLES = ['CUSTOMER', 'EDITOR', 'ORDER_SUPPORT'] as const
+
+  const runAccountAction = async (action?: 'BLOCK' | 'UNBLOCK', role?: string) => {
+    if (!detail || (!action && !role)) return
+    setSavingAction(true)
+    try {
+      await apiPatch<{ ok: boolean }>(`/api/admin/customers/${detail.id}`, {
+        ...(action ? { action } : {}),
+        ...(role ? { role } : {}),
+      })
+      if (action) {
+        const nextStatus = action === 'BLOCK' ? 'BLOCKED' : 'ACTIVE'
+        setDetail({ ...detail, status: nextStatus })
+        setRows((prev) => (prev ? prev.map((r) => (r.id === detail.id ? { ...r, status: nextStatus } : r)) : prev))
+      }
+      if (role) setDetail({ ...detail, role })
+      toast({ title: L.actionSaved })
+    } catch (e) {
+      toast({ title: L.actionError, description: serverMessage(e), variant: 'destructive' })
+    } finally {
+      setSavingAction(false)
+    }
+  }
 
   const saveNote = async () => {
     if (!detail || !noteDirty) return
@@ -507,6 +549,33 @@ export function AdminCustomersTable() {
                   </span>
                 </div>
               </DialogHeader>
+
+              {/* Account actions (SEC-013) — tiny inline row: role select (OWNER only) + block toggle */}
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-soft/40 p-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">{L.account}</span>
+                {isOwner && (
+                  <select
+                    value={detail.role}
+                    onChange={(e) => runAccountAction(undefined, e.target.value)}
+                    disabled={savingAction}
+                    aria-label={L.role}
+                    className="h-8 rounded-md border border-line bg-white px-2 text-xs text-ink-2"
+                  >
+                    {ACCOUNT_ROLES.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ms-auto h-8"
+                  onClick={() => runAccountAction(detail.status === 'BLOCKED' ? 'UNBLOCK' : 'BLOCK')}
+                  disabled={savingAction}
+                >
+                  {detail.status === 'BLOCKED' ? L.unblock : L.block}
+                </Button>
+              </div>
 
               {/* Stats cards */}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" role="group" aria-label={L.profile}>

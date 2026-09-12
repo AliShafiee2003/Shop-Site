@@ -9,6 +9,7 @@
 // password (Google-only accounts have no password to re-verify).
 import { db } from '@/lib/db'
 import { destroySession, getSessionUser, verifyPassword } from '@/lib/server/auth'
+import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, json } from '@/lib/server/utils'
 
 const ANON_PLACEHOLDER = JSON.stringify({
@@ -23,6 +24,10 @@ const ANON_PLACEHOLDER = JSON.stringify({
 export async function POST(req: Request) {
   const user = await getSessionUser()
   if (!user) return apiError(401, 'UNAUTHORIZED')
+
+  // PRIV-002: erasure is destructive and irreversible — throttle per user (3/hour).
+  const rl = rateLimit(`${user.id}:deletion-request`, 3, 60 * 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many requests. Please try again later.')
 
   // S11 re-auth: a stolen session cannot erase an account without the password.
   let password: string | undefined

@@ -127,7 +127,7 @@ export async function getCartPayload(): Promise<CartPayloadDTO> {
     const t = pickLocale(p.translations, 'en')
     const tFa = p.translations.find((x) => x.locale === 'fa')
     const stock = v.stock
-    const priced = promoPriceFor(promo, v.priceMinor, p.id)
+    const priced = promoPriceFor(promo, v.priceMinor, p.id, p.fixedPrice)
     return {
       id: row.id,
       variantId: v.id,

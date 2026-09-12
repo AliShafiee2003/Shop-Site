@@ -10,9 +10,14 @@ import type { NextConfig } from "next";
  * - Permissions-Policy: deny unused powerful features.
  * - CSP: same-origin default; inline scripts/styles stay allowed because the
  *   app bootstraps with an inline legacy-hash migration script, React inline
- *   styles and JSON-LD blocks. `unsafe-eval` is required by next dev (HMR)
- *   and kept for build parity; frame-ancestors is the operative guard here.
+ *   styles and JSON-LD blocks. `unsafe-eval` is required by next dev (HMR /
+ *   react-refresh) ONLY — production builds ship no dev runtime, so it is
+ *   dropped there (SEC-004); frame-ancestors is the operative guard here.
  */
+const isProd = process.env.NODE_ENV === "production";
+const scriptSrc = isProd
+  ? "script-src 'self' 'unsafe-inline'"
+  : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -25,7 +30,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
@@ -42,12 +47,20 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      // PERF-003: product/content images are content-static — immutable
+      // year-long caching. Applied alongside (not instead of) the global
+      // security headers below; the keys do not overlap, so both sets apply.
+      {
+        source: "/images/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      { source: "/:path*", headers: securityHeaders },
+    ];
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  reactStrictMode: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;

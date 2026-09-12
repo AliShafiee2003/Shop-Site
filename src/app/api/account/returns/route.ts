@@ -71,6 +71,18 @@ export async function POST(req: Request) {
     }
   }
 
+  // COM-006: block overlapping return requests — any item already claimed by one
+  // of the user's still-open requests (status enum: REQUESTED | APPROVED |
+  // RECEIVED | RESTOCKED are open; REJECTED / REFUNDED are terminal) rejects.
+  const openReturns = await db.returnRequest.findMany({
+    where: { orderId: order.id, userId: user.id, status: { notIn: ['REJECTED', 'REFUNDED'] } },
+    select: { items: { select: { orderItemId: true } } },
+  })
+  const claimedItemIds = new Set(openReturns.flatMap((r) => r.items.map((i) => i.orderItemId)))
+  if (items.some((i) => claimedItemIds.has(i.orderItemId))) {
+    return apiError(409, 'RETURN_ALREADY_REQUESTED', 'A return request for these items already exists')
+  }
+
   const returnRequest = await db.returnRequest.create({
     data: {
       orderId: order.id,

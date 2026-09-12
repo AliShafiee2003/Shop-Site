@@ -1,5 +1,5 @@
 /**
- * Simorgh Press — seed data
+ * Persepix — seed data
  * Realistic bilingual (EN/FA) publishing-house content per PRD §36.10 (no lorem ipsum).
  * Run: bun prisma/seed.ts
  *
@@ -39,9 +39,10 @@ type Block =
 const blocks = (b: Block[]) => JSON.stringify(b)
 
 async function main() {
-  console.log('Seeding Simorgh Press…')
-  // wipe (FK-safe order)
-  await (db as unknown as { deleteManyManySafe?: () => Promise<unknown> }).deleteManyManySafe?.()
+  console.log('Seeding Persepix…')
+  // wipe (FK-safe order). Each deleteMany is AWAITED — the un-awaited loop
+  // raced the creates below (BUG-003: creates could run against rows not yet
+  // deleted, and the process could exit before the queue drained).
   const tables = [
     'auditLog', 'consentRecord', 'ticketMessage', 'ticket', 'returnItem', 'returnRequest',
     'orderEvent', 'refund', 'paymentEvent', 'shipment', 'payment', 'orderItem', 'order',
@@ -51,7 +52,7 @@ async function main() {
     'variant', 'productTranslation', 'product', 'categoryTranslation', 'category',
     'personTranslation', 'person', 'legalDocument', 'address', 'session', 'savedPaymentMethod', 'settings', 'redirect', 'user',
   ] as const
-  for (const t of tables) (db as unknown as Record<string, { deleteMany: () => Promise<unknown> }>)[t].deleteMany()
+  for (const t of tables) await (db as unknown as Record<string, { deleteMany: () => Promise<unknown> }>)[t].deleteMany()
 
   // ── Settings ─────────────────────────────────────────────────────────
   await db.settings.createMany({
@@ -59,10 +60,10 @@ async function main() {
       {
         key: 'store',
         valueJson: JSON.stringify({
-          name: 'Simorgh Press',
-          nameFa: 'نشر سیمرغ',
-          legalName: 'Simorgh Press GmbH (placeholder — pending counsel review)',
-          email: 'hello@simorghpress.example',
+          name: 'Persepix',
+          nameFa: 'پرس‌پیکس',
+          legalName: 'Persepix GmbH (placeholder — pending counsel review)',
+          email: 'hello@persepix.example',
           phone: '+43 1 234 56 78',
           address: 'Praterstraße 12, 1020 Vienna, Austria',
           currency: 'EUR',
@@ -116,8 +117,8 @@ async function main() {
     const row = await db.category.create({ data: { slug: c.slug, icon: c.icon, color: c.color, sortOrder: i } })
     catIds[c.slug] = row.id
     await db.categoryTranslation.createMany({ data: [
-      { categoryId: row.id, locale: 'en', name: c.en, description: c.dEn, seoTitle: `${c.en} — Simorgh Press` },
-      { categoryId: row.id, locale: 'fa', name: c.fa, description: c.dFa, seoTitle: `${c.fa} — نشر سیمرغ` },
+      { categoryId: row.id, locale: 'en', name: c.en, description: c.dEn, seoTitle: `${c.en} — Persepix` },
+      { categoryId: row.id, locale: 'fa', name: c.fa, description: c.dFa, seoTitle: `${c.fa} — پرس‌پیکس` },
     ]})
   }
 
@@ -141,8 +142,8 @@ async function main() {
     const row = await db.person.create({ data: {
       slug: p.slug, status: 'PUBLISHED', portraitUrl: `/images/${p.img}.png`,
       birthYear: p.b, nationality: p.nat, profession: p.prof,
-      quoteEn: p.quoteEn, quoteFa: p.quoteFa, quoteSourceEn: 'From an interview with Simorgh Press',
-      quoteSourceFa: 'از گفت‌وگو با نشر سیمرغ',
+      quoteEn: p.quoteEn, quoteFa: p.quoteFa, quoteSourceEn: 'From an interview with Persepix',
+      quoteSourceFa: 'از گفت‌وگو با پرس‌پیکس',
       socialLinks: JSON.stringify([]),
     }})
     personIds[p.slug] = row.id
@@ -415,8 +416,8 @@ async function main() {
     }})
     productIds[p.slug] = row.id
     await db.productTranslation.createMany({ data: [
-      { productId: row.id, locale: 'en', title: p.en.title, subtitle: p.en.subtitle ?? null, shortDescription: p.en.short, longDescription: blocks(p.en.long), seoTitle: `${p.en.title} — Simorgh Press`, seoDesc: p.en.short.slice(0, 155), publishedState: 'READY' },
-      { productId: row.id, locale: 'fa', title: p.fa.title, subtitle: p.fa.subtitle ?? null, shortDescription: p.fa.short, longDescription: blocks(p.fa.long), seoTitle: `${p.fa.title} — نشر سیمرغ`, seoDesc: p.fa.short.slice(0, 155), publishedState: 'READY' },
+      { productId: row.id, locale: 'en', title: p.en.title, subtitle: p.en.subtitle ?? null, shortDescription: p.en.short, longDescription: blocks(p.en.long), seoTitle: `${p.en.title} — Persepix`, seoDesc: p.en.short.slice(0, 155), publishedState: 'READY' },
+      { productId: row.id, locale: 'fa', title: p.fa.title, subtitle: p.fa.subtitle ?? null, shortDescription: p.fa.short, longDescription: blocks(p.fa.long), seoTitle: `${p.fa.title} — پرس‌پیکس`, seoDesc: p.fa.short.slice(0, 155), publishedState: 'READY' },
     ]})
     for (let i = 0; i < p.variants.length; i++) {
       const v = p.variants[i]
@@ -492,7 +493,7 @@ async function main() {
   const articles = [
     {
       slug: 'why-translate', hero: 'article-translation', cat: 'translation', featured: true, days: 12,
-      byline: 'The Simorgh Press editors',
+      byline: 'The Persepix editors',
       en: {
         title: 'Why Translate? On Bringing Persian Stories to European Readers',
         excerpt: 'A short defence of the longest thing we do: carrying a book across a language border without dropping it.',
@@ -540,7 +541,7 @@ async function main() {
         body: blocks([
           { type: 'p', text: 'The Persian book cover has a long memory. Long before blurb economy and sales-rank typography, Iranian designers built covers that behaved like carpets: dense at the centre, calm at the edges, patient in their geometry.' },
           { type: 'h2', text: 'One idea per cover' },
-          { type: 'p', text: 'When we design a cover at Simorgh, we allow ourselves exactly one idea. The Cartographer of Silence is a contour map. Songs for a Burnt Bridge is a single brushstroke. If a second idea knocks, we note it for the spine.' },
+          { type: 'p', text: 'When we design a cover at Persepix, we allow ourselves exactly one idea. The Cartographer of Silence is a contour map. Songs for a Burnt Bridge is a single brushstroke. If a second idea knocks, we note it for the spine.' },
           { type: 'image', src: '/images/article-covers.png', alt: 'Cover proofs on the studio table', caption: 'Proofs for the autumn season, printed in-house on the plotter before sending to press.' },
           { type: 'h3', text: 'The colour of patience' },
           { type: 'p', text: 'Our house palette starts from a deep petrol blue — the colour of Tehran at 6 a.m. in November — and lets burnt orange arrive only when the text earns it. We print on uncoated stock so the paper, like the reader, keeps its dignity.' },
@@ -554,7 +555,7 @@ async function main() {
         body: blocks([
           { type: 'p', text: 'جلد کتاب ایرانی حافظه‌ای دراز دارد. سال‌ها پیش از اقتصادِ پشت‌جلد و تایپوگرافیِ رتبهٔ فروش، طراحان ایرانی جلدهایی می‌ساختند که مثل قالی رفتار می‌کردند: در مرکز پر، در حاشیه آرام، و در هندسه‌شان صبور.' },
           { type: 'h2', text: 'برای هر جلد، یک ایده' },
-          { type: 'p', text: 'وقتی در سیمرغ جلدی طراحی می‌کنیم، دقیقاً یک ایده به خودمان اجازه می‌دهیم. «نقشه‌کش سکوت» یک نقشهٔ تراز است. «ترانه‌هایی برای پل سوخته» یک قلم‌موی تنها. اگر ایدهٔ دومی در بزند، آن را برای عطف یادداشت می‌کنیم.' },
+          { type: 'p', text: 'وقتی در پرس‌پیکس جلدی طراحی می‌کنیم، دقیقاً یک ایده به خودمان اجازه می‌دهیم. «نقشه‌کش سکوت» یک نقشهٔ تراز است. «ترانه‌هایی برای پل سوخته» یک قلم‌موی تنها. اگر ایدهٔ دومی در بزند، آن را برای عطف یادداشت می‌کنیم.' },
           { type: 'image', src: '/images/article-covers.png', alt: 'نمونه‌های جلد روی میز استودیو', caption: 'نمونه‌های چاپ فصل پاییز، پیش از ارسال به چاپخانه.' },
           { type: 'h3', text: 'رنگ صبر' },
           { type: 'p', text: 'پالت خانه از آبی نفتی عمیق آغاز می‌شود — رنگ تهران ساعت شش صبح نوامبر — و نارنجی سوخته فقط وقتی می‌آید که متن لایقش باشد. روی کاغذ مات چاپ می‌کنیم تا کاغذ، مثل خواننده، وقارش را نگه دارد.' },
@@ -566,7 +567,7 @@ async function main() {
     },
     {
       slug: 'inside-the-print-shop', hero: 'article-printing', cat: 'craft', days: 40,
-      byline: 'The Simorgh Press editors',
+      byline: 'The Persepix editors',
       en: {
         title: 'Inside the Print Shop: How Our Books Are Made',
         excerpt: 'A photo essay from the presses outside Vienna, where our autumn titles were sewn, glued and trimmed.',
@@ -753,8 +754,8 @@ async function main() {
     { type: 'PRIVACY', en: ['Privacy Notice (Placeholder)', 'This is placeholder text for demonstration purposes. The final privacy notice must be reviewed and approved by qualified legal counsel before launch.\n\n## Data we process\nWe process the data needed to fulfil orders: contact details, addresses, order history, payment references, and technical logs.\n\n## Your rights\nYou can request access, correction, export and deletion of your personal data from your account privacy page.'], fa: ['بیانیهٔ حریم خصوصی (پیش‌نویس)', 'این متن صرفاً برای نمایش است. بیانیهٔ نهایی پیش از انتشار باید توسط مشاور حقوقی تأیید شود.\n\n## داده‌هایی که پردازش می‌کنیم\nبرای انجام سفارش‌ها به داده‌های تماس، نشانی، تاریخچهٔ سفارش و ارجاع پرداخت نیاز داریم.\n\n## حقوق شما\nمی‌توانید از صفحهٔ حریم خصوصی حساب، درخواست دسترسی، اصلاح، دریافت خروجی و حذف داده‌ها بدهید.'] },
     { type: 'TERMS', en: ['Terms of Sale (Placeholder)', 'Placeholder terms. Final wording requires counsel review.\n\n## Orders\nA contract is concluded when we confirm your order by email.\n\n## Prices\nAll prices include Austrian reduced VAT (10%) where applicable. Shipping is additional and shown at checkout.'], fa: ['شرایط فروش (پیش‌نویس)', 'متن نمونه. نسخهٔ نهایی نیازمند تأیید مشاور حقوقی است.\n\n## سفارش‌ها\nقرارداد هنگامی منعقد می‌شود که سفارش شما را با ایمیل تأیید کنیم.\n\n## قیمت‌ها\nهمهٔ قیمت‌ها شامل مالیات بر ارزش افزودهٔ کاهش‌یافتهٔ اتریش (۱۰٪) است. هزینهٔ ارسال جداگانه است و در مرحلهٔ پرداخت نمایش داده می‌شود.'] },
     { type: 'WITHDRAWAL', en: ['Right of Withdrawal (Placeholder)', 'Consumers in the EU may withdraw from a purchase within 14 days without giving a reason. The model withdrawal form will be provided here once reviewed by counsel.'], fa: ['حق انصراف (پیش‌نویس)', 'مصرف‌کنندگان در اتحادیهٔ اروپا می‌توانند تا ۱۴ روز بدون ذکر دلیل از خرید انصراف دهند. فرم نمونهٔ انصراف پس از بازبینی حقوقی اینجا قرار می‌گیرد.'] },
-    { type: 'IMPRINT', en: ['Imprint / Legal Notice (Placeholder)', 'Simorgh Press GmbH (placeholder)\nPraterstraße 12, 1020 Vienna, Austria\nContact: hello@simorghpress.example\nCompany registration and managing director details to be inserted before launch.'], fa: ['اطلاعات ناشر (پیش‌نویس)', 'نشر سیمرغ (نمونه)\nپراتراشتراسه ۱۲، ۱۰۲۰ وین، اتریش\nتماس: hello@simorghpress.example\nمشخصات ثبت شرکت و مدیر مسئول پیش از انتشار درج می‌شود.'] },
-    { type: 'ACCESSIBILITY', en: ['Accessibility Statement (Placeholder)', 'We aim to meet WCAG 2.2 AA across the storefront. If you encounter barriers, contact hello@simorghpress.example and we will provide the content in an accessible alternative.'], fa: ['بیانیهٔ دسترس‌پذیری (پیش‌نویس)', 'هدف ما رعایت سطح AA از WCAG 2.2 در سراسر فروشگاه است. اگر با موانعی روبه‌رو شدید، به hello@simorghpress.example اطلاع دهید تا محتوا را به شکلی در دسترس ارائه کنیم.'] },
+    { type: 'IMPRINT', en: ['Imprint / Legal Notice (Placeholder)', 'Persepix GmbH (placeholder)\nPraterstraße 12, 1020 Vienna, Austria\nContact: hello@persepix.example\nCompany registration and managing director details to be inserted before launch.'], fa: ['اطلاعات ناشر (پیش‌نویس)', 'پرس‌پیکس (نمونه)\nپراتراشتراسه ۱۲، ۱۰۲۰ وین، اتریش\nتماس: hello@persepix.example\nمشخصات ثبت شرکت و مدیر مسئول پیش از انتشار درج می‌شود.'] },
+    { type: 'ACCESSIBILITY', en: ['Accessibility Statement (Placeholder)', 'We aim to meet WCAG 2.2 AA across the storefront. If you encounter barriers, contact hello@persepix.example and we will provide the content in an accessible alternative.'], fa: ['بیانیهٔ دسترس‌پذیری (پیش‌نویس)', 'هدف ما رعایت سطح AA از WCAG 2.2 در سراسر فروشگاه است. اگر با موانعی روبه‌رو شدید، به hello@persepix.example اطلاع دهید تا محتوا را به شکلی در دسترس ارائه کنیم.'] },
     { type: 'COOKIES', en: ['Cookie Notice (Placeholder)', 'We use only essential cookies for cart and session. Analytics cookies, if enabled in future, will require prior opt-in consent.'], fa: ['اطلاعیهٔ کوکی (پیش‌نویس)', 'ما فقط از کوکی‌های ضروری برای سبد خرید و نشست استفاده می‌کنیم. کوکی‌های تحلیلی در صورت فعال شدن در آینده، نیازمند رضایت قبلی خواهند بود.'] },
   ]
   for (const l of legal) {

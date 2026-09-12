@@ -2,11 +2,13 @@
 // S13 residual: new local accounts start UNVERIFIED and receive a verification
 // mail (sandbox outbox). Best-effort: a mail failure never blocks signup.
 import { z } from 'zod'
+import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { createSession, hashPassword, publicUser } from '@/lib/server/auth'
 import { mergeGuestCartOnLogin } from '@/lib/server/cart'
 import { mintVerifyToken } from '@/lib/server/email-verification'
-import { apiError, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
+import { rateLimit } from '@/lib/server/rate-limit'
+import { apiError, clientIp, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
 
 const bodySchema = z.object({
   email: z.string().email(),
@@ -15,7 +17,13 @@ const bodySchema = z.object({
   locale: z.string().optional(),
 })
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // SEC-007: signup was the one auth flow without an IP throttle — cap account
+  // creation attempts (same 429 shape as login/forgot-password).
+  const ip = clientIp(req)
+  const rl = rateLimit(`${ip}:register`, 5, 15 * 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many attempts. Please try again later.')
+
   let body: unknown
   try {
     body = await req.json()
@@ -62,6 +70,8 @@ export async function POST(req: Request) {
     await db.mailMessage.create({
       data: { to: user.email, subject, kind: 'EMAIL_VERIFY', bodyText: mailBody, locale },
     })
+    // DEV ONLY: the token/link is exposed in the API response solely for
+    // sandbox testing — production never exposes tokens, regardless of env.
     if (process.env.DEV_EXPOSE_RESET_LINK === '1' && process.env.NODE_ENV !== 'production') {
       devVerifyUrl = `/verify-email?token=${token}`
     }

@@ -7,6 +7,7 @@ import { db } from '@/lib/db'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, clientIp, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
 import { getSessionUser } from '@/lib/server/auth'
+import { resolveConsent } from '@/lib/server/consent'
 
 const ALLOWED_TYPES = [
   'view_product',
@@ -43,6 +44,14 @@ export async function POST(req: NextRequest) {
   const { type, path, productSlug, valueMinor, sessionKey } = parsed.data
   const locale = normalizeLocale(parsed.data.locale)
 
+  // PRIV-001: the client gate is advisory — the server verifies consent. Read
+  // the visitor's verified decision (sp_consent_id cookie → CookieConsent row,
+  // fail-closed) and silently drop the event when the analytics category is
+  // not granted. No decision at all → also a no-op. The 200 answer is identical
+  // either way so the client never errors.
+  const consent = await resolveConsent()
+  if (!consent.decided || consent.categories.analytics !== true) return json({ ok: true })
+
   try {
     await db.analyticsEvent.create({
       data: {
@@ -60,7 +69,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Personalization signal (view) — fire-and-forget, never blocks the response.
-  if (type === 'view_product' && productSlug) {
+  // PRIV-001: taste signals are PERSONALIZATION data — written only when the
+  // verified decision granted that category (mirrors personalizationSubject()).
+  if (type === 'view_product' && productSlug && consent.categories.personalization) {
     try {
       const user = await getSessionUser()
       await db.tasteSignal.create({

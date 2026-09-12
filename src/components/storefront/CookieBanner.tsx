@@ -50,8 +50,12 @@ export function CookieBanner() {
     fetchAndAdoptConsent()
       .then((state) => {
         if (!on || !state.decided) return
-        try { window.localStorage.setItem('sp_consent_v1', '1') } catch { /* private mode */ }
-        setConsentAccepted(true)
+        // PRIV-001: the tracking flag derives from the CATEGORIES, not from
+        // the mere existence of a decision — a rejected decision must never
+        // enable analytics. Either localStorage value keeps the banner hidden.
+        const analyticsOk = state.categories?.analytics === true
+        try { window.localStorage.setItem('sp_consent_v1', analyticsOk ? '1' : '0') } catch { /* private mode */ }
+        setConsentAccepted(analyticsOk)
       })
       .catch(() => { /* API unreachable → banner follows localStorage only */ })
     return () => { on = false }

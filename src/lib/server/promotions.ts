@@ -57,13 +57,16 @@ export function isPromoExcluded(
 }
 
 /** Apply a promotion to a list price. FIXED promos apply per unit.
- *  Pass productId to honour per-product exclusions. */
+ *  Pass productId to honour per-product exclusions, and fixedPrice to exempt
+ *  Buchpreisbindung titles (COM-005: fixed-book-price products are NEVER
+ *  discounted by a sitewide promotion — legal requirement in AT/DE). */
 export function promoPriceFor(
   promo: ActivePromotion | null,
   listPriceMinor: number,
   productId?: string | null,
+  fixedPrice?: boolean | null,
 ): PromoPrice {
-  if (!promo || listPriceMinor <= 0 || isPromoExcluded(promo, productId)) {
+  if (!promo || listPriceMinor <= 0 || fixedPrice === true || isPromoExcluded(promo, productId)) {
     return { salePriceMinor: listPriceMinor, listPriceMinor: null }
   }
   const raw =

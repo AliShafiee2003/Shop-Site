@@ -32,10 +32,11 @@ export async function GET() {
       _count: { publisher: true },
       orderBy: { publisher: 'asc' },
     }),
-    // Only the two columns needed for the price domain.
+    // Only the columns needed for the price domain (fixedPrice → COM-005:
+    // Buchpreisbindung titles are exempt from the sitewide promotion).
     db.variant.findMany({
       where: variantWhere,
-      select: { priceMinor: true, productId: true },
+      select: { priceMinor: true, productId: true, product: { select: { fixedPrice: true } } },
     }),
   ])
 
@@ -52,8 +53,10 @@ export async function GET() {
 
   let effMin: number | null = null
   let effMax: number | null = null
+  const fixedByProduct = new Map<string, boolean>()
+  for (const v of variants) if (!fixedByProduct.has(v.productId)) fixedByProduct.set(v.productId, v.product.fixedPrice)
   for (const [productId, listPrice] of cheapestByProduct) {
-    const effective = promoPriceFor(promo, listPrice, productId).salePriceMinor
+    const effective = promoPriceFor(promo, listPrice, productId, fixedByProduct.get(productId) ?? false).salePriceMinor
     if (effMin == null || effective < effMin) effMin = effective
     if (effMax == null || effective > effMax) effMax = effective
   }

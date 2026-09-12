@@ -2,11 +2,16 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSessionUser } from '@/lib/server/auth'
+import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, parseJsonSafe } from '@/lib/server/utils'
 
 export async function POST() {
   const user = await getSessionUser()
   if (!user) return apiError(401, 'UNAUTHORIZED')
+
+  // PRIV-002: exports dump the whole account — throttle per user (3/hour).
+  const rl = rateLimit(`${user.id}:data-export`, 3, 60 * 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many requests. Please try again later.')
 
   const [addresses, orders, tickets, consents, reviews] = await Promise.all([
     db.address.findMany({ where: { userId: user.id } }),

@@ -572,7 +572,7 @@ const en = {
     title: 'Share', copy: 'Copy link', copied: 'Link copied', email: 'Email', x: 'Post on X',
   },
   promo: {
-    label: 'Promo code', placeholder: 'e.g. SIMORGH10', apply: 'Apply',
+    label: 'Promo code', placeholder: 'e.g. PERSEPIX10', apply: 'Apply',
     applied: 'Code {code} applied', invalid: 'This code is not valid.',
     minSubtotal: 'Your order does not meet the minimum for this code.',
     notEligible: 'This code does not apply to the items in your cart.',
@@ -1174,7 +1174,7 @@ const fa: Dict = {
     title: 'هم‌رسانی', copy: 'رونوشت پیوند', copied: 'پیوند رونوشت شد', email: 'ایمیل', x: 'انتشار در X',
   },
   promo: {
-    label: 'کد تخفیف', placeholder: 'مثلاً SIMORGH10', apply: 'اعمال',
+    label: 'کد تخفیف', placeholder: 'مثلاً PERSEPIX10', apply: 'اعمال',
     applied: 'کد {code} اعمال شد', invalid: 'این کد معتبر نیست.',
     minSubtotal: 'سفارش شما حداقل مقدار لازم برای این کد را ندارد.',
     notEligible: 'این کد به کالاهای سبد شما تعلق ندارد.',

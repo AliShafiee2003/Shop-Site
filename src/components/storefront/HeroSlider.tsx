@@ -54,6 +54,19 @@ export function HeroSlider({ slides, locale, heightPreset, autoplayMs: autoplayM
   const [index, setIndex] = useState(0) // real-slide index for dots/aria
   const [paused, setPaused] = useState(false)
   const [dragging, setDragging] = useState(false)
+  // A11Y (audit A11Y-001 residual): the CSS blocks (ken-burns, transitions)
+  // already respect prefers-reduced-motion, but the AUTOPLAY TIMER is JS —
+  // track it so it can be skipped below. SSR renders with `false` and the
+  // effect flips it right after hydration (no mismatch, no layout change —
+  // hover/drag/keyboard navigation keep working for everyone).
+  const [reduceMotion, setReduceMotion] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduceMotion(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
   const widthRef = useRef(1)
 
   const autoplayMs = Math.max(3000, autoplayMsProp ?? 5000)
@@ -161,15 +174,17 @@ export function HeroSlider({ slides, locale, heightPreset, autoplayMs: autoplayM
     return () => ro.disconnect()
   }, [applyPos])
 
-  // Autoplay — paused while dragging, hidden tab, hover/focus, manual pause.
+  // Autoplay — paused while dragging, hidden tab, hover/focus, manual pause,
+  // or when the visitor asks for reduced motion (A11Y-001: no motion that the
+  // user did not initiate — manual navigation is unaffected).
   useEffect(() => {
-    if (count <= 1 || paused || dragging) return
+    if (count <= 1 || paused || dragging || reduceMotion) return
     const timer = setInterval(() => {
       if (document.hidden) return
       step(1)
     }, autoplayMs)
     return () => clearInterval(timer)
-  }, [count, paused, dragging, autoplayMs, step])
+  }, [count, paused, dragging, autoplayMs, step, reduceMotion])
 
   useEffect(() => () => { if (reseatRef.current) window.clearTimeout(reseatRef.current) }, [])
 
