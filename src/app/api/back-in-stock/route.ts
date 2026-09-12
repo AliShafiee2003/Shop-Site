@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
+import { getSessionUser } from '@/lib/server/auth'
 import { apiError, clientIp, json, zodMessage } from '@/lib/server/utils'
 import { rateLimit } from '@/lib/server/rate-limit'
 
@@ -31,6 +32,15 @@ export async function POST(req: NextRequest) {
 
   const variant = await db.variant.findUnique({ where: { id: variantId }, select: { id: true, isActive: true } })
   if (!variant || !variant.isActive) return apiError(404, 'VARIANT_NOT_FOUND', 'Unknown edition')
+
+  // S13 residual parity with the review gate: a SIGNED-IN customer subscribing
+  // their own account address must have it verified — an unconfirmed inbox is
+  // a throwaway vector for notification spam. Guests and other addresses are
+  // unaffected (the double opt-in seam is the newsletter flow's job).
+  const user = await getSessionUser()
+  if (user && !user.emailVerifiedAt && user.email === email.toLowerCase().trim()) {
+    return apiError(403, 'EMAIL_NOT_VERIFIED', 'Verify your email address before subscribing for restock alerts.')
+  }
 
   await db.backInStockSubscriber.upsert({
     where: { variantId_email: { variantId, email: email.toLowerCase().trim() } },

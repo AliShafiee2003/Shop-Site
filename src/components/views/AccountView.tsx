@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X, BadgeCheck, MailWarning, AtSign, MailCheck, ShieldCheck } from 'lucide-react'
+import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X, BadgeCheck, MailWarning, AtSign, MailCheck, ShieldCheck, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,6 +15,7 @@ import { apiGet, apiPost, apiPatch, apiDelete, apiPut } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
 import { formatMoney, formatDate, formatDateTime, faDigits, compactOrderNumber } from '@/lib/format'
 import { Spinner, EmptyState, Breadcrumbs, Badge } from '@/components/storefront/bits'
+import { OrderStepper } from '@/components/storefront/OrderStepper'
 import { formatLabel } from '@/lib/bookLabels'
 import { useApp } from '@/store/store'
 import { useToast } from '@/hooks/use-toast'
@@ -44,29 +45,6 @@ function StatusBadge({ status, locale }: { status: string; locale: Locale }) {
   return <Badge tone={s.tone}>{locale === 'fa' ? s.fa : s.en}</Badge>
 }
 
-/** Canonical fulfillment stages shown in the customer timeline stepper. The
- *  timestamps are REAL OrderEvent rows written by the admin workbench — the
- *  stepper is pure rendering over backend state, never the reverse. */
-const TIMELINE_STAGES = ['PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'] as const
-
-function stageTimes(events: { type: string; message: string; createdAt: string }[]): Record<string, string> {
-  const ts: Record<string, string> = {}
-  const claim = (stage: string, at: string) => { if (!ts[stage]) ts[stage] = at }
-  for (const ev of events) {
-    if (ev.type === 'CREATED') claim('PENDING_PAYMENT', ev.createdAt)
-    else if (ev.type === 'PAID' || ev.type === 'STATUS_PAID') claim('PAID', ev.createdAt)
-    else if (ev.type === 'STATUS_PROCESSING') claim('PROCESSING', ev.createdAt)
-    else if (ev.type === 'SHIPPED' || ev.type === 'STATUS_SHIPPED') claim('SHIPPED', ev.createdAt)
-    else if (ev.type === 'STATUS_DELIVERED') claim('DELIVERED', ev.createdAt)
-    else if (ev.type === 'NOTE') {
-      // Legacy rows: parse "Status changed X → Y" written by older admin PATCHes.
-      const m = /Status changed [A-Z_]+ → ([A-Z_]+)/.exec(ev.message)
-      if (m && (TIMELINE_STAGES as readonly string[]).includes(m[1])) claim(m[1], ev.createdAt)
-    }
-  }
-  return ts
-}
-
 /** Fan-of-playing-cards cover stack (user: covers fanned like held cards —
  *  1 book = full cover; 2+ = the next ones peek out from behind, rotated). */
 function CoverFan({ covers, alt }: { covers: (string | null | undefined)[]; alt: string }) {
@@ -79,16 +57,16 @@ function CoverFan({ covers, alt }: { covers: (string | null | undefined)[]; alt:
   if (list.length <= 1) {
     return (
       <span className="relative block h-[4.25rem] w-12 shrink-0">
-        {list[0] ? <img src={list[0]} alt="" className="absolute inset-0 h-full w-full rounded-sm border border-line object-cover shadow-sm" /> : placeholder}
+        {list[0] ? <img src={list[0]} alt="" width={88} height={128} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full rounded-sm border border-line object-cover shadow-sm" /> : placeholder}
       </span>
     )
   }
   return (
     <span className="relative block h-[4.5rem] w-14 shrink-0" aria-hidden>
       {/* deepest card peeks the most */}
-      {list[2] && <img src={list[2]} alt="" className="absolute start-0 top-0 h-16 w-11 rotate-[11deg] translate-x-3 rounded-sm border border-line bg-white object-cover" />}
-      {list[1] && <img src={list[1]} alt="" className="absolute start-0 top-0 h-16 w-11 rotate-[6deg] translate-x-1.5 rounded-sm border border-line bg-white object-cover" />}
-      <img src={list[0]} alt={alt} className="absolute start-0 top-0 h-16 w-11 -rotate-[4deg] rounded-sm border border-line bg-white object-cover shadow-sm" />
+      {list[2] && <img src={list[2]} alt="" width={88} height={128} loading="lazy" decoding="async" className="absolute start-0 top-0 h-16 w-11 rotate-[11deg] translate-x-3 rounded-sm border border-line bg-white object-cover" />}
+      {list[1] && <img src={list[1]} alt="" width={88} height={128} loading="lazy" decoding="async" className="absolute start-0 top-0 h-16 w-11 rotate-[6deg] translate-x-1.5 rounded-sm border border-line bg-white object-cover" />}
+      <img src={list[0]} alt={alt} width={88} height={128} loading="lazy" decoding="async" className="absolute start-0 top-0 h-16 w-11 -rotate-[4deg] rounded-sm border border-line bg-white object-cover shadow-sm transition-transform duration-300 group-hover:-rotate-[7deg]" />
     </span>
   )
 }
@@ -368,7 +346,7 @@ function Orders({ locale }: { locale: Locale }) {
           const moreCount = Math.max(0, o.itemCount - 1)
           return (
             <li key={o.orderNumber}>
-              <button type="button" onClick={() => navigate(`/account/orders/${o.orderNumber}`)} className="flex w-full items-center gap-4 px-4 py-4 text-start transition-colors hover:bg-soft">
+              <button type="button" onClick={() => navigate(`/account/orders/${o.orderNumber}`)} className="group flex w-full items-center gap-4 px-4 py-4 text-start transition-colors hover:bg-soft">
                 {/* fanned cover stack — 1 book full, extras peek from behind */}
                 <CoverFan covers={o.covers?.length ? o.covers : [o.firstCoverUrl]} alt={firstTitle ?? o.orderNumber} />
                 <span className="min-w-0 flex-1">
@@ -381,6 +359,7 @@ function Orders({ locale }: { locale: Locale }) {
                 </span>
                 <StatusBadge status={o.status} locale={locale} />
                 <span className="w-20 text-end text-sm font-semibold text-ink bdi">{formatMoney(o.totalMinor, locale)}</span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-ink-3/40 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-brand rtl:rotate-180" aria-hidden />
               </button>
             </li>
           )
@@ -401,19 +380,34 @@ function OrderDetail({ locale, orderNumber }: { locale: Locale; orderNumber: str
   const t = getDict(locale)
   const isFa = locale === 'fa'
   const { toast } = useToast()
+  // null = still loading; 'missing' = the API said NOT_FOUND (foreign order,
+  // typo'd number, or the caller's own cancelled-then-purged row) — an eternal
+  // spinner was the old behavior and read as a hang.
   const [order, setOrder] = useState<OrderFullDTO | null>(null)
+  const [missing, setMissing] = useState(false)
   const [returnOpen, setReturnOpen] = useState(false)
   const [returnReason, setReturnReason] = useState('')
   const [returnDetails, setReturnDetails] = useState('')
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => {
-    apiGet<{ order: OrderFullDTO }>(`/api/account/orders/${orderNumber}`).then((r) => setOrder(r.order)).catch(() => setOrder(null))
+    apiGet<{ order: OrderFullDTO }>(`/api/account/orders/${orderNumber}`)
+      .then((r) => { setOrder(r.order); setMissing(false) })
+      .catch(() => { setOrder(null); setMissing(true) })
   }, [orderNumber])
 
   useEffect(() => { load() }, [load])
 
-  if (!order) return <Spinner label={t.common.loading} />
+  if (!order) {
+    return missing ? (
+      <EmptyState
+        title={isFa ? 'سفارش پیدا نشد' : 'Order not found'}
+        action={<Button variant="outline" onClick={() => navigate('/account/orders')}>{t.account.orders}</Button>}
+      />
+    ) : (
+      <Spinner label={t.common.loading} />
+    )
+  }
   const addr = order.shippingAddress
 
   const requestReturn = async () => {
@@ -505,7 +499,14 @@ function OrderDetail({ locale, orderNumber }: { locale: Locale; orderNumber: str
           return (
             <li key={i} className="flex items-center gap-4 px-4 py-3.5">
               { }
-              <img src={item.coverUrl ?? ''} alt="" className="h-16 w-11 rounded-sm border border-line object-cover" />
+              {item.coverUrl ? (
+                <img src={item.coverUrl} alt="" width={88} height={128} loading="lazy" decoding="async" className="h-16 w-11 shrink-0 rounded-sm border border-line object-cover" />
+              ) : (
+                // Empty src would make the browser re-fetch the page — placeholder box instead.
+                <span className="flex h-16 w-11 shrink-0 items-center justify-center rounded-sm border border-line bg-soft text-ink-3" aria-hidden>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 19.5V5a2 2 0 0 1 2-2h9l5 5v11.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5Z" /><path d="M15 3v5h5" /></svg>
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-ink">{title}</p>
                 {authors.length > 0 && <p className="text-xs text-ink-2">{authors.join(' · ')}</p>}
@@ -567,73 +568,36 @@ function OrderDetail({ locale, orderNumber }: { locale: Locale; orderNumber: str
         </div>
       )}
 
-      {order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
-        <div className="mt-6 rounded-lg border border-line p-4">
-          <h3 className="mb-4 text-sm font-semibold text-ink">{t.account.timeline}</h3>
-          {/* Backend-driven stepper: each stage lights up only when an
-              OrderEvent row exists (written by the admin workbench on every
-              approval step) — this is real state, not visual sugar. */}
-          <ol className="relative space-y-4 ps-1">
-            {TIMELINE_STAGES.map((stage, i) => {
-              const times = stageTimes(order.events ?? [])
-              const at = times[stage]
-              const done = Boolean(at)
-              const stageIdx = TIMELINE_STAGES.indexOf((order.status as typeof TIMELINE_STAGES[number]))
-              const current = !done && i === (stageIdx === -1 ? 0 : stageIdx)
-              const label = {
-                PENDING_PAYMENT: t.account.stagePendingPayment,
-                PAID: t.account.stagePaid,
-                PROCESSING: t.account.stageProcessing,
-                SHIPPED: t.account.stageShipped,
-                DELIVERED: t.account.stageDelivered,
-              }[stage]
-              return (
-                <li key={stage} className="relative flex gap-3 ps-6">
-                  {i < TIMELINE_STAGES.length - 1 && (
-                    <span aria-hidden className={cn('absolute start-[7px] top-4 h-[calc(100%-0.25rem)] w-px', done ? 'bg-brand/40' : 'bg-line')} />
-                  )}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      'absolute start-0 top-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2',
-                      done ? 'border-brand bg-brand text-white' : current ? 'border-brand bg-white' : 'border-line bg-white',
-                    )}
-                  >
-                    {done ? (
-                      <svg viewBox="0 0 24 24" className="h-2.5 w-2.5" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                    ) : current ? <span className="h-1.5 w-1.5 rounded-full bg-brand" /> : null}
-                  </span>
-                  <div className="min-w-0">
-                    <p className={cn('text-sm', done ? 'font-semibold text-ink' : current ? 'font-medium text-brand' : 'text-ink-3')}>
-                      {label}
-                      {current && <span className="ms-2 rounded-full bg-brand-soft px-1.5 py-px text-[10px] font-bold text-brand">{isFa ? 'اکنون' : 'Now'}</span>}
-                    </p>
-                    {at && <p className="text-xs text-ink-3">{formatDateTime(at, locale)}</p>}
-                  </div>
-                </li>
-              )
-            })}
-          </ol>
-          {(order.events ?? []).filter((ev) => ev.type !== 'CREATED' && !ev.type.startsWith('STATUS_') && !['PAID', 'SHIPPED'].includes(ev.type) && !/Status changed/.test(ev.message)).length > 0 && (
-            <div className="mt-4 border-t border-line pt-3">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">{isFa ? 'یادداشت‌ها' : 'Updates'}</p>
-              <ul className="space-y-1.5">
-                {(order.events ?? [])
-                  .filter((ev) => ev.type !== 'CREATED' && !ev.type.startsWith('STATUS_') && !['PAID', 'SHIPPED'].includes(ev.type) && !/Status changed/.test(ev.message))
-                  .map((ev, i) => (
-                    <li key={i} className="flex gap-2 text-xs text-ink-2">
-                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-3/50" aria-hidden />
-                      <span>
-                        {ev.message}
-                        <span className="ms-1.5 text-ink-3">· {formatDateTime(ev.createdAt, locale)}</span>
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+      {/* Lifecycle stepper — the SAME shared component /track uses, fed by the
+          SAME derived timeline (real OrderEvent rows parsed server-side).
+          Terminal states (CANCELLED/REFUNDED) render a muted banner instead. */}
+      <div className="mt-6 rounded-lg border border-line p-4">
+        <OrderStepper
+          status={order.status}
+          timeline={order.timeline}
+          createdAt={order.createdAt}
+          eta={order.shipment?.estimatedDeliveryAt ?? null}
+          locale={locale}
+        />
+        {(order.events ?? []).filter((ev) => ev.type !== 'CREATED' && !ev.type.startsWith('STATUS_') && !['PAID', 'SHIPPED'].includes(ev.type) && !/Status changed/.test(ev.message)).length > 0 && (
+          <div className="mt-4 border-t border-line pt-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">{isFa ? 'یادداشت‌ها' : 'Updates'}</p>
+            <ul className="space-y-1.5">
+              {(order.events ?? [])
+                .filter((ev) => ev.type !== 'CREATED' && !ev.type.startsWith('STATUS_') && !['PAID', 'SHIPPED'].includes(ev.type) && !/Status changed/.test(ev.message))
+                .map((ev, i) => (
+                  <li key={i} className="flex gap-2 text-xs text-ink-2">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-3/50" aria-hidden />
+                    <span>
+                      {ev.message}
+                      <span className="ms-1.5 text-ink-3">· {formatDateTime(ev.createdAt, locale)}</span>
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

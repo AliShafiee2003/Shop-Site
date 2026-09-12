@@ -58,6 +58,9 @@ export interface ReviewDTO {
   createdAt: string
   isVerifiedPurchase: boolean
   locale: string
+  /** Helpfulness votes (signed-in toggle): fresh count + whether the viewer voted. */
+  helpfulCount?: number
+  voted?: boolean
 }
 
 export interface ProductDetail extends ProductCard {
@@ -326,6 +329,9 @@ export interface OrderFullDTO {
   payment?: { brand?: string | null; last4?: string | null; status: string } | null
   shipment?: { carrier: string; trackingNumber?: string | null; trackingUrl?: string | null; status: string; shippedAt?: string | null; estimatedDeliveryAt?: string | null } | null
   events?: { type: string; message: string; createdAt: string }[]
+  /** Derived canonical fulfillment stages ({stage, at}[] from real OrderEvents)
+   *  — same shape /track serves; rendered by the shared OrderStepper. */
+  timeline?: { stage: string; at: string }[]
   returns?: { id: string; status: string; reason: string; createdAt: string; items: { quantity: number }[] }[]
 }
 export interface AddressSnapshot {

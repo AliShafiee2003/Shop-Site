@@ -78,6 +78,7 @@ const en = {
     reviewsTitle: 'Reviews', writeReview: 'Write a review', yourRating: 'Your rating',
     reviewName: 'Display name', reviewTitle: 'Title', reviewBody: 'Your review',
     submitReview: 'Submit review', reviewPending: 'Thanks! Your review is awaiting moderation.', reviewVerifyNeeded: 'Please verify your email address before reviewing — check your inbox, or resend the link from your account.',
+    helpful: 'Helpful', helpfulSignIn: 'Sign in to mark reviews as helpful.', helpfulSelf: 'You can’t vote on your own review.',
     reviewLogin: 'Reviews are published after moderation.', related: 'You may also like',
     specs: 'Details', contributors: 'Contributors', aboutAuthor: 'About the author',
     viewProfile: 'View profile', selectFormat: 'Choose your edition',
@@ -549,6 +550,7 @@ const en = {
     submitting: 'Submitting…',
     success: 'You’re on the list — we’ll email you the moment it’s back.',
     hint: 'One email when this edition is back in stock. No marketing.',
+    verifyNeeded: 'Please verify your email address first — check your inbox, or resend the link from your account.',
   },
   errors: { notFound: 'Page not found', notFoundBody: 'The page you are looking for does not exist or has moved.', goHome: 'Back to home' },
 }
@@ -631,6 +633,7 @@ const fa: Dict = {
     reviewsTitle: 'نظرها', writeReview: 'نوشتن نظر', yourRating: 'امتیاز شما',
     reviewName: 'نام نمایشی', reviewTitle: 'عنوان', reviewBody: 'نظر شما',
     submitReview: 'ثبت نظر', reviewPending: 'سپاس! نظر شما در انتظار تأیید است.', reviewVerifyNeeded: 'برای ثبت نظر، ابتدا نشانی ایمیل‌تان را تأیید کنید — صندوق ورودی را ببینید یا از حساب خود پیوند تازه بفرستید.',
+    helpful: 'مفید بود', helpfulSignIn: 'برای علامت‌گذاری «مفید بود» وارد حساب خود شوید.', helpfulSelf: 'نمی‌توانید به نظر خودتان رای دهید.',
     reviewLogin: 'نظرها پس از تأیید منتشر می‌شوند.', related: 'شاید بپسندید',
     specs: 'مشخصات', contributors: 'همکاران', aboutAuthor: 'دربارهٔ نویسنده',
     viewProfile: 'مشاهدهٔ پروفایل', selectFormat: 'انتخاب نسخه',
@@ -1102,6 +1105,7 @@ const fa: Dict = {
     submitting: 'در حال ثبت…',
     success: 'در فهرست قرار گرفتید — به محض موجود شدن ایمیلتان می‌کنیم.',
     hint: 'هنگام موجود شدن این نسخه فقط یک ایمیل می‌گیرید. بدون تبلیغ.',
+    verifyNeeded: 'ابتدا نشانی ایمیل‌تان را تأیید کنید — صندوق ورودی را ببینید یا از حساب خود پیوند تازه بفرستید.',
   },
   errors: { notFound: 'صفحه پیدا نشد', notFoundBody: 'صفحه‌ای که دنبالش هستید وجود ندارد یا جابه‌جا شده است.', goHome: 'بازگشت به خانه' },
 }

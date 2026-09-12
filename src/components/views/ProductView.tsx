@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Star, Truck, RotateCcw, ShieldCheck, ZoomIn, BadgeCheck, Heart, Share2, Link2, Check, Tag, BellRing, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Star, Truck, RotateCcw, ShieldCheck, ZoomIn, BadgeCheck, Heart, Share2, Link2, Check, Tag, BellRing, ChevronLeft, ChevronRight, ThumbsUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { navigate, useRoute } from '@/lib/router'
 import { apiGet, apiPost, normalizeCart } from '@/lib/api'
@@ -81,6 +81,35 @@ export function ProductView({ slug }: { slug: string }) {
   const [bisEmail, setBisEmail] = useState('')
   const [bisBusy, setBisBusy] = useState(false)
   const [bisDone, setBisDone] = useState(false)
+  /** Helpfulness votes — local overlay over the SSR/fetched DTO so a toggle
+   *  updates instantly (optimistic) and is corrected by the API response. */
+  const [votes, setVotes] = useState<Record<string, { helpfulCount: number; voted: boolean }>>({})
+  const [voteBusy, setVoteBusy] = useState<string | null>(null)
+
+  const voteState = (r: ReviewWithReply) => votes[r.id] ?? { helpfulCount: r.helpfulCount ?? 0, voted: Boolean(r.voted) }
+
+  const toggleHelpful = async (r: ReviewWithReply) => {
+    if (!user) {
+      // Guests get a pointer to sign in — votes must be attributable to keep
+      // the signal spam-safe (same policy as review submission).
+      toast({ title: t.product.helpfulSignIn, duration: 5000 })
+      return
+    }
+    if (voteBusy === r.id) return
+    const cur = voteState(r)
+    setVoteBusy(r.id)
+    setVotes((m) => ({ ...m, [r.id]: { helpfulCount: Math.max(0, cur.helpfulCount + (cur.voted ? -1 : 1)), voted: !cur.voted } }))
+    try {
+      const res = await apiPost<{ helpfulCount: number; voted: boolean }>(`/api/reviews/${r.id}/helpful`, {})
+      setVotes((m) => ({ ...m, [r.id]: res }))
+    } catch (err) {
+      setVotes((m) => ({ ...m, [r.id]: cur }))
+      const code = (err as { code?: string }).code
+      if (code === 'SELF_VOTE') toast({ title: t.product.helpfulSelf, variant: 'destructive' })
+      else if (code === 'UNAUTHORIZED') toast({ title: t.product.helpfulSignIn, duration: 5000 })
+      else toast({ title: t.common.error, variant: 'destructive' })
+    } finally { setVoteBusy(null) }
+  }
 
   useEffect(() => {
     let alive = true
@@ -184,8 +213,15 @@ export function ProductView({ slug }: { slug: string }) {
     try {
       await apiPost('/api/back-in-stock', { variantId: variant.id, email: bisEmail.trim(), locale })
       setBisDone(true)
-    } catch {
-      toast({ title: t.common.error, variant: 'destructive' })
+    } catch (err) {
+      const code = (err as { code?: string }).code
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        // The signed-in account owns this (unverified) address — point at the
+        // account verification banner, same guidance as the review gate.
+        toast({ title: t.bis.verifyNeeded, variant: 'destructive', duration: 6000 })
+      } else {
+        toast({ title: t.common.error, variant: 'destructive' })
+      }
     } finally { setBisBusy(false) }
   }
 
@@ -628,7 +664,27 @@ export function ProductView({ slug }: { slug: string }) {
                   )}
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-2">{r.body}</p>
-                <p className="mt-2 text-xs text-ink-3">{r.authorName ?? (isFa ? 'خوانندهٔ پرس‌پیکس' : 'Persepix reader')} · {formatDate(r.createdAt, locale)}</p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs text-ink-3">{r.authorName ?? (isFa ? 'خوانندهٔ پرس‌پیکس' : 'Persepix reader')} · {formatDate(r.createdAt, locale)}</p>
+                  {(() => {
+                    const v = voteState(r)
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => toggleHelpful(r)}
+                        aria-pressed={v.voted}
+                        aria-label={`${t.product.helpful}${v.helpfulCount > 0 ? ` (${isFa ? faDigits(String(v.helpfulCount)) : v.helpfulCount})` : ''}`}
+                        disabled={voteBusy === r.id}
+                        className={cn('inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition-colors disabled:opacity-60',
+                          v.voted ? 'border-brand/40 bg-brand-soft text-brand' : 'border-line text-ink-3 hover:border-brand/40 hover:text-brand')}
+                      >
+                        <ThumbsUp className={cn('h-3.5 w-3.5', v.voted && 'fill-current')} aria-hidden />
+                        {t.product.helpful}
+                        {v.helpfulCount > 0 && <span className="bdi">({isFa ? faDigits(String(v.helpfulCount)) : v.helpfulCount})</span>}
+                      </button>
+                    )
+                  })()}
+                </div>
                 {/* Press response — visually nested under the review it answers. */}
                 {r.reply ? (
                   <div className="mt-3 ms-3 rounded-e-md border-s-2 border-brand/30 bg-soft/60 px-4 py-3" role="note" aria-label={isFa ? 'پاسخ پرس‌پیکس' : 'Response from Persepix'}>

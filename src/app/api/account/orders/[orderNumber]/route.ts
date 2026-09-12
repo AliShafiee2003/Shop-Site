@@ -1,9 +1,12 @@
 // GET /api/account/orders/[orderNumber] — full order detail with ownership check.
 // Items carry resolved author names (title+author is what a customer needs —
-// raw book IDs/SKUs are not human information) and the raw timeline events
-// that the customer stepper renders.
+// raw book IDs/SKUs are not human information), the raw timeline events the
+// "Updates" list renders, and the derived canonical `timeline` (same
+// {stage, at}[] shape as the guest /track endpoint) that the shared
+// OrderStepper component consumes.
 import { db } from '@/lib/db'
 import { getSessionUser } from '@/lib/server/auth'
+import { getPublicOrderTimeline } from '@/lib/server/order-timeline'
 import { apiError, json, parseJsonSafe } from '@/lib/server/utils'
 
 export async function GET(_req: Request, ctx: { params: Promise<{ orderNumber: string }> }) {
@@ -27,6 +30,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ orderNumber: s
 
   const payment = order.payments[0] ?? null
   const shipment = order.shipments[0] ?? null
+  // Derived canonical stages (PENDING_PAYMENT→DELIVERED with real timestamps)
+  // — ONE source of truth shared with /track; the client stepper never parses
+  // event strings itself.
+  const timeline = await getPublicOrderTimeline(order.id)
 
   // Resolve authors for every item in ONE query: orderItem.variantId →
   // variant.product.contributors (AUTHOR role) → person bilingual names.
@@ -126,6 +133,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ orderNumber: s
         message: e.message,
         createdAt: e.createdAt.toISOString(),
       })),
+      timeline,
       returns: order.returns.map((r) => ({
         id: r.id,
         status: r.status,

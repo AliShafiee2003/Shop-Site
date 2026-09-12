@@ -8,6 +8,7 @@ import {
 } from '@/lib/server/catalog'
 import { getActivePromotion, promoPriceFor, promoBadgeLabel, isPromoExcluded } from '@/lib/server/promotions'
 import { apiError, json, normalizeLocale, parseJsonSafe, pickLocale } from '@/lib/server/utils'
+import { getSessionUser } from '@/lib/server/auth'
 
 export async function GET(req: Request, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params
@@ -145,7 +146,21 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   const allReviews = await db.review.findMany({
     where: { productId: p.id, moderationState: 'APPROVED' },
     orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { votes: true } } },
   })
+  // Helpfulness votes: fresh counts come from the include; `voted` is only
+  // resolved when a session exists (guests get the button in signed-out mode).
+  const viewer = await getSessionUser()
+  const votedIds = viewer
+    ? new Set(
+        (
+          await db.reviewVote.findMany({
+            where: { userId: viewer.id, reviewId: { in: allReviews.map((r) => r.id) } },
+            select: { reviewId: true },
+          })
+        ).map((v) => v.reviewId),
+      )
+    : new Set<string>()
   const avg = allReviews.length
     ? Math.round((allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length) * 10) / 10
     : 0
@@ -182,6 +197,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
         createdAt: r.createdAt.toISOString(),
         isVerifiedPurchase: r.isVerifiedPurchase,
         locale: r.locale,
+        // Helpfulness votes (toggleable by signed-in customers).
+        helpfulCount: r._count.votes,
+        voted: votedIds.has(r.id),
         // Press response (public, shown under the review when present).
         reply: r.reply,
         repliedAt: r.repliedAt ? r.repliedAt.toISOString() : null,

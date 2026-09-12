@@ -40,6 +40,7 @@ model User {
   resetTokens         PasswordResetToken[]
   emailVerifyTokens   EmailVerificationToken[]
   emailChangeTokens   EmailChangeToken[]
+  reviewVotes         ReviewVote[]
 }
 
 model Session {
@@ -665,8 +666,23 @@ model Review {
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id])
+  votes   ReviewVote[]
 
   @@index([productId, moderationState])
+}
+
+/// Helpfulness votes on customer reviews (one per user per review, toggleable).
+model ReviewVote {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([userId])
 }
 
 model Ticket {

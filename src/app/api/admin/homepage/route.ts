@@ -43,7 +43,10 @@ const putSchema = z.object({
   sections: z
     .array(
       z.object({
-        type: z.enum(['HERO', 'PRODUCT_SHELF', 'POSTER_GRID', 'EDITORIAL_FEATURE', 'CATEGORY_CAROUSEL', 'FOR_YOU', 'RECENTLY_VIEWED', 'ARTICLES', 'SCROLL_STORY']),
+        // SERIES (round 4) is admin-placeable — the palette offers it, so the
+        // validator must accept it too (click-test found this enum missing it,
+        // which made every publish containing a SERIES row a VALIDATION_ERROR).
+        type: z.enum(['HERO', 'PRODUCT_SHELF', 'POSTER_GRID', 'EDITORIAL_FEATURE', 'CATEGORY_CAROUSEL', 'FOR_YOU', 'RECENTLY_VIEWED', 'ARTICLES', 'SCROLL_STORY', 'SERIES']),
         sortOrder: z.number().int().min(0),
         enabled: z.boolean().default(true),
         settings: z.record(z.string(), z.unknown()),

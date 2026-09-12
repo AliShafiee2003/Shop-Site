@@ -9,6 +9,7 @@ import {
 } from '@/lib/server/catalog'
 import { getActivePromotion, promoPriceFor, promoBadgeLabel, isPromoExcluded } from '@/lib/server/promotions'
 import { parseJsonSafe, pickLocale } from '@/lib/server/utils'
+import { getSessionUser } from '@/lib/server/auth'
 import type { Locale } from '@/lib/types'
 
 export async function getProductDetail(slug: string, locale: Locale) {
@@ -143,7 +144,23 @@ export async function getProductDetail(slug: string, locale: Locale) {
   const allReviews = await db.review.findMany({
     where: { productId: p.id, moderationState: 'APPROVED' },
     orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { votes: true } } },
   })
+  // Helpfulness votes for the viewer — best-effort: getSessionUser needs the
+  // cookie jar, which every caller (RSC + route) provides.
+  const viewer = await getSessionUser().catch(() => null)
+  const votedIds = viewer
+    ? new Set(
+        (
+          await db.reviewVote
+            .findMany({
+              where: { userId: viewer.id, reviewId: { in: allReviews.map((r) => r.id) } },
+              select: { reviewId: true },
+            })
+            .catch(() => [])
+        ).map((v) => v.reviewId),
+      )
+    : new Set<string>()
   const avg = allReviews.length
     ? Math.round((allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length) * 10) / 10
     : 0
@@ -182,6 +199,9 @@ export async function getProductDetail(slug: string, locale: Locale) {
         createdAt: r.createdAt.toISOString(),
         isVerifiedPurchase: r.isVerifiedPurchase,
         locale: r.locale,
+        // Helpfulness votes (toggleable by signed-in customers).
+        helpfulCount: r._count.votes,
+        voted: votedIds.has(r.id),
       })),
     },
     safetyNote: p.safetyNote,
