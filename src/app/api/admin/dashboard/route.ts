@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json, pickLocale } from '@/lib/server/utils'
 import { getActivePromotion, promoBadgeLabel } from '@/lib/server/promotions'
+import { isMailProviderConfigured } from '@/lib/server/mail-dispatch'
 
 export async function GET() {
   const user = await requireAdmin()
@@ -34,6 +35,8 @@ export async function GET() {
     giftWrapStats,
     archivedHomepageVersions,
     lastHomepagePublish,
+    queuedMails,
+    queuedDigests,
   ] = await Promise.all([
     db.order.count({ where: { createdAt: { gte: d7 } } }),
     db.order.aggregate({
@@ -86,6 +89,10 @@ export async function GET() {
       orderBy: { publishedAt: 'desc' },
       select: { publishedAt: true },
     }),
+    // R11: dispatch status for the dashboard card (parity with the Marketing
+    // panel's dispatch bar) — total unsent mails + the reports digest share.
+    db.mailMessage.count({ where: { sentAt: null } }),
+    db.mailMessage.count({ where: { sentAt: null, kind: 'SALES_DIGEST' } }),
   ])
 
   // Top products by units in the last 30 days (grouped in JS — SQLite).
@@ -139,6 +146,11 @@ export async function GET() {
     homepageRestore: {
       archived: archivedHomepageVersions,
       lastPublishedAt: lastHomepagePublish?.publishedAt?.toISOString() ?? null,
+    },
+    mailQueue: {
+      queued: queuedMails,
+      queuedDigests: queuedDigests,
+      providerConfigured: isMailProviderConfigured(),
     },
     promoImpact: {
       orders: promoOrdersCount,

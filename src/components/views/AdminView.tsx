@@ -38,6 +38,7 @@ interface DashData {
   promoImpact?: { orders: number; paidOrders: number; savedMinor: number; revenueMinor: number; perPromo: { name: string; orders: number; savedMinor: number; revenueMinor: number }[] }
   giftWrap?: { orders: number; paidOrders: number; feesMinor: number; revenueMinor: number }
   homepageRestore?: { archived: number; lastPublishedAt: string | null }
+  mailQueue?: { queued: number; queuedDigests: number; providerConfigured: boolean }
 }
 
 // S10 RBAC matrix — `content: true` sections are OWNER/EDITOR only (mirrors
@@ -202,6 +203,7 @@ function AdminDashboard() {
           <PromoImpactCard data={data} />
           <GiftWrapCard data={data} />
           <RestorePointsCard data={data} />
+          <MailDispatchCard data={data} />
           <section className="rounded-lg border border-line" aria-label={t.admin.topProducts}>
             <h2 className="border-b border-line px-4 py-3 text-sm font-semibold text-ink">{t.admin.topProducts}</h2>
             <ul className="divide-y divide-line">
@@ -397,6 +399,69 @@ function RestorePointsCard({ data }: { data: DashData }) {
           {t.admin.restorePointsCta}
           <span className="text-brand mirror-rtl" aria-hidden>→</span>
         </Button>
+      </div>
+    </section>
+  )
+}
+
+/** R11 (round-10 item d): mail-dispatch status on the dashboard — parity with
+ *  the Marketing panel's dispatch bar (queued transactional mails + queued
+ *  report digests + provider state), with a deep link into the outbox. */
+function MailDispatchCard({ data }: { data: DashData }) {
+  const locale = useApp((s) => s.locale)
+  const t = getDict(locale)
+  const mq = data.mailQueue
+  if (!mq) return null
+  const on = mq.providerConfigured
+  const transactional = Math.max(0, mq.queued - mq.queuedDigests)
+  const num = (n: number) => (locale === 'fa' ? faDigits(n) : n)
+  return (
+    <section
+      className="overflow-hidden rounded-lg border border-line bg-gradient-to-br from-brand-soft/25 via-transparent to-transparent transition-shadow hover:shadow-[0_0_0_3px_rgba(1,75,116,0.06)]"
+      aria-label={t.admin.mailQueueTitle}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <span className={cn('flex h-6 w-6 items-center justify-center rounded-md', on ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning')}>
+            <Send className="h-3.5 w-3.5" aria-hidden />
+          </span>
+          {t.admin.mailQueueTitle}
+        </h2>
+        <span
+          className={cn('inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold',
+            on ? 'border-success/30 bg-success/10 text-success' : 'border-warning/30 bg-warning/10 text-warning')}
+        >
+          <span className={cn('inline-block h-1.5 w-1.5 rounded-full', on ? 'bg-success' : 'bg-warning')} aria-hidden />
+          {on ? t.admin.mailQueueProviderOn : t.admin.mailQueueProviderOff}
+        </span>
+      </div>
+      <div className="px-4 py-4">
+        <ul className="space-y-1.5 text-sm">
+          {transactional > 0 ? (
+            <li className="flex items-center gap-2 text-ink-2">
+              <Inbox className="h-3.5 w-3.5 shrink-0 text-ink-3" aria-hidden />
+              {tf(t.admin.mailQueueTransactional, { n: num(transactional) })}
+            </li>
+          ) : mq.queuedDigests === 0 ? (
+            <li className="flex items-center gap-2 text-ink-3">
+              <Inbox className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {t.admin.mailQueueNone}
+            </li>
+          ) : null}
+          {mq.queuedDigests > 0 && (
+            <li className="flex items-center gap-2 text-ink-2">
+              <BarChart3 className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+              {tf(t.admin.mailQueueDigests, { n: num(mq.queuedDigests) })}
+            </li>
+          )}
+        </ul>
+        <button
+          type="button"
+          onClick={() => navigate('/admin/marketing')}
+          className="mt-3 inline-flex items-center gap-1 rounded text-xs font-semibold text-brand transition-colors hover:text-orange-dark hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          {t.admin.mailQueueOpenOutbox}
+        </button>
       </div>
     </section>
   )
@@ -4535,11 +4600,14 @@ function AdminReports() {
   } | null>(null)
 
   const [days, setDays] = useState(30)
-  // R10: manual weekly-digest send (queues through the outbox like the
-  // automatic healthz queueing; ?force=1 bypasses the 7-day guard).
+  // R10/R11: manual digest send (queues through the outbox like the automatic
+  // healthz queueing; ?force=1 bypasses the per-window guard, days=7|30
+  // selects the weekly/monthly window — the two guards are independent).
   const { toast } = useToast()
+  const [digestWindow, setDigestWindow] = useState<7 | 30>(7)
   const [digestBusy, setDigestBusy] = useState(false)
-  const [digestStatus, setDigestStatus] = useState<{ lastDigestAt: string | null; lastDigestSent: string | null; lastTo: string | null; queuedUnsent: number } | null>(null)
+  type DigestWin = { lastDigestAt: string | null; lastDigestSent: string | null; lastTo: string | null; queuedUnsent: number }
+  const [digestStatus, setDigestStatus] = useState<{ weekly: DigestWin; monthly: DigestWin } | null>(null)
   const loadDigestStatus = useCallback(() => {
     apiGet<NonNullable<typeof digestStatus>>('/api/admin/reports/digest').then(setDigestStatus).catch(() => setDigestStatus(null))
   }, [])
@@ -4547,7 +4615,7 @@ function AdminReports() {
   const sendDigest = async () => {
     setDigestBusy(true)
     try {
-      const r = await apiPost<{ queued: boolean; skipped?: string; to?: string }>('/api/admin/reports/digest?force=1')
+      const r = await apiPost<{ queued: boolean; skipped?: string; to?: string }>(`/api/admin/reports/digest?force=1&days=${digestWindow}`)
       if (r.queued) {
         toast({ title: t.admin.digestQueued })
       } else if (r.skipped === 'no-recipient') {
@@ -4573,33 +4641,54 @@ function AdminReports() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-ink">{t.admin.reports}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-md border border-line bg-white p-0.5" role="group" aria-label={t.admin.digestWindowLabel}>
+            {([7, 30] as const).map((w) => (
+              <button
+                key={w} type="button" aria-pressed={digestWindow === w}
+                onClick={() => setDigestWindow(w)}
+                title={w === 7 ? t.admin.digestHint : t.admin.digestHint30}
+                className={cn('h-7 rounded px-2.5 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand',
+                  digestWindow === w ? 'bg-brand text-white shadow-sm' : 'text-ink-3 hover:text-brand')}
+              >
+                {w === 7 ? t.admin.digestWindowWeekly : t.admin.digestWindowMonthly}
+              </button>
+            ))}
+          </div>
           {([7, 30, 90] as const).map((d) => (
-            <button key={d} type="button" onClick={() => setDays(d)}
+            <button key={d} type="button" onClick={() => setDays(d)} aria-pressed={days === d}
               className={cn('h-8 rounded-md border px-3 text-xs font-medium', days === d ? 'border-brand bg-brand-soft text-brand' : 'border-line text-ink-2 hover:bg-soft')}>
               {locale === 'fa' ? faDigits(d) : d} {locale === 'fa' ? 'روز' : 'd'}
             </button>
           ))}
           <a href={`/api/admin/reports/export?days=${days}`} className="rounded-md border border-line px-3 py-2 text-xs font-medium text-ink-2 hover:bg-soft">{t.admin.exportCsv}</a>
-          <Button size="sm" className="h-8 gap-1.5 text-xs" disabled={digestBusy} onClick={sendDigest} title={t.admin.digestHint}>
+          <Button size="sm" className="h-8 gap-1.5 text-xs" disabled={digestBusy} onClick={sendDigest} title={digestWindow === 7 ? t.admin.digestHint : t.admin.digestHint30}>
             {digestBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Send className="h-3.5 w-3.5" aria-hidden />}
             {t.admin.digestSend}
           </Button>
         </div>
       </div>
       {digestStatus && (
-        <p className="flex items-center gap-2 text-xs text-ink-3" role="status">
-          <span
-            className={cn('inline-block h-2 w-2 shrink-0 rounded-full', digestStatus.lastDigestSent ? 'bg-success' : digestStatus.lastDigestAt ? 'bg-warning' : 'bg-ink-3/40')}
-            aria-hidden
-          />
-          {digestStatus.lastDigestAt
-            ? tf(digestStatus.lastDigestSent ? t.admin.digestLastSent : t.admin.digestLastQueued, {
-                date: formatDate(digestStatus.lastDigestAt, locale),
-                to: digestStatus.lastTo ?? '—',
-              })
-            : t.admin.digestNever}
-        </p>
+        <div className="space-y-1" role="status">
+          {([['weekly', 7 as const], ['monthly', 30 as const]] as const).map(([key, w]) => {
+            const st = digestStatus[key]
+            return (
+              <p key={key} className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
+                <span
+                  className={cn('inline-block h-2 w-2 shrink-0 rounded-full', st.lastDigestSent ? 'bg-success' : st.lastDigestAt ? 'bg-warning' : 'bg-ink-3/40')}
+                  aria-hidden
+                />
+                <span className="font-semibold text-ink-2">{w === 7 ? t.admin.digestWindowWeekly : t.admin.digestWindowMonthly}</span>
+                {st.lastDigestAt
+                  ? tf(st.lastDigestSent ? t.admin.digestLastSent : t.admin.digestLastQueued, {
+                      date: formatDate(st.lastDigestAt, locale),
+                      to: st.lastTo ?? '—',
+                    })
+                  : (w === 7 ? t.admin.digestNever : t.admin.digestNeverMonthly)}
+              </p>
+            )
+          })}
+        </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card title={t.admin.orders} value={data.totals.orders} />
@@ -5144,6 +5233,8 @@ function AdminMarketing() {
               const isEmailChange = em.kind === 'EMAIL_CHANGE'
               const isEmailChangeNotice = em.kind === 'EMAIL_CHANGE_NOTICE'
               const isDigest = em.kind === 'SALES_DIGEST'
+              // R11: window-aware badge — same markers the report module uses.
+              const isMonthlyDigest = isDigest && (/monthly digest/i.test(em.subject) || em.subject.includes('ماهانه'))
               return (
                 <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : isVerify && openEmail !== em.id ? 'border-success/30' : isShipNotice && openEmail !== em.id ? 'border-brand/20' : isOrderConfirm && openEmail !== em.id ? 'border-success/20' : (isEmailChange || isEmailChangeNotice) && openEmail !== em.id ? 'border-warning/25' : isDigest && openEmail !== em.id ? 'border-brand/25' : 'border-line')}>
                   <button
@@ -5168,7 +5259,7 @@ function AdminMarketing() {
                     ) : isEmailChangeNotice ? (
                       <Badge tone="warning"><Bell className="me-1 h-3 w-3" aria-hidden />{locale === 'fa' ? 'اطلاع‌رسانی تغییر ایمیل' : 'Email-changed notice'}</Badge>
                     ) : isDigest ? (
-                      <Badge tone="brand"><BarChart3 className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxDigest}</Badge>
+                      <Badge tone="brand"><BarChart3 className="me-1 h-3 w-3" aria-hidden />{isMonthlyDigest ? t.admin.outboxDigestMonthly : t.admin.outboxDigest}</Badge>
                     ) : (
                       <Badge tone="success">✓</Badge>
                     )}
