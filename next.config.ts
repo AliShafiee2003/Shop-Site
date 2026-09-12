@@ -46,6 +46,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // Next ≥16.2 blocks dev-only resources (/_next/hmr etc.) for hosts outside
+  // this list — the sandbox gateway/preview proxies mean the browser origin
+  // may differ from the server hostname, which silently killed hydration.
+  // DEV-ONLY key: production ignores it.
+  allowedDevOrigins: ["localhost", "**.localhost", "127.0.0.1"],
   async headers() {
     return [
       // PERF-003: product/content images are content-static — immutable

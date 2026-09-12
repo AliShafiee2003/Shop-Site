@@ -17,6 +17,7 @@ import { computeTax } from '@/lib/server/money'
 import { queueOrderConfirmationEmail, type OrderMailItem, type OrderMailOrder } from '@/lib/server/order-mail'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { loadShippingSettings, methodServesCountry } from '@/lib/server/shipping'
+import { getActivePromotion, promoPriceFor } from '@/lib/server/promotions'
 import { apiError, clientIp, json, nextOrderNumber, tehranDayParts, zodMessage } from '@/lib/server/utils'
 
 const addressSchema = z.object({
@@ -216,14 +217,24 @@ export async function POST(req: NextRequest) {
       // TOCTOU guard: re-read the LIVE variant prices inside the transaction —
       // the cart payload was read before the payment step and prices/promos
       // may have changed. Any drift aborts the whole order (409 to retry).
+      // COM-fix: the comparison uses the PROMO-AWARE live price — cart lines
+      // are priced through promoPriceFor, so a bare variant price would false-
+      // alarm PRICE_CHANGED for every order while a sitewide promotion runs.
       const liveVariants = await tx.variant.findMany({
         where: { id: { in: cart.items.map((i) => i.variantId) } },
-        select: { id: true, priceMinor: true, isActive: true },
+        select: {
+          id: true,
+          priceMinor: true,
+          isActive: true,
+          product: { select: { id: true, fixedPrice: true } },
+        },
       })
+      const livePromo = await getActivePromotion()
       const liveById = new Map(liveVariants.map((v) => [v.id, v]))
       for (const item of cart.items) {
         const live = liveById.get(item.variantId)
-        if (!live || !live.isActive || live.priceMinor !== item.unitPriceMinor) {
+        const liveSale = live ? promoPriceFor(livePromo, live.priceMinor, live.product.id, live.product.fixedPrice).salePriceMinor : -1
+        if (!live || !live.isActive || liveSale !== item.unitPriceMinor) {
           throw new Error('PRICE_CHANGED')
         }
       }
