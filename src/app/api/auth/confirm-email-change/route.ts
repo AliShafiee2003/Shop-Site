@@ -65,10 +65,10 @@ export async function POST(req: NextRequest) {
   })
   if (user) {
     const mailFa = user.preferredLocale === 'fa'
-    const subject = mailFa ? 'نشانی ایمیل حساب شما تغییر کرد' : 'Your Persepix email address was changed'
+    const subject = mailFa ? 'نشانی ایمیل حساب شما تغییر کرد' : 'Your PersePix email address was changed'
     const bodyText = mailFa
       ? `نشانی ایمیل حساب پرس‌پیکس شما به این نشانی تغییر کرد و تأیید شد. از همه دستگاه‌ها خارج شده‌اید — با نشانی تازه دوباره وارد شوید.\n\nاگر شما این تغییر را انجام نداده‌اید، فوراً گذرواژه را بازنشانی کنید و با پشتیبانی تماس بگیرید.`
-      : `The email address of your Persepix account was changed to this address and verified. You have been signed out everywhere — sign in again with the new address.\n\nIf you did NOT make this change, reset your password immediately and contact support.`
+      : `The email address of your PersePix account was changed to this address and verified. You have been signed out everywhere — sign in again with the new address.\n\nIf you did NOT make this change, reset your password immediately and contact support.`
     await db.mailMessage.create({
       data: { to: user.email, subject, kind: 'EMAIL_CHANGE_NOTICE', bodyText, locale: mailFa ? 'fa' : 'en' },
     })

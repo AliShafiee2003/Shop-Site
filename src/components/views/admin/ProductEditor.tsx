@@ -174,7 +174,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
 
   // Details / SEO
   const [slug, setSlug] = useState('')
-  const [publisher, setPublisher] = useState('Persepix')
+  const [publisher, setPublisher] = useState('PersePix')
   const [series, setSeries] = useState('')
   const [publicationDate, setPublicationDate] = useState('')
   const [audience, setAudience] = useState('')
@@ -537,7 +537,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
       setLongRaw({ en: null, fa: null })
       setInitialLongText({ en: '', fa: '' })
       setSlug('')
-      setPublisher('Persepix')
+      setPublisher('PersePix')
       setSeries('')
       setPublicationDate('')
       setAudience('')
@@ -587,7 +587,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
         setLongRaw({ en: en?.longDescription ?? null, fa: fa?.longDescription ?? null })
         setInitialLongText({ en: enLong, fa: faLong })
         setSlug(p.slug ?? '')
-        setPublisher(p.publisher ?? 'Persepix')
+        setPublisher(p.publisher ?? 'PersePix')
         setSeries(p.series ?? '')
         setPublicationDate(p.publicationDate ? String(p.publicationDate).slice(0, 10) : '')
         setAudience(p.audience ?? '')

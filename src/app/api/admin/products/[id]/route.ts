@@ -373,7 +373,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     ...(isFeatured !== undefined ? { isFeatured } : {}),
     ...(fixedPrice !== undefined ? { fixedPrice } : {}),
     ...(slug !== undefined && slug !== product.slug ? { slug } : {}),
-    ...(publisher !== undefined ? { publisher: publisher || 'Persepix' } : {}),
+    ...(publisher !== undefined ? { publisher: publisher || 'PersePix' } : {}),
     ...(series !== undefined ? { series: series || null } : {}),
     ...(pubDate !== undefined ? { publicationDate: pubDate } : {}),
     ...(audience !== undefined ? { audience: audience || null } : {}),
@@ -384,7 +384,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const simpleChanges: string[] = []
   if (slug !== undefined && slug !== product.slug) simpleChanges.push(`slug ${product.slug} → ${slug}`)
-  if (publisher !== undefined && (publisher || 'Persepix') !== product.publisher) simpleChanges.push('publisher')
+  if (publisher !== undefined && (publisher || 'PersePix') !== product.publisher) simpleChanges.push('publisher')
   if (series !== undefined && (series || null) !== product.series) simpleChanges.push('series')
   if (pubDate !== undefined && pubDate?.toJSON() !== product.publicationDate?.toJSON()) simpleChanges.push('publicationDate')
   if (audience !== undefined && (audience || null) !== product.audience) simpleChanges.push('audience')

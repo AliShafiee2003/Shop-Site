@@ -3,7 +3,6 @@
 // owner can send an extra report any time; without it a digest of the SAME
 // window younger than its period is a no-op (skipped:'recent') — identical
 // semantics to the automatic healthz housekeeping queueing.
-import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json } from '@/lib/server/utils'
 import { queueSalesDigestEmail, digestWindowStatus, DIGEST_WINDOWS, type DigestWindowDays } from '@/lib/server/report-mail'

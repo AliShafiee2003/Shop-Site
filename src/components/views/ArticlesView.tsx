@@ -11,7 +11,6 @@ import { Share2, Link2, Check } from 'lucide-react'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useApp } from '@/store/store'
 import { useSsrPageData } from '@/components/storefront/SsrProviders'
 import type { ArticleListItem, ArticleDetail, Block, Locale } from '@/lib/types'
 
@@ -57,12 +56,12 @@ export function ArticlesView({ category }: { category?: string }) {
   useEffect(() => {
     if (ssrConsumed.current) {
       ssrConsumed.current = false
-      document.title = `${t.articles.title} — Persepix`
+      document.title = `${t.articles.title} — PersePix`
       return
     }
     const url = '/api/articles?locale=' + locale + (category ? `&category=${encodeURIComponent(category)}` : '')
     apiGet<ArticleListItem[]>(url).then((r) => setArticles(Array.isArray(r) ? r : [])).catch(() => setArticles([]))
-    document.title = `${t.articles.title} — Persepix`
+    document.title = `${t.articles.title} — PersePix`
   }, [locale, category, t])
 
   const featured = useMemo(() => articles?.find((a) => a.featured), [articles])
@@ -118,7 +117,7 @@ export function ArticleView({ slug }: { slug: string }) {
       ssrConsumed.current = false
       const a = article
       if (a) {
-        document.title = `${a.title} — Persepix Journal`
+        document.title = `${a.title} — PersePix Journal`
         track('view_article')
       }
       return
@@ -127,7 +126,7 @@ export function ArticleView({ slug }: { slug: string }) {
       .then((r) => {
         if (!alive) return
         setState({ key, article: r })
-        document.title = `${r.title} — Persepix Journal`
+        document.title = `${r.title} — PersePix Journal`
         track('view_article')
       })
       .catch(() => { if (alive) setState({ key, failed: true }) })

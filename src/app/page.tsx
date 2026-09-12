@@ -22,8 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const hdrs = await headers()
   const site = siteUrlFrom({ headers: hdrs })
   const fa = false // EN is the canonical unprefixed home (hreflang below covers fa)
-  const brand = fa ? 'پرس‌پیکس' : 'Persepix'
-  const title = 'Persepix — Independent books from Tehran & Vienna'
+  const brand = fa ? 'پرس‌پیکس' : 'PersePix'
+  const title = 'PersePix — Independent books from Tehran & Vienna'
   const description = 'Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children\'s books. Ships across Europe from Vienna.'
   return {
     title: { absolute: title },
@@ -64,7 +64,7 @@ export default async function HomePage() {
     seriesIndex = null
   }
 
-  const brand = 'Persepix'
+  const brand = 'PersePix'
   const jsonLd: unknown[] = [
     {
       '@context': 'https://schema.org',

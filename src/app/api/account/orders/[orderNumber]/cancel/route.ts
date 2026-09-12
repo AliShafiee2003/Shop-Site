@@ -11,7 +11,7 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { getSessionUser } from '@/lib/server/auth'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json } from '@/lib/server/utils'
 
 const bodySchema = z.object({
   reason: z.string().max(300).optional(),

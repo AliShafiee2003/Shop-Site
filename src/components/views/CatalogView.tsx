@@ -20,7 +20,7 @@ import { bookLanguageLabel, formatLabel } from '@/lib/bookLabels'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
 import { useSsrPageData } from '@/components/storefront/SsrProviders'
-import type { Locale, ProductCard as ProductCardDTO, CategoryDTO, PersonDTO } from '@/lib/types'
+import type { ProductCard as ProductCardDTO, CategoryDTO, PersonDTO } from '@/lib/types'
 
 export interface CatalogQuery {
   category?: string
@@ -93,7 +93,7 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
   )
   const [loadingMore, setLoadingMore] = useState(false)
   const [categories, setCategories] = useState<CategoryDTO[]>([])
-  const [people, setPeople] = useState<PersonDTO[]>([])
+  const [, setPeople] = useState<PersonDTO[]>([])
   const [facets, setFacets] = useState<Facets | null>(null)
   const [seriesList, setSeriesList] = useState<SeriesEntry[]>([])
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -447,7 +447,7 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
           <p className="mt-1 text-sm text-ink-3">
             {activeSeries
               ? t.catalog.seriesDesc
-              : activeCategory?.description ?? (locale === 'fa' ? 'همهٔ عناوین پرس‌پیکس' : 'Every title from Persepix')}
+              : activeCategory?.description ?? (locale === 'fa' ? 'همهٔ عناوین پرس‌پیکس' : 'Every title from PersePix')}
             {' · '}
             {items ? tf(t.catalog.count, { n: total }) : '…'}
           </p>

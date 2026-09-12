@@ -43,7 +43,7 @@ export function HomeView() {
   }, [locale])
 
   useEffect(() => {
-    document.title = locale === 'fa' ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین' : 'Persepix — Independent books from Tehran & Vienna'
+    document.title = locale === 'fa' ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین' : 'PersePix — Independent books from Tehran & Vienna'
   }, [locale])
 
   if (failed) {
@@ -97,7 +97,7 @@ export function HomeView() {
       <h1 className="sr-only">
         {locale === 'fa'
           ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین'
-          : 'Persepix — Independent books from Tehran & Vienna'}
+          : 'PersePix — Independent books from Tehran & Vienna'}
       </h1>
       <HomeSections sections={sections} locale={locale} />
     </>

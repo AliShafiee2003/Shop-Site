@@ -2,7 +2,6 @@
 
 import { Truck } from 'lucide-react'
 import { formatMoney } from '@/lib/format'
-import { getDict } from '@/lib/i18n'
 import { useSettings } from '@/lib/use-settings'
 import type { Locale } from '@/lib/types'
 

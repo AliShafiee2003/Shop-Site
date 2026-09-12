@@ -38,15 +38,26 @@ export const apiDelete = <T,>(path: string) => api<T>(path, { method: 'DELETE' }
 export const apiPut = <T,>(path: string, body?: unknown) => api<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined })
 
 /** Cart endpoints return `itemsCount`; the UI speaks `count`. Normalize once here. */
- 
-export function normalizeCart(c: any): import('@/lib/types').CartDTO {
+type RawCart = {
+  items?: import('@/lib/types').CartDTO['items'] | null
+  count?: number | null
+  itemsCount?: number | null
+  subtotalMinor?: number | null
+  currency?: string | null
+  vatRatePct?: number | null
+  vatIncluded?: boolean | null
+  promotion?: import('@/lib/types').CartDTO['promotion'] | null
+}
+
+export function normalizeCart(input: unknown): import('@/lib/types').CartDTO {
+  const c = (input ?? {}) as RawCart
   return {
-    items: (c?.items ?? []).map((i: any) => ({ ...i })),
-    count: c?.count ?? c?.itemsCount ?? c?.items?.length ?? 0,
-    subtotalMinor: c?.subtotalMinor ?? 0,
-    currency: c?.currency ?? 'EUR',
-    vatRatePct: c?.vatRatePct ?? 10,
-    vatIncluded: c?.vatIncluded ?? true,
-    promotion: c?.promotion ?? null,
+    items: (c.items ?? []).map((i) => ({ ...i })),
+    count: c.count ?? c.itemsCount ?? c.items?.length ?? 0,
+    subtotalMinor: c.subtotalMinor ?? 0,
+    currency: c.currency ?? 'EUR',
+    vatRatePct: c.vatRatePct ?? 10,
+    vatIncluded: c.vatIncluded ?? true,
+    promotion: c.promotion ?? null,
   }
 }

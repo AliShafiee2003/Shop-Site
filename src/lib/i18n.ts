@@ -2,7 +2,7 @@ import type { Locale } from './types'
 
 /** Bilingual UI dictionary. English is the source of truth; Persian is complete (PRD §19). */
 const en = {
-  brand: { name: 'Persepix', tagline: 'Independent books from Tehran & Vienna' },
+  brand: { name: 'PersePix', tagline: 'Independent books from Tehran & Vienna' },
   nav: {
     books: 'Books', authors: 'Authors', articles: 'Journal', about: 'About',
     search: 'Search', account: 'Account', cart: 'Cart', menu: 'Menu', close: 'Close',
@@ -37,7 +37,7 @@ const en = {
     recentlyViewed: 'Recently viewed',
   },
   newsletter: {
-    title: 'The Persepix letter',
+    title: 'The PersePix letter',
     body: 'One email per season — new titles, essays and reader offers. No noise.',
     placeholder: 'Your email address',
     cta: 'Subscribe',
@@ -123,7 +123,7 @@ const en = {
   auth: {
     login: 'Sign in', register: 'Create account', email: 'Email', password: 'Password',
     name: 'Full name', loginTitle: 'Welcome back', registerTitle: 'Create your account',
-    noAccount: 'New to Persepix?', haveAccount: 'Already have an account?',
+    noAccount: 'New to PersePix?', haveAccount: 'Already have an account?',
     logout: 'Sign out', invalid: 'Invalid email or password.', emailTaken: 'This email is already registered.',
     demoNote: 'Demo accounts — customer: customer@example.com / Customer#2025',
     googleContinue: 'Continue with Google', or: 'or',
@@ -171,7 +171,7 @@ const en = {
   nlConfirm: {
     checking: 'Checking your confirmation link…',
     doneTitle: 'Subscription confirmed',
-    doneBody: 'Welcome aboard — the next Persepix letter is heading your way. No noise, one email per season.',
+    doneBody: 'Welcome aboard — the next PersePix letter is heading your way. No noise, one email per season.',
     alreadyTitle: 'Already confirmed',
     alreadyBody: 'This subscription was already confirmed — nothing more to do.',
     badTitle: 'Link invalid',
@@ -229,12 +229,12 @@ const en = {
     changeEmailFailed: 'Could not start the email change — please try again.',
   },
   articles: { title: 'Journal', subtitle: 'Essays, interviews and studio notes from the press.', categories: 'Topics', byline: 'By', updated: 'Updated', related: 'Related reading', relatedBooks: 'Books in this essay', toc: 'On this page' },
-  series: { title: 'Series', indexTitle: 'Book series', indexSubtitle: 'Every Persepix collection in one place — complete shelves you can browse volume by volume.', booksIn: '{n} books in this series', booksInOne: '1 book in this series', empty: 'This series is resting — new titles are on their way.', explore: 'Explore the series', browseInCatalog: 'Browse this series in the shop' },
+  series: { title: 'Series', indexTitle: 'Book series', indexSubtitle: 'Every PersePix collection in one place — complete shelves you can browse volume by volume.', booksIn: '{n} books in this series', booksInOne: '1 book in this series', empty: 'This series is resting — new titles are on their way.', explore: 'Explore the series', browseInCatalog: 'Browse this series in the shop' },
   authors: { title: 'Authors & translators', subtitle: 'The people behind the books.', roles: 'Roles', author: 'Author', translator: 'Translator', editor: 'Editor', booksBy: 'Books', mentions: 'Mentions in the journal' },
   footer: {
-    about: 'Persepix is an independent publishing house bringing contemporary Persian literature to European readers — in English and in bilingual editions.',
+    about: 'PersePix is an independent publishing house bringing contemporary Persian literature to European readers — in English and in bilingual editions.',
     shop: 'Shop', house: 'House', help: 'Help', legal: 'Legal', social: 'Follow us',
-    contact: 'Contact', paymentNote: 'Secure payments via Persepix Secure Pay (sandbox).',
+    contact: 'Contact', paymentNote: 'Secure payments via PersePix Secure Pay (sandbox).',
     language: 'Language', rights: 'All rights reserved.',
   },
   static: {
@@ -582,7 +582,7 @@ const en = {
   announce: {
     freeShipping: 'Free tracked EU shipping on orders over {amount}',
     suffixShip: ' — ships from Vienna',
-    letter: 'Join “The Persepix letter” — new titles and essays, once a month',
+    letter: 'Join “The PersePix letter” — new titles and essays, once a month',
     giftWrap: 'Gift wrap available at checkout — {amount} per order, twine and a hand-written note',
     live: 'Live now',
     prev: 'Previous announcement',

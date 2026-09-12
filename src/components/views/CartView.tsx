@@ -11,7 +11,7 @@ import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
 import { FreeShippingBar } from '@/components/storefront/FreeShippingBar'
 import { useApp } from '@/store/store'
 import { useToast } from '@/hooks/use-toast'
-import type { CartDTO, Locale } from '@/lib/types'
+import type { CartDTO } from '@/lib/types'
 
 export function CartView() {
   const route = useRoute()
@@ -27,7 +27,7 @@ export function CartView() {
 
   useEffect(() => {
     refresh()
-    document.title = `${t.cart.title} — Persepix`
+    document.title = `${t.cart.title} — PersePix`
      
   }, [locale])
 

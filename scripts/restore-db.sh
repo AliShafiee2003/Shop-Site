@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# scripts/restore-db.sh — Persepix SQLite restore (task 1-c, audit DB-001)
+# scripts/restore-db.sh — PersePix SQLite restore (task 1-c, audit DB-001)
 #
 # Purpose : restore a gzipped backup produced by scripts/backup-db.sh
 #           (backups/persepix-YYYYmmdd-HHMMSS.db.gz) into the database path

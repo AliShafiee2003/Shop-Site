@@ -7,7 +7,7 @@
 //
 //   SMTP_HOST / SMTP_PORT       required to enable dispatch
 //   SMTP_USER / SMTP_PASS       optional auth credentials
-//   SMTP_FROM                   optional "Persepix <no-reply@…>" override
+//   SMTP_FROM                   optional "PersePix <no-reply@…>" override
 //
 // Without SMTP_* env vars the dispatcher is a strict no-op (rows stay queued,
 // the admin outbox keeps rendering previews) — exactly the sandbox behaviour.
@@ -63,7 +63,7 @@ async function getTransport(): Promise<Transport | null> {
 }
 
 function fromAddress(): string {
-  return process.env.SMTP_FROM?.trim() || 'Persepix <no-reply@persepix.ir>'
+  return process.env.SMTP_FROM?.trim() || 'PersePix <no-reply@persepix.ir>'
 }
 
 /** Try to send up to `limit` queued (sentAt: null) mails, oldest first.

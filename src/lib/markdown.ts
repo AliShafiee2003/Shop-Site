@@ -31,8 +31,6 @@ export type MdBlock =
 /** Inline marks parsed at RENDER time (blocks keep plain text for lossless round-trips). */
 export type InlineSpan = { bold?: boolean; italic?: boolean; code?: boolean; text: string }
 
-const CELL_SPLIT = /\s*\|\s*/ // trim cells around the pipe
-
 function splitRow(line: string): string[] {
   let t = line.trim()
   // Drop the leading/trailing structural pipes so "| a | b |" and "a | b" both work.

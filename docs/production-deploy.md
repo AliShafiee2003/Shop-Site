@@ -1,4 +1,4 @@
-# Production Deploy Runbook — Persepix
+# Production Deploy Runbook — PersePix
 
 Task 1-c artifacts. Audit traceability: **OPS-002** (no container/CI/TLS), **OPS-003**
 (ephemeral uploads), **DB-001** (SQLite ceiling), **OPS-004** (healthz side effects),
@@ -203,3 +203,16 @@ throughput bounded by SQLite, not the app.
 - Real payment gateway behind the `PAYMENT_PROVIDER` gate (COM-001).
 - Smoke/e2e tests in CI (QA-001 — slot reserved in `.github/workflows/ci.yml`).
 - Image build smoke test (§2.1) — first run happens outside this sandbox.
+
+## 8. Git history hygiene (C2 follow-up)
+
+The public repo's early commits still contain the leaked seed password
+(`Simorgh#2025`) even though HEAD is clean. Before (or right after) go-live:
+
+1. Rotate the credential anywhere it was reused (secrets never hardcode again —
+   seeds read `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` from the env).
+2. Run `scripts/rewrite-git-history.sh <remote-url>` — it purges the secret and
+   any tracked `db/*.db` blobs from ALL commits, then (with `--push`) force-pushes.
+3. Every collaborator re-clones afterwards; old clones keep the poisoned history.
+
+See the script header for the full pre-flight/post-flight checklist.

@@ -3,7 +3,6 @@
 // (/about, /faq, …) missing — they are now included.
 import { db } from '@/lib/db'
 import { siteUrlFrom } from '@/lib/site'
-import { headers } from 'next/headers'
 import { listSeriesSlugs } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'

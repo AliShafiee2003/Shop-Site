@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { BRAND_NAME } from "@/lib/site";
 
 /**
  * Preload ONLY the fonts the first paint actually needs (audit §6: eight
@@ -18,17 +19,17 @@ const FONT_PRELOADS = [
 
 export const metadata: Metadata = {
   title: {
-    default: "Persepix — Independent books from Tehran & Vienna",
-    template: "%s — Persepix",
+    default: `${BRAND_NAME} — Independent books from Tehran & Vienna`,
+    template: `%s — ${BRAND_NAME}`,
   },
   description:
     "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
   keywords: ["Persian literature", "books", "publishing house", "bilingual", "poetry", "fiction", "Iran"],
-  authors: [{ name: "Persepix" }],
+  authors: [{ name: BRAND_NAME }],
   openGraph: {
-    title: "Persepix",
+    title: BRAND_NAME,
     description: "Contemporary Persian literature in English and bilingual editions.",
-    siteName: "Persepix",
+    siteName: BRAND_NAME,
     type: "website",
     locale: "en",
   },

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# scripts/backup-db.sh — Persepix SQLite backup (task 1-c, audit DB-001)
+# scripts/backup-db.sh — PersePix SQLite backup (task 1-c, audit DB-001)
 #
 # Purpose : consistent online backup of the SQLite database via the `sqlite3`
 #           .backup command, gzipped into backups/ with timestamped names.

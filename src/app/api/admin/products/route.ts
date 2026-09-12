@@ -6,18 +6,7 @@ import { Prisma } from '@prisma/client'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit, json, normalizeLocale, parseIntParam, zodMessage } from '@/lib/server/utils'
-
-/** kebab-case whatever was typed ("The Nightingale's Atlas" → the-nightingales-atlas). */
-function toKebab(raw: string): string {
-  return raw
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[''`]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80)
-}
+import { apiError, audit, json, normalizeLocale, parseIntParam, toKebab, zodMessage } from '@/lib/server/utils'
 
 const variantSchema = z.object({
   sku: z.string().trim().min(2).max(40),
@@ -298,7 +287,7 @@ export async function POST(req: Request) {
           slug: slug!,
           status: d.status ?? 'DRAFT',
           publicationDate,
-          publisher: d.publisher || 'Persepix',
+          publisher: d.publisher || 'PersePix',
           series: d.series || null,
           coverUrl,
           audience: d.audience || null,

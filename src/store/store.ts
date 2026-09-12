@@ -46,7 +46,7 @@ interface AppState {
   initFavorites: () => void
   toggleFavorite: (slug: string) => boolean
   /** Merge local favorites into the server list (login), adopt result. */
-  syncWishlistOnLogin: () => Promise<void>
+  syncWishlistOnLogin: (serverSlugs?: string[]) => Promise<void>
 }
 
 const CONSENT_KEY = 'sp_consent_v1'
@@ -124,13 +124,18 @@ export const useApp = create<AppState>((set, get) => ({
     }
     return !has
   },
-  syncWishlistOnLogin: async () => {
+  syncWishlistOnLogin: async (serverSlugs?: string[]) => {
     if (!get().user || get().favsSynced) return
     try {
       await enqueueWishlistWrite(async () => {
-        const res = await fetch('/api/wishlist')
-        if (!res.ok) throw new Error('wishlist read failed')
-        const server = (await res.json()) as { slugs: string[] }
+        // Server slugs may arrive preloaded from /api/bootstrap — skip the GET.
+        const server = serverSlugs
+          ? { slugs: serverSlugs }
+          : await (async () => {
+              const res = await fetch('/api/wishlist')
+              if (!res.ok) throw new Error('wishlist read failed')
+              return (await res.json()) as { slugs: string[] }
+            })()
         const local = readFavorites()
         // Merge: server order first, then local-only items (newest first), capped.
         const merged = Array.from(new Set([...server.slugs, ...local])).slice(0, 48)

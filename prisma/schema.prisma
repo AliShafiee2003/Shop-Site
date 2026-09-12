@@ -40,7 +40,6 @@ model User {
   reviews             Review[]
   tickets             Ticket[]
   returnReq           ReturnRequest[]
-  savedPaymentMethods SavedPaymentMethod[]
   wishlist            WishlistItem[]
   resetTokens         PasswordResetToken[]
   emailVerifyTokens   EmailVerificationToken[]
@@ -96,20 +95,6 @@ model ConsentRecord {
   createdAt     DateTime @default(now())
 
   @@index([email])
-}
-
-model SavedPaymentMethod {
-  id               String   @id @default(cuid())
-  userId           String
-  provider         String   @default("PERSEPIX_SANDBOX")
-  providerMethodId String
-  brand            String
-  last4            String
-  expiryMonth      Int
-  expiryYear       Int
-  isDefault        Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // ───────────────────────── Catalog ─────────────────────────
@@ -564,16 +549,6 @@ model Payment {
   refunds Refund[]
 }
 
-model PaymentEvent {
-  id              String   @id @default(cuid())
-  providerEventId String   @unique // idempotency guard
-  paymentId       String?
-  type            String
-  payloadRef      String?
-  result          String? // PROCESSED | DUPLICATE | ERROR
-  processedAt     DateTime @default(now())
-}
-
 model Refund {
   id          String   @id @default(cuid())
   orderId     String
@@ -881,14 +856,6 @@ model WishlistItem {
 
   @@unique([userId, productSlug])
   @@index([userId])
-}
-
-model Redirect {
-  id         String  @id @default(cuid())
-  sourcePath String  @unique
-  targetPath String
-  statusCode Int     @default(301)
-  active     Boolean @default(true)
 }
 
 // SQLite sandbox notes (vs PRD's PostgreSQL):

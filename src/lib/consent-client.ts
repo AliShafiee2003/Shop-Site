@@ -12,10 +12,11 @@ export type OptionalCategories = {
 }
 
 type ConsentResponse = ConsentState & { currentPolicyVersion?: string }
+export type { ConsentResponse }
 
-/** Read the server-verified consent state and adopt it into the store. */
-export async function fetchAndAdoptConsent(): Promise<ConsentState> {
-  const r = await apiGet<ConsentResponse>('/api/privacy/consent')
+/** Adopt a server-verified consent response into the app store. Shared by
+ *  fetchAndAdoptConsent (standalone) and the /api/bootstrap boot path. */
+export function adoptConsentResponse(r: ConsentResponse): ConsentState {
   const state: ConsentState = {
     decided: r.decided,
     policyVersion: r.policyVersion,
@@ -23,6 +24,12 @@ export async function fetchAndAdoptConsent(): Promise<ConsentState> {
   }
   useApp.getState().setConsent(state)
   return state
+}
+
+/** Read the server-verified consent state and adopt it into the store. */
+export async function fetchAndAdoptConsent(): Promise<ConsentState> {
+  const r = await apiGet<ConsentResponse>('/api/privacy/consent')
+  return adoptConsentResponse(r)
 }
 
 /** Save a decision server-side and adopt the returned verified state. */

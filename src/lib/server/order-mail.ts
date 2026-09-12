@@ -146,7 +146,7 @@ export async function queueShippingNoticeEmail(
         ...(shipment.trackingNumber ? [`Tracking number: ${shipment.trackingNumber}`] : []),
         ...(shipment.trackingUrl ? [`Carrier tracking: ${shipment.trackingUrl}`] : []),
         '',
-        'Track it on Persepix:',
+        'Track it on PersePix:',
         track,
         '',
         'In this parcel:',

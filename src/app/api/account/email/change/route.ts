@@ -63,10 +63,10 @@ export async function POST(req: NextRequest) {
   const locale = req.headers.get('x-locale') === 'fa' ? 'fa' : 'en'
   const fa = locale === 'fa'
   const { token } = await mintEmailChangeToken(user.id, newEmail)
-  const subject = fa ? 'تغییر نشانی ایمیل پرس‌پیکس' : 'Confirm your new Persepix email address'
+  const subject = fa ? 'تغییر نشانی ایمیل پرس‌پیکس' : 'Confirm your new PersePix email address'
   const bodyText = fa
     ? `برای تأیید تغییر نشانی ایمیل حساب پرس‌پیکس‌تان به این نشانی روی پیوند کلیک کنید (۱۲ ساعت اعتبار دارد، یک‌بار مصرف):\n/confirm-email-change?token=${token}\n\nاگر شما این درخواست را نداده‌اید، نشانی ایمیل شما تغییری نکرده و می‌توانید این نامه را نادیده بگیرید.`
-    : `Click the link below to confirm this address as the new email for your Persepix account (valid for 12 hours, single use):\n/confirm-email-change?token=${token}\n\nIf you didn't request this, your email address has NOT been changed and you can safely ignore this email.`
+    : `Click the link below to confirm this address as the new email for your PersePix account (valid for 12 hours, single use):\n/confirm-email-change?token=${token}\n\nIf you didn't request this, your email address has NOT been changed and you can safely ignore this email.`
 
   await db.mailMessage.create({
     data: { to: newEmail, subject, kind: 'EMAIL_CHANGE', bodyText, locale },

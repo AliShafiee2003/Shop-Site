@@ -11,7 +11,7 @@ import { getDict, tf } from '@/lib/i18n'
 import { formatMoney, formatDate, compactOrderNumber } from '@/lib/format'
 import { Breadcrumbs, Badge } from '@/components/storefront/bits'
 import { OrderStepper } from '@/components/storefront/OrderStepper'
-import type { Locale, OrderPublicDTO } from '@/lib/types'
+import type { OrderPublicDTO } from '@/lib/types'
 
 type TrackOrder = OrderPublicDTO & { discountCode?: string | null }
 
@@ -40,7 +40,7 @@ export function TrackView() {
   const [order, setOrder] = useState<TrackOrder | null>(null)
   const [notFound, setNotFound] = useState(false)
 
-  useEffect(() => { document.title = `${t.track.title} — Persepix` }, [locale, t])
+  useEffect(() => { document.title = `${t.track.title} — PersePix` }, [locale, t])
 
   const lookup = async (e?: React.FormEvent) => {
     e?.preventDefault()

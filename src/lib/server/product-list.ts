@@ -1,7 +1,6 @@
 // Shared storefront product-listing query — used by GET /api/products AND the
 // RSC catch-all page (C3: server-rendered first page of the catalog).
 import { Prisma } from '@prisma/client'
-import { db } from '@/lib/db'
 import { fetchCards, sortCards, type ProductSort } from '@/lib/server/catalog'
 import { getActivePromotion } from '@/lib/server/promotions'
 import { toMinor } from '@/lib/server/money'

@@ -51,7 +51,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const faT = existing.translations.find((t) => t.locale === 'fa')
 
   const updated = await db.$transaction(async (tx) => {
-    const article = await tx.article.update({
+    await tx.article.update({
       where: { id },
       data: {
         ...(d.slug !== undefined && d.slug.trim() ? { slug: d.slug.trim() } : {}),

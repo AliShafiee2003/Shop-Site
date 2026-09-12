@@ -3,19 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Star, Truck, RotateCcw, ShieldCheck, ZoomIn, BadgeCheck, Heart, Share2, Link2, Check, Tag, BellRing, ChevronLeft, ChevronRight, ThumbsUp, Award, ArrowDownWideNarrow, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { navigate, useRoute } from '@/lib/router'
 import { apiGet, apiPost, normalizeCart } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
 import { formatMoney, formatDate, formatDims, faDigits } from '@/lib/format'
-import { RatingStars, StockBadge, PriceTag, SalePriceTag, QtyStepper, Breadcrumbs, ProseBlocks, Spinner, EmptyState, Skeleton } from '@/components/storefront/bits'
+import { RatingStars, StockBadge, PriceTag, SalePriceTag, QtyStepper, Breadcrumbs, ProseBlocks, EmptyState, Skeleton } from '@/components/storefront/bits'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { useApp } from '@/store/store'
 import { useSettings } from '@/lib/use-settings'
@@ -25,7 +23,7 @@ import { pushRecent } from '@/lib/recent'
 import { RecentlyViewed } from '@/components/storefront/RecentlyViewed'
 import { useSsrPageData } from '@/components/storefront/SsrProviders'
 import { bookLanguageLabel, countryLabel, seriesLabel } from '@/lib/bookLabels'
-import type { Locale, ProductDetail } from '@/lib/types'
+import type { ProductDetail } from '@/lib/types'
 
 const FORMAT_LABEL: Record<string, { en: string; fa: string }> = {
   PAPERBACK: { en: 'Paperback', fa: 'جلد شومیز' },
@@ -188,7 +186,7 @@ export function ProductView({ slug }: { slug: string }) {
       const p = ssrProduct
       if (p) {
         if (p.variants.length > 0) setVariantId((cur) => cur ?? p.variants[0].id)
-        document.title = p.seoTitle || `${p.title} — Persepix`
+        document.title = p.seoTitle || `${p.title} — PersePix`
         track('view_product', { productSlug: p.slug })
         pushRecent(p.slug)
       }
@@ -200,7 +198,7 @@ export function ProductView({ slug }: { slug: string }) {
         setProduct(r)
         loadedSlug.current = slug
         if (r.variants.length > 0) setVariantId(r.variants[0].id)
-        document.title = r.seoTitle || `${r.title} — Persepix`
+        document.title = r.seoTitle || `${r.title} — PersePix`
         // Consent-gated first-party analytics + recently-viewed history.
         track('view_product', { productSlug: r.slug })
         pushRecent(r.slug)
@@ -777,7 +775,7 @@ export function ProductView({ slug }: { slug: string }) {
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-2">{r.body}</p>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-ink-3">{r.authorName ?? (isFa ? 'خوانندهٔ پرس‌پیکس' : 'Persepix reader')} · {formatDate(r.createdAt, locale)}</p>
+                  <p className="text-xs text-ink-3">{r.authorName ?? (isFa ? 'خوانندهٔ پرس‌پیکس' : 'PersePix reader')} · {formatDate(r.createdAt, locale)}</p>
                   {(() => {
                     const v = voteState(r)
                     return (
@@ -799,8 +797,8 @@ export function ProductView({ slug }: { slug: string }) {
                 </div>
                 {/* Press response — visually nested under the review it answers. */}
                 {r.reply ? (
-                  <div className="mt-3 ms-3 rounded-e-md border-s-2 border-brand/30 bg-soft/60 px-4 py-3" role="note" aria-label={isFa ? 'پاسخ پرس‌پیکس' : 'Response from Persepix'}>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">{isFa ? 'پاسخ پرس‌پیکس' : 'Response from Persepix'}</p>
+                  <div className="mt-3 ms-3 rounded-e-md border-s-2 border-brand/30 bg-soft/60 px-4 py-3" role="note" aria-label={isFa ? 'پاسخ پرس‌پیکس' : 'Response from PersePix'}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-brand">{isFa ? 'پاسخ پرس‌پیکس' : 'Response from PersePix'}</p>
                     <p className="mt-1 text-sm leading-relaxed text-ink-2">{r.reply}</p>
                     {r.repliedAt ? <p className="mt-1.5 text-[11px] text-ink-3">{formatDate(r.repliedAt, locale)}</p> : null}
                   </div>

@@ -1,4 +1,4 @@
-// Server-side shared utilities — Persepix backend (Task 4)
+// Server-side shared utilities — PersePix backend (Task 4)
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
@@ -163,4 +163,19 @@ export function pickLocale<T extends { locale: string }>(rows: T[], locale: stri
 /** Zod error → first human message. */
 export function zodMessage(err: { issues: { message: string }[] }): string {
   return err.issues[0]?.message ?? 'Invalid request body'
+}
+
+/**
+ * Kebab-case whatever was typed ("The Nightingale's Atlas" → the-nightingales-atlas).
+ * Shared by the admin product create/update and CSV import routes (was duplicated
+ * there with different 80/100-char caps — the cap is now a parameter).
+ */
+export function toKebab(raw: string, maxLen = 80): string {
+  return raw
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[''`]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, maxLen)
 }

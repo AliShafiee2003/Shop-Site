@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     if (!user.emailVerifiedAt) {
       return apiError(403, 'EMAIL_NOT_VERIFIED', 'Verify your email address before submitting a review.')
     }
-    authorName = user.name ?? 'Persepix reader'
+    authorName = user.name ?? 'PersePix reader'
     userId = user.id
     // Verified purchase: a paid order by this user containing a variant of this product.
     const count = await db.order.count({

@@ -24,7 +24,7 @@
 1. به [console.cloud.google.com](https://console.cloud.google.com/) بروید و یک پروژه بسازید (یا پروژه‌ی موجود را انتخاب کنید).
 2. **APIs & Services → OAuth consent screen**:
    - User Type را **External** بگذارید.
-   - App name: `Persepix`، ایمیل پشتیبانی و ایمیل توسعه‌دهنده را پر کنید.
+   - App name: `PersePix`، ایمیل پشتیبانی و ایمیل توسعه‌دهنده را پر کنید.
    - Scopes را دست نزنید (فقط اسکوپ‌های پیش‌فرض openid/email/profile).
    - اگر دکمه‌ی «Publish» را نزنید، فقط ایمیل‌های Test users می‌توانند وارد شوند.
 3. **APIs & Services → Credentials → Create Credentials → OAuth client ID**:

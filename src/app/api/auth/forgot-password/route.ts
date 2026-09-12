@@ -10,7 +10,7 @@ import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { mintResetToken } from '@/lib/server/password-reset'
 import { rateLimit } from '@/lib/server/rate-limit'
-import { apiError, clientIp, json, zodMessage } from '@/lib/server/utils'
+import { apiError, clientIp, json } from '@/lib/server/utils'
 
 const bodySchema = z.object({ email: z.string().email().max(200) })
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     if (user && user.passwordHash && user.status === 'ACTIVE') {
       const { token } = await mintResetToken(user.id)
       const fa = locale === 'fa'
-      const subject = fa ? 'بازنشانی گذرواژهٔ پرس‌پیکس' : 'Reset your Persepix password'
+      const subject = fa ? 'بازنشانی گذرواژهٔ پرس‌پیکس' : 'Reset your PersePix password'
       const bodyText = fa
         ? `برای بازنشانی گذرواژه روی این پیوند کلیک کنید (۳۰ دقیقه اعتبار دارد، یک‌بار مصرف):\n/forgot-password?token=${token}\n\nاگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید — گذرواژه‌تان بدون تغییر می‌ماند.`
         : `Click the link below to choose a new password (valid for 30 minutes, single use):\n/forgot-password?token=${token}\n\nIf you didn't request this, ignore this email — your password stays unchanged.`

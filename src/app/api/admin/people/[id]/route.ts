@@ -37,7 +37,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const fa = existing.translations.find((t) => t.locale === 'fa')
 
   const updated = await db.$transaction(async (tx) => {
-    const person = await tx.person.update({
+    await tx.person.update({
       where: { id },
       data: {
         ...(d.profession !== undefined ? { profession: d.profession } : {}),

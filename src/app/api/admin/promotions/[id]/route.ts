@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
-import { parseExcludedIds } from '@/lib/server/promotions'
 
 const patchSchema = z.object({
   name: z.string().min(2).max(80).optional(),

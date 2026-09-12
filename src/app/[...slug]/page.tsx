@@ -58,8 +58,8 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const { locale, segments } = route
   const [root, second] = segments
   const fa = locale === 'fa'
-  const brand = fa ? 'پرس‌پیکس' : 'Persepix'
-  const homeTitle = fa ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین' : 'Persepix — Independent books from Tehran & Vienna'
+  const brand = fa ? 'پرس‌پیکس' : 'PersePix'
+  const homeTitle = fa ? 'پرس‌پیکس — کتاب‌های مستقل از تهران و وین' : 'PersePix — Independent books from Tehran & Vienna'
   const homeDesc = fa
     ? 'ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.'
     : 'Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children\'s books. Ships across Europe from Vienna.'
@@ -114,7 +114,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
       title = fa ? 'مجموعه‌های کتاب' : 'Book series'
       description = fa
         ? 'مجموعه‌های کتاب پرس‌پیکس — از تاریخ مصور ایران تا نثر معاصر فارسی. همهٔ جلدهای هر مجموعه در یک نگاه.'
-        : 'The Persepix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.'
+        : 'The PersePix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.'
     } else if (root === 'books' || root === 'categories') {
       title = fa ? 'همه کتاب‌ها' : 'All books'
     } else if (root === 'articles') {
@@ -124,7 +124,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     }
 
     // Home keeps the full brand title as-is; every other page gets the brand suffix once.
-    const absTitle = title === homeTitle ? title : `${title} — ${brand}`
+    // seoTitle rows are seeded as "Title — PersePix", so strip any baked-in
+    // brand suffix first — the single append below must never double it.
+    const stripped = title.replace(new RegExp(`\\s*—\\s*${brand}\\s*$`), '')
+    const absTitle = title === homeTitle ? title : `${stripped} — ${brand}`
     const imageUrl = image.startsWith('http') ? image : absUrl(site, image)
     const base: Metadata = {
       title: { absolute: absTitle },
@@ -174,7 +177,7 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
   const [root, second] = segments
   const payloads: unknown[] = []
   const fa = locale === 'fa'
-  const brand = fa ? 'پرس‌پیکس' : 'Persepix'
+  const brand = fa ? 'پرس‌پیکس' : 'PersePix'
 
   const crumb = (items: { name: string; path: string }[]) => ({
     '@context': 'https://schema.org',

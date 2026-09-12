@@ -140,7 +140,7 @@ export async function GET(req: Request) {
         giftWrap: o.giftWrap, giftWrapMinor: o.giftWrapMinor, giftMessage: o.giftMessage,
         carrier: ship?.carrier ?? undefined,
         trackingUrl: ship?.trackingUrl ?? undefined,
-        footerNote: fa ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+        footerNote: fa ? 'پرس‌پیکس — وین' : 'PersePix — Vienna',
       }
     }
     return {
@@ -156,7 +156,7 @@ export async function GET(req: Request) {
       items,
       subtotalMinor: o.subtotalMinor, discountCode: o.discountCode, discountMinor: o.discountMinor, shippingMinor: o.shippingMinor, totalMinor: o.totalMinor,
       giftWrap: o.giftWrap, giftWrapMinor: o.giftWrapMinor, giftMessage: o.giftMessage,
-      footerNote: fa ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+      footerNote: fa ? 'پرس‌پیکس — وین' : 'PersePix — Vienna',
     }
   })
 
@@ -185,7 +185,7 @@ export async function GET(req: Request) {
       shippingMinor: 0,
       totalMinor: 0,
       product: { title: titleEn, titleFa, slug: n.variant.product.slug, sku: n.variant.sku },
-      footerNote: fa ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+      footerNote: fa ? 'پرس‌پیکس — وین' : 'PersePix — Vienna',
     }
   })
 
@@ -242,7 +242,7 @@ export async function GET(req: Request) {
         giftWrap: o.giftWrap, giftWrapMinor: o.giftWrapMinor, giftMessage: o.giftMessage,
         carrier: ship?.carrier ?? undefined,
         trackingUrl: ship?.trackingUrl ?? undefined,
-        footerNote: fa ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+        footerNote: fa ? 'پرس‌پیکس — وین' : 'PersePix — Vienna',
       })
       continue
     }
@@ -263,7 +263,7 @@ export async function GET(req: Request) {
       totalMinor: 0,
       // R10: the digest is the owner's own report — render the full body.
       ...(m.kind === 'SALES_DIGEST' ? { digestText: m.bodyText } : {}),
-      footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+      footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'PersePix — Vienna',
     })
   }
   const mailEmails = [...orderMailEmails, ...plainMailEmails]

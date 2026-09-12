@@ -182,7 +182,7 @@ export type CookieDef = {
 export const COOKIE_INVENTORY: CookieDef[] = [
   {
     name: 'sp_session',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'necessary',
     storage: 'HTTP cookie (httpOnly)',
     durationEn: '30 days',
@@ -193,7 +193,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_cart',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'necessary',
     storage: 'HTTP cookie (httpOnly)',
     durationEn: '30 days',
@@ -204,7 +204,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_locale',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'necessary',
     storage: 'HTTP cookie',
     durationEn: '12 months',
@@ -215,7 +215,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_consent_id',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'necessary',
     storage: 'HTTP cookie (httpOnly)',
     durationEn: '12 months',
@@ -226,7 +226,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_recent_v1',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'preferences',
     storage: 'Local storage',
     durationEn: 'Until you clear it',
@@ -237,7 +237,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_favs_v1',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'preferences',
     storage: 'Local storage',
     durationEn: 'Until you clear it',
@@ -248,7 +248,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_aid_v1',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'analytics',
     storage: 'Local storage (rotated daily, random)',
     durationEn: 'Rotated every 24h',
@@ -259,7 +259,7 @@ export const COOKIE_INVENTORY: CookieDef[] = [
   },
   {
     name: 'sp_taste_id',
-    provider: 'Persepix',
+    provider: 'PersePix',
     category: 'personalization',
     storage: 'HTTP cookie (httpOnly)',
     durationEn: '180 days',

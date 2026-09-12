@@ -10,8 +10,6 @@ import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import type { Locale, HomeSection } from '@/lib/types'
 
-type StorySettings = Extract<HomeSection, { type: 'SCROLL_STORY' }>['settings']
-
 /**
  * Pinned scroll section / sticky scrollytelling — a TALL module (n scenes ×
  * ~100vh of real page scroll) whose cinematic panel stays `position: sticky`

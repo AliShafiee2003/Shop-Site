@@ -37,8 +37,6 @@ export const DIGEST_WINDOWS = [7, 30] as const
 export type DigestWindowDays = (typeof DIGEST_WINDOWS)[number]
 
 const DIGEST_WINDOW_DAYS = 7
-/** A digest this fresh suppresses the automatic one (manual force bypasses). */
-const DIGEST_FRESH_MS = DIGEST_WINDOW_DAYS * 24 * 3600 * 1000
 
 /** Subject markers used to tell the two windows apart in the outbox — see the
  *  module header. Keep these EXACTLY in sync with the subject builders. */
@@ -247,7 +245,7 @@ export function buildDigestBody(
     '',
     fa
       ? (days === 30 ? '\u067e\u0631\u0633\u200c\u067e\u06cc\u06a9\u0633 \u2014 \u06af\u0632\u0627\u0631\u0634 \u062e\u0648\u062f\u06a9\u0627\u0631 \u0645\u0627\u0647\u0627\u0646\u0647' : '\u067e\u0631\u0633\u200c\u067e\u06cc\u06a9\u0633 \u2014 \u06af\u0632\u0627\u0631\u0634 \u062e\u0648\u062f\u06a9\u0627\u0631 \u0647\u0641\u062a\u06af\u06cc')
-      : (days === 30 ? 'Persepix \u2014 automatic monthly report' : 'Persepix \u2014 automatic weekly report'),
+      : (days === 30 ? 'PersePix \u2014 automatic monthly report' : 'PersePix \u2014 automatic weekly report'),
   )
   return { fa, text: lines.join('\n') }
 }
@@ -282,7 +280,7 @@ export async function queueSalesDigestEmail(
     ? (days === 30
         ? `\u067e\u0631\u0633\u200c\u067e\u06cc\u06a9\u0633 \u2014 \u06af\u0632\u0627\u0631\u0634 \u0645\u0627\u0647\u0627\u0646\u0647 \u0641\u0631\u0648\u0634 (${range})`
         : `\u067e\u0631\u0633\u200c\u067e\u06cc\u06a9\u0633 \u2014 \u06af\u0632\u0627\u0631\u0634 \u0647\u0641\u062a\u06af\u06cc \u0641\u0631\u0648\u0634 (${range})`)
-    : (days === 30 ? `Persepix monthly digest \u2014 ${range}` : `Persepix weekly digest \u2014 ${range}`)
+    : (days === 30 ? `PersePix monthly digest \u2014 ${range}` : `PersePix weekly digest \u2014 ${range}`)
   await db.mailMessage.create({
     data: { to: recipient.email, subject, kind: 'SALES_DIGEST', bodyText: text, locale: fa ? 'fa' : 'en' },
   })

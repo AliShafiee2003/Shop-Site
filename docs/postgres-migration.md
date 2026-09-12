@@ -1,4 +1,4 @@
-# PostgreSQL Migration Plan (Persepix)
+# PostgreSQL Migration Plan (PersePix)
 
 > Status: **step 0 DONE (sandbox)** — `prisma/migrations/0_init` is baselined
 > on SQLite and marked applied (`migrate status` clean; drift diff empty).
@@ -62,6 +62,7 @@ Newsletter/Consent/Mail`.
 ```bash
 # per-table copy with Prisma (single script, batched by cursor, idempotent):
 bun scripts/pg-transfer.ts            # reads SQLite, upserts into Postgres by id
+bun scripts/pg-transfer.ts --verify   # parity report only, no writes
 ```
 
 Rules:

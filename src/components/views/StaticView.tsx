@@ -15,7 +15,7 @@ import { Breadcrumbs, ProseBlocks, LegalPlaceholder, Spinner } from '@/component
 import { SocialRow } from '@/components/storefront/Footer'
 import { useSettings } from '@/lib/use-settings'
 import { useToast } from '@/hooks/use-toast'
-import type { Block, Locale, StoreSettings } from '@/lib/types'
+import type { Block, StoreSettings } from '@/lib/types'
 
  
 
@@ -25,7 +25,7 @@ export function AboutView({ settings }: { settings?: StoreSettings | null }) {
   const t = getDict(locale)
   const isFa = locale === 'fa'
 
-  useEffect(() => { document.title = `${t.static.aboutTitle} — Persepix` }, [locale, t])
+  useEffect(() => { document.title = `${t.static.aboutTitle} — PersePix` }, [locale, t])
 
   const values = isFa ? [
     { icon: Languages, title: 'دوزبانه از روز نخست', body: 'هر عنوان از ابتدا برای دو زبان طراحی می‌شود؛ ترجمه پس از اصل نیست، همزاد است.' },
@@ -47,11 +47,11 @@ export function AboutView({ settings }: { settings?: StoreSettings | null }) {
         <p className="mt-4 text-[17px] leading-relaxed text-ink-2">
           {isFa
             ? 'پرس‌پیکس در سال ۲۰۲۱ در وین بنیان گذاشته شد تا ادبیات معاصر ایران را — به انگلیسی و در نسخه‌های دوزبانه — به دست خوانندگان اروپا برساند. ما باور داریم یک کتاب خوب باید در دو زبان به‌یک‌اندازه خوش‌بیاید.'
-            : 'Founded in Vienna in 2021, Persepix brings contemporary Iranian literature to European readers — in English and in bilingual editions. We believe a good book should feel at home in two languages at once.'}
+            : 'Founded in Vienna in 2021, PersePix brings contemporary Iranian literature to European readers — in English and in bilingual editions. We believe a good book should feel at home in two languages at once.'}
         </p>
       </header>
       <div className="mx-auto mt-8 max-w-3xl overflow-hidden rounded-lg border border-line">
-        <img src="/images/about-studio.png" alt={isFa ? 'دفتر پرس‌پیکس' : 'The Persepix office'} className="aspect-[7/4] w-full object-cover" />
+        <img src="/images/about-studio.png" alt={isFa ? 'دفتر پرس‌پیکس' : 'The PersePix office'} className="aspect-[7/4] w-full object-cover" />
       </div>
 
       <div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-2">
@@ -83,7 +83,7 @@ export function FAQView() {
   const settings = useSettings()
   const freeShipAmount = formatMoney(settings?.store?.freeShippingThresholdMinor ?? 6000, locale)
 
-  useEffect(() => { document.title = `${t.static.faqTitle} — Persepix` }, [locale, t])
+  useEffect(() => { document.title = `${t.static.faqTitle} — PersePix` }, [locale, t])
 
   const items = isFa ? [
     { q: 'کتاب‌ها از کجا ارسال می‌شوند؟', a: 'همهٔ سفارش‌ها از وین، اتریش ارسال می‌شود. ارسال در اتریش ۲ تا ۴ روز کاری و در اتحادیهٔ اروپا ۳ تا ۷ روز کاری طول می‌کشد. ارسال بین‌المللی ۵ تا ۱۴ روز.' },
@@ -123,7 +123,7 @@ export function ShippingView({ settings, shipping }: { settings?: StoreSettings 
   const t = getDict(locale)
   const isFa = locale === 'fa'
 
-  useEffect(() => { document.title = `${t.static.shippingTitle} — Persepix` }, [locale, t])
+  useEffect(() => { document.title = `${t.static.shippingTitle} — PersePix` }, [locale, t])
 
   return (
     <main id="main" className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
@@ -177,7 +177,7 @@ export function ContactView({ settings }: { settings?: StoreSettings | null }) {
   const [busy, setBusy] = useState(false)
   const [ticket, setTicket] = useState<string | null>(null)
 
-  useEffect(() => { document.title = `${t.static.contactTitle} — Persepix` }, [locale, t])
+  useEffect(() => { document.title = `${t.static.contactTitle} — PersePix` }, [locale, t])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -278,7 +278,7 @@ export function LegalView({ type }: { type: string }) {
     accessibility: locale === 'fa' ? 'دسترس‌پذیری' : 'Accessibility statement',
     cookies: locale === 'fa' ? 'کوکی‌ها' : 'Cookie notice',
   }
-  useEffect(() => { document.title = `${titles[type] ?? t.static.legalTitle} — Persepix` }, [locale, type])  
+  useEffect(() => { document.title = `${titles[type] ?? t.static.legalTitle} — PersePix` }, [locale, type])  
 
   if (failed) {
     return (

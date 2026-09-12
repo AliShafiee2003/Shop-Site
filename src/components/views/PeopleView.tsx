@@ -8,7 +8,7 @@ import { formatDate } from '@/lib/format'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Spinner, EmptyState, Breadcrumbs, ProseBlocks } from '@/components/storefront/bits'
 import { Button } from '@/components/ui/button'
-import type { Block, Locale, PersonDTO, PersonDetail } from '@/lib/types'
+import type { Block, PersonDTO, PersonDetail } from '@/lib/types'
 
 export function AuthorsView() {
   const route = useRoute()
@@ -18,7 +18,7 @@ export function AuthorsView() {
 
   useEffect(() => {
     apiGet<PersonDTO[]>('/api/people?locale=' + locale).then(setPeople).catch(() => setPeople([]))
-    document.title = `${t.authors.title} — Persepix`
+    document.title = `${t.authors.title} — PersePix`
   }, [locale, t])
 
   return (
@@ -75,7 +75,7 @@ export function AuthorView({ slug }: { slug: string }) {
       .then((r) => {
         if (!alive) return
         setState({ key, person: r })
-        document.title = `${r.name} — Persepix`
+        document.title = `${r.name} — PersePix`
       })
       .catch(() => { if (alive) setState({ key, failed: true }) })
     return () => { alive = false }

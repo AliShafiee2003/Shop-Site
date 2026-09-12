@@ -6,7 +6,6 @@ import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const LEGAL_TYPES = ['PRIVACY', 'TERMS', 'WITHDRAWAL', 'IMPRINT', 'ACCESSIBILITY', 'COOKIES'] as const
-type LegalType = (typeof LEGAL_TYPES)[number]
 
 const putSchema = z.object({
   type: z.enum(LEGAL_TYPES),

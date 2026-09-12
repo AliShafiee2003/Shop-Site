@@ -253,7 +253,7 @@ function ArticleEditor({ row, cats, t, locale, onDone, onCancel }: {
     personIds: [],
   }))
   // Original related ids (chips resolve from saved ids on open)
-  const [related, setRelated] = useState<{ products: ProdHit[]; people: PersonHit[] }>({ products: [], people: [] })
+  const [, setRelated] = useState<{ products: ProdHit[]; people: PersonHit[] }>({ products: [], people: [] })
   const set = (d: Partial<Draft>) => setDraft((prev) => ({ ...prev, ...d }))
 
   // Resolve the saved related ids into labeled chips (one batch each).

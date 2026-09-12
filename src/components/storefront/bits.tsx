@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Star, StarHalf, Minus, Plus, ChevronRight, Loader2, Tag } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { localePath } from '@/lib/router'
 import { parseInlineSpans } from '@/lib/markdown'
@@ -274,7 +273,6 @@ export function renderInline(text: string, keyPrefix = ''): React.ReactNode[] {
  *  ![alt](src) image · GFM table · --- divider · **bold** · *italic* · `code`.
  *  Fully bilingual — FA gets Vazirmatn via [lang=fa], «» quote marks, RTL tables. */
 export function ProseBlocks({ blocks, locale, measure = true }: { blocks: Block[]; locale: Locale; measure?: boolean }) {
-  const t = getDict(locale)
   if (!Array.isArray(blocks)) return null
   const isFa = locale === 'fa'
   const q = (s: string) => (isFa ? `«${s}»` : `“${s}”`)

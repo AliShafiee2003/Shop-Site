@@ -9,7 +9,7 @@
 // one typo never blocks a whole catalog drop (each import is audited).
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json, toKebab, zodMessage } from '@/lib/server/utils'
 import { z } from 'zod'
 
 /** Columns that MUST be present in the header — everything else defaults. */
@@ -61,17 +61,6 @@ function parseCsv(input: string): string[][] {
   return rows
 }
 
-/** kebab-case whatever was typed ("The Nightingale's Atlas" → the-nightingales-atlas). */
-function toKebab(raw: string): string {
-  return raw
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[''`]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 100)
-}
-
 export async function POST(req: Request) {
   const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
@@ -112,7 +101,7 @@ export async function POST(req: Request) {
     const priceRaw = get('price_eur').replace(',', '.').replace(/[^\d.]/g, '')
     const stockRaw = get('stock').replace(/[^\d-]/g, '')
     const candidate = {
-      slug: toKebab(get('slug') || get('title_en')),
+      slug: toKebab(get('slug') || get('title_en'), 100),
       title_en: get('title_en'),
       ...(get('title_fa') ? { title_fa: get('title_fa') } : {}),
       price_eur: Number(priceRaw),

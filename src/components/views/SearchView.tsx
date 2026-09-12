@@ -8,7 +8,7 @@ import { getDict } from '@/lib/i18n'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
 import { Button } from '@/components/ui/button'
-import type { Locale, SearchResults } from '@/lib/types'
+import type { SearchResults } from '@/lib/types'
 
 export function SearchView({ q }: { q: string }) {
   const route = useRoute()
@@ -36,7 +36,7 @@ export function SearchView({ q }: { q: string }) {
   }, [key])
 
   useEffect(() => {
-    document.title = `${t.common.searchResults} “${q}” — Persepix`
+    document.title = `${t.common.searchResults} “${q}” — PersePix`
   }, [q, t])
 
   const empty = results && results.products.length === 0 && results.people.length === 0 && results.articles.length === 0

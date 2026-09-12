@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Check, CreditCard, Loader2, Lock, PackageCheck, Truck, ClipboardList, Tag, X, BadgePercent, Gift } from 'lucide-react'
+import { Check, Loader2, Lock, PackageCheck, Tag, X, BadgePercent, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,14 +17,7 @@ import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
 import { useApp } from '@/store/store'
 import { useToast } from '@/hooks/use-toast'
 import { track } from '@/lib/analytics'
-import type { CartDTO, DiscountPublic, QuoteDTO, ShippingMethodDTO, StoreSettings, UserDTO, AddressDTO } from '@/lib/types'
-
-const STEPS = [
-  { id: 'contact', icon: ClipboardList },
-  { id: 'shipping', icon: Truck },
-  { id: 'delivery', icon: PackageCheck },
-  { id: 'payment', icon: CreditCard },
-] as const
+import type { CartDTO, DiscountPublic, QuoteDTO, ShippingMethodDTO, StoreSettings, AddressDTO } from '@/lib/types'
 
 const COUNTRIES = [
   { code: 'AT', en: 'Austria', fa: 'اتریش' }, { code: 'DE', en: 'Germany', fa: 'آلمان' },
@@ -58,7 +51,7 @@ export function CheckoutView({ mode }: { mode?: 'success' | 'cancelled' }) {
   const [cart, setCart] = useState<CartDTO | null>(null)
   const [cartLoaded, setCartLoaded] = useState(false)
   const [quote, setQuote] = useState<QuoteDTO | null>(null)
-  const [settings, setSettings] = useState<StoreSettings | null>(null)
+  const [, setSettings] = useState<StoreSettings | null>(null)
 
   const [email, setEmail] = useState('')
   const [ship, setShip] = useState<AddressForm>(EMPTY_ADDRESS)

@@ -75,7 +75,6 @@ export function AccountView({ section, sub }: { section: string; sub?: string })
   const route = useRoute()
   const locale = route.locale
   const t = getDict(locale)
-  const isFa = locale === 'fa'
   const { toast } = useToast()
   const user = useApp((s) => s.user)
   const userLoaded = useApp((s) => s.userLoaded)
@@ -233,7 +232,7 @@ function EmailVerifyBanner({ locale, user }: { locale: Locale; user: UserDTO }) 
   )
 }
 
-function Dashboard({ locale, user }: { locale: Locale; user: UserDTO }) {
+function Dashboard({ locale }: { locale: Locale; user: UserDTO }) {
   const t = getDict(locale)
   const [data, setData] = useState<{ recentOrders: OrderSummary[]; activeShipment: { orderNumber: string; trackingNumber?: string; trackingUrl?: string; carrier: string; status: string } | null; openReturns: number; openTickets: number } | null>(null)
 
@@ -810,7 +809,6 @@ function Tickets({ locale }: { locale: Locale }) {
 
 function TicketDetail({ locale, id }: { locale: Locale; id: string }) {
   const t = getDict(locale)
-  const isFa = locale === 'fa'
   const { toast } = useToast()
   const [ticket, setTicket] = useState<TicketDTO | null>(null)
   const [body, setBody] = useState('')
@@ -875,7 +873,6 @@ function describeUa(ua: string | null): { kind: 'phone' | 'tablet' | 'desktop'; 
 
 function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUser: (u: UserDTO) => void }) {
   const t = getDict(locale)
-  const isFa = locale === 'fa'
   const { toast } = useToast()
   const [marketing, setMarketing] = useState(false)
   const [busy, setBusy] = useState(false)

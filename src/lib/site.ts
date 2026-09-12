@@ -25,3 +25,8 @@ export function siteUrlFrom(req: { headers: Headers } | null): string {
   }
   return 'http://localhost:3000'
 }
+
+/** Canonical brand wordmark — matches the uploaded logo asset (public/images/logo.png).
+ *  Single source of truth for metadata, emails, and document titles (audit P2:
+ *  the codebase previously mixed "Persepix" and "PersePix"). */
+export const BRAND_NAME = 'PersePix' as const

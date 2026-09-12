@@ -48,10 +48,10 @@ export async function POST(req: NextRequest) {
     const sig = newsletterSig('unsub', email)
     const manageUrl = `${origin}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}`
     const fa = locale === 'fa'
-    const subject = fa ? 'مدیریت عضویت شما در نامهٔ پرس‌پیکس' : 'Manage your Persepix letter subscription'
+    const subject = fa ? 'مدیریت عضویت شما در نامهٔ پرس‌پیکس' : 'Manage your PersePix letter subscription'
     const bodyText = fa
       ? `شما پیش‌تر عضو نامهٔ پرس‌پیکس هستید. برای خروج از نامه از این پیوند یک‌کلیکی استفاده کنید:\n${manageUrl}\n\nاگر شما این درخواست را نداده‌اید، کافیست این ایمیل را نادیده بگیرید — عضویت‌تان بدون تغییر می‌ماند.`
-      : `You are already subscribed to the Persepix letter. To leave it, use this one-click link:\n${manageUrl}\n\nIf you didn't request this, simply ignore this email — your subscription stays unchanged.`
+      : `You are already subscribed to the PersePix letter. To leave it, use this one-click link:\n${manageUrl}\n\nIf you didn't request this, simply ignore this email — your subscription stays unchanged.`
     await db.mailMessage.create({
       data: { to: email, subject, kind: 'NEWSLETTER_CONFIRM', bodyText, locale },
     })
@@ -69,10 +69,10 @@ export async function POST(req: NextRequest) {
   // Signed double opt-in link → /newsletter-confirm page → POST /api/newsletter/confirm.
   const sig = newsletterSig('confirm', email)
   const fa = locale === 'fa'
-  const subject = fa ? 'عضویت در نامهٔ پرس‌پیکس را تأیید کنید' : 'Confirm your Persepix letter subscription'
+  const subject = fa ? 'عضویت در نامهٔ پرس‌پیکس را تأیید کنید' : 'Confirm your PersePix letter subscription'
   const bodyText = fa
     ? `برای تأیید عضویت در نامهٔ پرس‌پیکس روی این پیوند کلیک کنید:\n/newsletter-confirm?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}\n\nاگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید — هیچ ایمیلی برایتان فرستاده نمی‌شود.`
-    : `Click the link below to confirm your subscription to the Persepix letter:\n/newsletter-confirm?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}\n\nIf you didn't request this, ignore this email — nothing will be sent to you.`
+    : `Click the link below to confirm your subscription to the PersePix letter:\n/newsletter-confirm?email=${encodeURIComponent(email)}&sig=${encodeURIComponent(sig)}\n\nIf you didn't request this, ignore this email — nothing will be sent to you.`
   await db.mailMessage.create({
     data: { to: email, subject, kind: 'NEWSLETTER_CONFIRM', bodyText, locale },
   })

@@ -31,7 +31,7 @@ export async function seriesMeta(
   const count = await db.product.count({ where: { seriesSlug: slug, status: 'PUBLISHED' } })
   return {
     name,
-    description: `${name} — a Persepix book series with ${count} published volume${count === 1 ? '' : 's'}. The complete collection, in English and bilingual editions.` + (nameFa !== name ? ` (فارسی: ${nameFa})` : ''),
+    description: `${name} — a PersePix book series with ${count} published volume${count === 1 ? '' : 's'}. The complete collection, in English and bilingual editions.` + (nameFa !== name ? ` (فارسی: ${nameFa})` : ''),
   }
 }
 

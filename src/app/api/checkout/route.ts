@@ -1,4 +1,4 @@
-// POST /api/checkout — place an order with the "Persepix Secure Pay" sandbox payment.
+// POST /api/checkout — place an order with the "PersePix Secure Pay" sandbox payment.
 // ⚠️ SANDBOX PAYMENT SIMULATION: no real charge happens, and the full card number is
 // NEVER stored — only brand + last4 on the Payment row (PCI-safe by design).
 // C6: every order also gets an unguessable publicRef (PR-…) for guest tracking.

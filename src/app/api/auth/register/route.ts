@@ -63,10 +63,10 @@ export async function POST(req: NextRequest) {
   try {
     const { token } = await mintVerifyToken(user.id)
     const fa = locale === 'fa'
-    const subject = fa ? 'تأیید نشانی ایمیل پرس‌پیکس' : 'Confirm your Persepix email address'
+    const subject = fa ? 'تأیید نشانی ایمیل پرس‌پیکس' : 'Confirm your PersePix email address'
     const mailBody = fa
       ? `به پرس‌پیکس خوش آمدید! برای تأیید نشانی ایمیل حساب کاربری‌تان روی این پیوند کلیک کنید (۲۴ ساعت اعتبار دارد، یک‌بار مصرف):\n/verify-email?token=${token}\n\nاگر شما این حساب را نساخته‌اید، این ایمیل را نادیده بگیرید.`
-      : `Welcome to Persepix! Click the link below to confirm the email address of your new account (valid for 24 hours, single use):\n/verify-email?token=${token}\n\nIf you didn't create this account, you can safely ignore this email.`
+      : `Welcome to PersePix! Click the link below to confirm the email address of your new account (valid for 24 hours, single use):\n/verify-email?token=${token}\n\nIf you didn't create this account, you can safely ignore this email.`
     await db.mailMessage.create({
       data: { to: user.email, subject, kind: 'EMAIL_VERIFY', bodyText: mailBody, locale },
     })

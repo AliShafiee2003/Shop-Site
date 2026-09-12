@@ -6,7 +6,7 @@ import { DirectionProvider } from '@radix-ui/react-direction'
 import { navigate, useRoute, useScrollTopOnNavigate } from '@/lib/router'
 import { apiGet, normalizeCart } from '@/lib/api'
 import { useApp } from '@/store/store'
-import { fetchAndAdoptConsent } from '@/lib/consent-client'
+import { fetchAndAdoptConsent, adoptConsentResponse, type ConsentResponse } from '@/lib/consent-client'
 import { getDict } from '@/lib/i18n'
 import { useToast } from '@/hooks/use-toast'
 import { Header } from '@/components/storefront/Header'
@@ -77,7 +77,6 @@ export function Shell() {
   const setLocale = useApp((s) => s.setLocale)
   const setUser = useApp((s) => s.setUser)
   const setCartSummary = useApp((s) => s.setCartSummary)
-  const setConsentAccepted = useApp((s) => s.setConsentAccepted)
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [shipping, setShipping] = useState<ShippingSettings | null>(null)
   const [series, setSeries] = useState<{ slug: string; name: string; nameFa: string }[]>([])
@@ -106,20 +105,37 @@ export function Shell() {
   // legacy `#/…` hash links to their real-path form.
 
   useEffect(() => {
-    apiGet<{ user: UserDTO | null }>('/api/auth/me')
-      .then((r) => {
-        setUser(r.user)
-        if (r.user) void useApp.getState().syncWishlistOnLogin()
-      })
-      .catch(() => setUser(null))
-    apiGet<CartDTO>('/api/cart').then((c) => { const n = normalizeCart(c); setCartSummary(n.count, n.subtotalMinor) }).catch(() => {})
-    apiGet<{ store: StoreSettings; shipping: ShippingSettings; series?: { slug: string; name: string; nameFa: string }[] }>('/api/settings')
-      .then((r) => { setSettings(r.store); setShipping(r.shipping); setSeries(r.series ?? []) })
-      .catch(() => {})
-    // Server-verified consent (same as every route — the old duplicate boot in
-    // app/page.tsx was unified here when it became the single dispatcher).
-    fetchAndAdoptConsent().catch(() => {})
+    // One boot request instead of 4–5 parallel dispatches (audit P2):
+    // /api/auth/me + /api/cart + /api/settings + /api/privacy/consent + /api/wishlist.
+    // Every section is best-effort — same degradation semantics as the old
+    // separate calls. Guest wishlists stay localStorage-authoritative (null).
     useApp.getState().initFavorites()
+    apiGet<{
+      user: UserDTO | null
+      cart: CartDTO | null
+      settings: { store: StoreSettings; shipping: ShippingSettings; series?: { slug: string; name: string; nameFa: string }[] } | null
+      consent: ConsentResponse | null
+      wishlist: { slugs: string[] } | null
+    }>('/api/bootstrap')
+      .then((b) => {
+        setUser(b.user)
+        if (b.cart) {
+          const n = normalizeCart(b.cart)
+          setCartSummary(n.count, n.subtotalMinor)
+        }
+        if (b.settings) {
+          setSettings(b.settings.store)
+          setShipping(b.settings.shipping)
+          setSeries(b.settings.series ?? [])
+        }
+        if (b.consent) adoptConsentResponse(b.consent)
+        if (b.user) void useApp.getState().syncWishlistOnLogin(b.wishlist?.slugs)
+      })
+      .catch(() => {
+        setUser(null)
+        // Bootstrap itself failed (offline?) — degrade to the standalone calls.
+        fetchAndAdoptConsent().catch(() => {})
+      })
   }, [])
 
   const segs = route.segments

@@ -9,7 +9,7 @@ import { getDict } from '@/lib/i18n'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { Spinner, EmptyState, Breadcrumbs } from '@/components/storefront/bits'
 import { useApp } from '@/store/store'
-import type { Locale, ProductCard as ProductCardDTO } from '@/lib/types'
+import type { ProductCard as ProductCardDTO } from '@/lib/types'
 
 export function FavoritesView() {
   const route = useRoute()
@@ -29,7 +29,7 @@ export function FavoritesView() {
 
   useEffect(() => {
     if (!favsLoaded) return
-    document.title = `${t.favorites.title} — Persepix`
+    document.title = `${t.favorites.title} — PersePix`
     if (favKey === '') return
     let alive = true
     apiGet<{ items: ProductCardDTO[] }>(`/api/products?locale=${locale}&slugs=${encodeURIComponent(favKey)}&pageSize=48`)
