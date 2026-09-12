@@ -22,10 +22,12 @@ import { ArticlesView, ArticleView } from '@/components/views/ArticlesView'
 import { CartView } from '@/components/views/CartView'
 import { CheckoutView, SuccessPanel } from '@/components/views/CheckoutView'
 import { AuthView } from '@/components/views/AuthView'
+import { PasswordResetView } from '@/components/views/PasswordResetView'
 import { AccountView } from '@/components/views/AccountView'
 import { FavoritesView } from '@/components/views/FavoritesView'
 import { TrackView } from '@/components/views/TrackView'
 import { AboutView, FAQView, ShippingView, ContactView, LegalView } from '@/components/views/StaticView'
+import { SeriesView } from '@/components/views/SeriesView'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/storefront/bits'
 import type { ShippingSettings, StoreSettings, CartDTO, UserDTO } from '@/lib/types'
@@ -74,6 +76,7 @@ export function Shell() {
   const setConsentAccepted = useApp((s) => s.setConsentAccepted)
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [shipping, setShipping] = useState<ShippingSettings | null>(null)
+  const [series, setSeries] = useState<{ slug: string; name: string; nameFa: string }[]>([])
   const { toast } = useToast()
 
   useScrollTopOnNavigate(route.segments)
@@ -106,8 +109,8 @@ export function Shell() {
       })
       .catch(() => setUser(null))
     apiGet<CartDTO>('/api/cart').then((c) => { const n = normalizeCart(c); setCartSummary(n.count, n.subtotalMinor) }).catch(() => {})
-    apiGet<{ store: StoreSettings; shipping: ShippingSettings }>('/api/settings')
-      .then((r) => { setSettings(r.store); setShipping(r.shipping) })
+    apiGet<{ store: StoreSettings; shipping: ShippingSettings; series?: { slug: string; name: string; nameFa: string }[] }>('/api/settings')
+      .then((r) => { setSettings(r.store); setShipping(r.shipping); setSeries(r.series ?? []) })
       .catch(() => {})
     // Server-verified consent (same as every route — the old duplicate boot in
     // app/page.tsx was unified here when it became the single dispatcher).
@@ -166,6 +169,10 @@ export function Shell() {
     view = <AuthView mode="login" />
   } else if (root === 'register') {
     view = <AuthView mode="register" />
+  } else if (root === 'forgot-password' || root === 'reset-password') {
+    view = <PasswordResetView />
+  } else if (root === 'series' && second) {
+    view = <SeriesView slug={second} />
   } else if (root === 'account') {
     view = <AccountView section={second ?? ''} sub={third} />
   } else if (root === 'admin') {
@@ -180,7 +187,9 @@ export function Shell() {
     || root === 'categories' || root === 'search' || root === 'authors' || root === 'articles'
     || root === 'cart' || root === 'checkout' || root === 'about' || root === 'faq' || root === 'favorites' || root === 'track'
     || root === 'shipping-returns' || root === 'contact' || root === 'legal'
-    || root === 'login' || root === 'register' || root === 'account' || root === 'admin'
+    || root === 'login' || root === 'register' || root === 'forgot-password' || root === 'reset-password'
+    || (root === 'series' && Boolean(second))
+    || root === 'account' || root === 'admin'
   )
 
   return (
@@ -192,7 +201,7 @@ export function Shell() {
       <div className="flex min-h-screen flex-col bg-white">
         <Header />
         {hasOwnMain ? view : <main id="main">{view}</main>}
-        <Footer settings={settings} />
+        <Footer settings={settings} series={series} />
         <CookieBanner />
         <CookiePreferencesDialog />
       </div>

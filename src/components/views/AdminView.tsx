@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Package, LayoutTemplate, Star, LifeBuoy, Users, BarChart3, History, Loader2, ArrowUp, ArrowDown, ShieldAlert, Activity, Mail, Plus, Minus, ChevronUp, ChevronDown, Inbox, TrendingUp, UserMinus, Tag, TicketPercent, Trash2, CalendarClock, Shapes, BookUser, Download, Megaphone, BellRing, Layers, Check, X, PieChart, Gift, Settings2, Clock, Ban, Upload, Store, Truck, Search, Landmark, Phone, MapPin, FileUp, FileText, ArrowUpDown, Pencil, MessageSquare, ImagePlus, Smartphone, Copy, Tags, Building2, Instagram, Twitter, Youtube, Share2, GripVertical, Camera, Newspaper, KeyRound } from 'lucide-react'
 import { AdminArticles } from '@/components/views/admin/ArticlesAdmin'
 import { AdminAnnouncements } from '@/components/views/admin/AnnouncementsEditor'
 import { AdminLegal } from '@/components/views/admin/LegalEditor'
@@ -4619,7 +4619,7 @@ interface BisGroup {
   requests: { id: string; email: string; locale: string; notifiedAt: string | null; createdAt: string }[]
 }
 interface OutboxEmail {
-  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK'
+  id: string; orderId: string | null; orderNumber: string; to: string; kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET'
   locale: string; createdAt: string; subject: string; greeting: string; intro: string
   items: { title: string; qty: number; lineTotalMinor: number }[]
   subtotalMinor: number; discountCode?: string | null; discountMinor?: number
@@ -4803,8 +4803,9 @@ function AdminMarketing() {
             {emails.map((em) => {
               const open = openEmail === em.id
               const isBis = em.kind === 'BACK_IN_STOCK'
+              const isReset = em.kind === 'PASSWORD_RESET'
               return (
-                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : 'border-line')}>
+                <li key={em.id} className={cn('overflow-hidden rounded-lg border', isBis && openEmail !== em.id ? 'border-warning/30' : isReset && openEmail !== em.id ? 'border-brand/25' : 'border-line')}>
                   <button
                     type="button" onClick={() => setOpenEmail(open ? null : em.id)} aria-expanded={open}
                     className={cn('flex w-full flex-wrap items-center gap-2 px-4 py-3 text-start transition hover:bg-soft/60', open && 'bg-brand-soft/40')}
@@ -4812,6 +4813,8 @@ function AdminMarketing() {
                     {open ? <ChevronUp className="h-4 w-4 shrink-0 text-ink-3" aria-hidden /> : <ChevronDown className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />}
                     {isBis ? (
                       <Badge tone="warning"><BellRing className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxBis}</Badge>
+                    ) : isReset ? (
+                      <Badge tone="default"><KeyRound className="me-1 h-3 w-3" aria-hidden />{t.admin.outboxReset}</Badge>
                     ) : (
                       <Badge tone={em.kind === 'SHIPPING_NOTICE' ? 'brand' : 'success'}>{em.kind === 'SHIPPING_NOTICE' ? t.account.shipped : '✓'}</Badge>
                     )}
@@ -4841,6 +4844,10 @@ function AdminMarketing() {
                           </span>
                           <span className="text-xs font-medium text-brand">{t.admin.view} →</span>
                         </a>
+                      ) : isReset ? (
+                        <p className="mt-4 rounded-md bg-soft px-4 py-3 text-xs leading-relaxed text-ink-3">
+                          {em.locale === 'fa' ? 'متن کامل این نامه فقط در نسخهٔ گیرنده قرار دارد — پیوند بازنشانی یک‌بارمصرف است و ۳۰ دقیقه اعتبار دارد.' : 'The full body exists only in the recipient’s copy — the reset link is single-use and expires after 30 minutes.'}
+                        </p>
                       ) : (
                         <>
                           <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-3">{t.admin.emailItems}</p>

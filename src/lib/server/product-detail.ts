@@ -189,6 +189,7 @@ export async function getProductDetail(slug: string, locale: Locale) {
     audience: p.audience,
     publisher: p.publisher,
     series: p.series,
+    seriesSlug: p.seriesSlug,
   }
 }
 

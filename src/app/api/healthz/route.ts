@@ -19,6 +19,13 @@ async function housekeeping(): Promise<void> {
       where: { status: 'ACTIVE', userId: null, updatedAt: { lt: new Date(now - 60 * 24 * 3600 * 1000) } },
       data: { status: 'ABANDONED' },
     })
+    // Password-reset tokens: expired ones are useless (single-use, 30 min) —
+    // keep them 7 days for forensics, then delete.
+    await db.passwordResetToken.deleteMany({ where: { expiresAt: { lt: new Date(now - 7 * 24 * 3600 * 1000) } } })
+    // Login throttles: entries not touched for 30 days (released locks included).
+    await db.loginThrottle.deleteMany({ where: { lastFailAt: { lt: new Date(now - 30 * 24 * 3600 * 1000) } } })
+    // Sandbox outbox: delivered mail older than 30 days.
+    await db.mailMessage.deleteMany({ where: { sentAt: { lt: new Date(now - 30 * 24 * 3600 * 1000) } } })
   } catch {
     // housekeeping must never fail the health probe
   }

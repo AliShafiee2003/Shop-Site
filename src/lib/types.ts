@@ -73,6 +73,7 @@ export interface ProductDetail extends ProductCard {
   audience?: string | null
   publisher?: string
   series?: string | null
+  seriesSlug?: string | null
   seoTitle?: string | null
   seoDesc?: string | null
   /** active sitewide promotion (if any) with preformatted badge, e.g. "−10%" */

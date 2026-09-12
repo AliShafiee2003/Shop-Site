@@ -15,6 +15,9 @@ export type FooterSettings = {
   instagram?: string; x?: string; youtube?: string
 } | null
 
+/** Published book series — footer navigation + internal linking (SEO). */
+export type FooterSeries = { slug: string; name: string; nameFa: string }
+
 /** X (Twitter) glyph — lucide's bird is outdated; draw the X mark inline. */
 function XIcon({ className }: { className?: string }) {
   return (
@@ -53,7 +56,7 @@ export function SocialRow({ settings, className }: { settings?: { instagram?: st
   )
 }
 
-export function Footer({ settings }: { settings?: FooterSettings }) {
+export function Footer({ settings, series = [] }: { settings?: FooterSettings; series?: FooterSeries[] }) {
   const route = useRoute()
   const locale = route.locale
   const t = getDict(locale)
@@ -82,6 +85,7 @@ export function Footer({ settings }: { settings?: FooterSettings }) {
       title: t.footer.shop,
       links: [
         { label: t.nav.books, href: '/books' },
+        ...series.slice(0, 3).map((s) => ({ label: locale === 'fa' ? s.nameFa || s.name : s.name, href: `/series/${s.slug}` })),
         { label: t.authors.title, href: '/authors' },
         { label: t.articles.title, href: '/articles' },
         { label: t.nav.faq, href: '/faq' },

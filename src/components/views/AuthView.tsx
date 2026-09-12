@@ -130,6 +130,15 @@ export function AuthView({ mode }: { mode: 'login' | 'register' }) {
           <div>
             <Label htmlFor="auth-pass" className="mb-1.5">{t.auth.password}</Label>
             <Input id="auth-pass" type="password" required minLength={8} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={() => navigate('/forgot-password')}
+                className="mt-1.5 text-xs font-medium text-brand hover:underline focus-visible:outline-brand"
+              >
+                {t.auth.forgotPassword}
+              </button>
+            )}
           </div>
           {error && <p role="alert" className="text-sm text-error">{error}</p>}
           <Button type="submit" size="lg" className="h-12 w-full" disabled={busy}>

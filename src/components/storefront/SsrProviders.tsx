@@ -17,6 +17,7 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import type { RouteState } from '@/lib/route-state'
 import type { ArticleDetail, ArticleListItem, HomeSection, ProductCardDTO, ProductDetail } from '@/lib/types'
+import type { SeriesDetail } from '@/lib/server/series'
 
 export const ServerRouteContext = createContext<RouteState | null>(null)
 
@@ -32,6 +33,8 @@ export type SsrPageData = {
   articles?: ArticleListItem[] | null
   /** category slug the prefetched article list was filtered by (null = all) */
   articlesCategory?: string | null
+  /** /series/[slug] payload (CollectionPage shelf) */
+  series?: SeriesDetail | null
 }
 
 export const SsrPageDataContext = createContext<SsrPageData | null>(null)

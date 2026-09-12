@@ -377,7 +377,17 @@ export function ProductView({ slug }: { slug: string }) {
 
         {/* Purchase panel */}
         <div>
-          {product.series ? <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orange-dark">{seriesLabel(product.series, locale)}</p> : null}
+          {product.series ? (
+            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-orange-dark">
+              {product.seriesSlug ? (
+                <button type="button" onClick={() => navigate(`/series/${product.seriesSlug}`)} className="transition hover:text-orange-accent hover:underline focus-visible:outline-brand">
+                  {seriesLabel(product.series, locale)}
+                </button>
+              ) : (
+                seriesLabel(product.series, locale)
+              )}
+            </p>
+          ) : null}
           <h1 className="text-2xl font-bold leading-tight tracking-tight text-ink sm:text-3xl">{title}</h1>
           {subtitle ? <p className="mt-1 text-[15px] text-ink-3">{subtitle}</p> : null}
           <p className="mt-2 text-sm text-ink-2">

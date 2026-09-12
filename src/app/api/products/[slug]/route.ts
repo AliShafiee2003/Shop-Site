@@ -192,5 +192,6 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     audience: p.audience,
     publisher: p.publisher,
     series: p.series,
+    seriesSlug: p.seriesSlug,
   })
 }

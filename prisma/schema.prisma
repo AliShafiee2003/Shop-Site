@@ -37,6 +37,7 @@ model User {
   returnReq           ReturnRequest[]
   savedPaymentMethods SavedPaymentMethod[]
   wishlist            WishlistItem[]
+  resetTokens         PasswordResetToken[]
 }
 
 model Session {
@@ -899,4 +900,47 @@ model CookieConsent {
   createdAt       DateTime @default(now())
 
   @@index([subjectKey, createdAt])
+}
+
+// ───────────────── S13 — password reset + sandbox mail outbox ─────────────────
+/// Single-use password-reset tokens. Only the sha256(token) is stored — a DB
+/// leak cannot be replayed against the reset endpoint. 30-minute expiry.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Sandbox transactional mail outbox. Real deployments hand this row to the
+/// email provider (SES/Postmark) and stamp `sentAt`; the admin outbox renders
+/// previews. Password-reset mails are recorded here so the flow is auditable.
+model MailMessage {
+  id        String    @id @default(cuid())
+  to        String
+  subject   String
+  kind      String // PASSWORD_RESET | (future: ORDER_CONFIRMATION, VERIFY_EMAIL…)
+  bodyText  String
+  locale    String    @default("en")
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt])
+}
+
+// ───────────────── S5 — per-account login throttle (DB-backed) ─────────────────
+/// Failed-login counter keyed by attempted email (lowercased). Rows are also
+/// minted for NON-existent emails so "locked out" never confirms an account
+/// exists (S9). Cleared on successful sign-in; stale rows swept by healthz.
+model LoginThrottle {
+  email       String    @id
+  failCount   Int       @default(0)
+  lockedUntil DateTime?
+  lastFailAt  DateTime?
+  updatedAt   DateTime  @updatedAt
 }

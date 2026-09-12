@@ -12,6 +12,7 @@ import { getArticleList } from '@/lib/server/article-list'
 import { getHomeSections } from '@/lib/server/home-sections'
 import { queryStorefrontProducts } from '@/lib/server/product-list'
 import { getSetting } from '@/lib/server/utils'
+import { getSeriesDetail, seriesMeta } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +24,7 @@ const DEFAULT_OG_IMAGE = '/images/hero-season.png'
 /** Page roots that must NEVER be indexed (private / utility surfaces). */
 const NOINDEX_ROOTS = new Set([
   'search', 'account', 'admin', 'checkout', 'cart', 'favorites', 'track', 'login', 'register',
+  'forgot-password', 'reset-password',
 ])
 
 function absUrl(site: string, path: string): string {
@@ -103,6 +105,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
       } else {
         title = fa ? 'نویسندگان و مترجمان' : 'Authors & translators'
       }
+    } else if (root === 'series' && second) {
+      const s = await seriesMeta(second)
+      title = s?.name ?? (fa ? 'مجموعه‌ها' : 'Series')
+      description = s?.description ?? homeDesc
     } else if (root === 'books' || root === 'categories') {
       title = fa ? 'همه کتاب‌ها' : 'All books'
     } else if (root === 'articles') {
@@ -330,6 +336,24 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
     }
     // Index pages get a two-step breadcrumb (Home → section).
     if (root === 'books' && !second) payloads.push(crumb([{ name: fa ? 'خانه' : 'Home', path: localePath(locale, '') }, { name: fa ? 'همه کتاب‌ها' : 'All books', path: localePath(locale, '/books') }]))
+    if (root === 'series' && second) {
+      const s = await seriesMeta(second)
+      if (s) {
+        payloads.push({
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: s.name,
+          url: absUrl(site, localePath(locale, `/series/${second}`)),
+          ...(s.description ? { description: s.description } : {}),
+          isPartOf: { '@type': 'WebSite', name: brand, url: absUrl(site, localePath(locale, '')) },
+        })
+        payloads.push(crumb([
+          { name: fa ? 'خانه' : 'Home', path: localePath(locale, '') },
+          { name: fa ? 'همه کتاب‌ها' : 'All books', path: localePath(locale, '/books') },
+          { name: s.name, path: localePath(locale, `/series/${second}`) },
+        ]))
+      }
+    }
     if (root === 'articles' && (!second || second === 'categories')) payloads.push(crumb([{ name: fa ? 'خانه' : 'Home', path: localePath(locale, '') }, { name: fa ? 'مجله' : 'Journal', path: localePath(locale, '/articles') }]))
     if (root === 'authors' && !second) payloads.push(crumb([{ name: fa ? 'خانه' : 'Home', path: localePath(locale, '') }, { name: fa ? 'نویسندگان و مترجمان' : 'Authors & translators', path: localePath(locale, '/authors') }]))
   } catch {
@@ -387,6 +411,9 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
     }
     if (root === 'articles' && !second) {
       return { locale, articles: await getArticleList(locale, null), articlesCategory: null }
+    }
+    if (root === 'series' && second) {
+      return { locale, series: await getSeriesDetail(second, locale) }
     }
     return { locale }
   } catch {

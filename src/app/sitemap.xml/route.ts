@@ -4,6 +4,7 @@
 import { db } from '@/lib/db'
 import { siteUrlFrom } from '@/lib/site'
 import { headers } from 'next/headers'
+import { listSeriesSlugs } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,11 +24,12 @@ export async function GET(req: Request) {
   const base = siteUrlFrom({ headers: hdrs })
   const now = new Date()
 
-  const [products, articles, people, categories] = await Promise.all([
+  const [products, articles, people, categories, series] = await Promise.all([
     db.product.findMany({ where: { status: 'PUBLISHED' }, select: { slug: true, updatedAt: true } }),
     db.article.findMany({ where: { status: 'PUBLISHED' }, select: { slug: true, updatedAt: true, publishedAt: true } }),
     db.person.findMany({ where: { status: 'PUBLISHED' }, select: { slug: true, updatedAt: true } }),
     db.category.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }),
+    listSeriesSlugs(),
   ])
 
   // Static, always-indexable pages (audit §8.6). /search stays out: noindex.
@@ -56,6 +58,7 @@ export async function GET(req: Request) {
     urls.push(urlEntry(`${base}${p}/articles`, now, 'daily', '0.8'))
     for (const c of categories) urls.push(urlEntry(`${base}${p}/categories/${c.slug}`, c.updatedAt, 'weekly', '0.6'))
     for (const pr of products) urls.push(urlEntry(`${base}${p}/books/${pr.slug}`, pr.updatedAt, 'weekly', '0.9'))
+    for (const s of series) urls.push(urlEntry(`${base}${p}/series/${s.slug}`, s.updatedAt, 'weekly', '0.7'))
     for (const a of articles) urls.push(urlEntry(`${base}${p}/articles/${a.slug}`, a.publishedAt ?? a.updatedAt, 'monthly', '0.6'))
     for (const pe of people) urls.push(urlEntry(`${base}${p}/authors/${pe.slug}`, pe.updatedAt, 'monthly', '0.5'))
     for (const s of staticPaths) urls.push(urlEntry(`${base}${p}${s.path}`, undefined, s.changefreq, s.priority))

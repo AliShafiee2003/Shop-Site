@@ -1,8 +1,9 @@
 // GET  /api/auth/sessions — list the signed-in user's active sessions (S11).
-// DELETE /api/auth/sessions — revoke every session EXCEPT the current one
-//                             (?all=1 also revokes the current session).
-// S11 partial: stolen-cookie containment + a visible "sign out everywhere"
-// control. (Full rotation/idle-timeout remains on the roadmap.)
+// DELETE /api/auth/sessions — revoke sessions:
+//   ?id=<sessionId>  revoke ONE session (must belong to the caller)
+//   (no params)      revoke every session EXCEPT the current one
+//   ?all=1           also revoke the current session
+// S11: stolen-cookie containment + a visible per-device sign-out control.
 import { createHash } from 'node:crypto'
 import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
@@ -45,6 +46,23 @@ export async function DELETE(req: NextRequest) {
   const jar = await cookies()
   const currentHash = jar.get('sp_session')?.value ? sha256(jar.get('sp_session')!.value) : null
   const includeCurrent = req.nextUrl.searchParams.get('all') === '1'
+  const singleId = req.nextUrl.searchParams.get('id')
+
+  if (singleId) {
+    // Revoke exactly one of the caller's own sessions (per-device sign-out).
+    const target = await db.session.findFirst({
+      where: { id: singleId, userId: user.id, revokedAt: null },
+      select: { id: true, tokenHash: true },
+    })
+    if (!target) return apiError(404, 'NOT_FOUND', 'Session not found (or already signed out).')
+    await db.session.update({ where: { id: target.id }, data: { revokedAt: new Date() } })
+    // If the browser revoked its OWN row, drop the cookie so it stops sending
+    // a dead token on every request.
+    if (currentHash && target.tokenHash === currentHash) {
+      jar.set('sp_session', '', { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 0 })
+    }
+    return json({ ok: true, revoked: 1 })
+  }
 
   const revoked = await db.session.updateMany({
     where: {

@@ -5,6 +5,7 @@ import { db } from '@/lib/db'
 import { getSetting, json } from '@/lib/server/utils'
 import { getActivePromotion, promoBadgeLabel } from '@/lib/server/promotions'
 import { loadGiftWrapConfig } from '@/lib/server/giftwrap'
+import { seriesLabel } from '@/lib/bookLabels'
 
 export type StoreSettings = {
   name?: string
@@ -43,12 +44,21 @@ export async function GET() {
       })
       .catch(() => []),
   ])
+  // Footer navigation data: published series (slug + localized display name).
+  const seriesRows = await db.product
+    .groupBy({ by: ['seriesSlug', 'series'], where: { seriesSlug: { not: null }, status: 'PUBLISHED' } })
+    .catch(() => [])
+  const series = seriesRows
+    .filter((r): r is typeof r & { seriesSlug: string } => Boolean(r.seriesSlug))
+    .map((r) => ({ slug: r.seriesSlug, name: seriesLabel(r.series, 'en'), nameFa: seriesLabel(r.series, 'fa') }))
+
   return json({
     store,
     shipping,
     features,
     giftWrap,
     announcements,
+    series,
     promotion: promotion
       ? {
           name: promotion.name,

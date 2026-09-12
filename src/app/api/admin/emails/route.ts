@@ -12,7 +12,7 @@ interface RenderedEmail {
   orderId: string | null
   orderNumber: string
   to: string
-  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK'
+  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET'
   locale: string
   createdAt: string
   subject: string
@@ -134,6 +134,33 @@ export async function GET() {
     }
   })
 
-  const items = [...orderEmails, ...bisEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  // Generic queued mails (MailMessage outbox, S13): password-reset mails etc.
+  // Subjects/links are NOT expanded here — the body contains the single-use
+  // token and only the recipient's own copy would (in production).
+  const mails = await db.mailMessage.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 12,
+  })
+  const mailEmails: RenderedEmail[] = mails.map((m) => ({
+    id: `mail-${m.id}`,
+    orderId: null,
+    orderNumber: '',
+    to: m.to,
+    kind: 'PASSWORD_RESET' as const,
+    locale: m.locale,
+    createdAt: m.createdAt.toISOString(),
+    subject: m.subject,
+    greeting: '',
+    intro: m.locale === 'fa'
+      ? 'پیوند یک‌بارمصرف بازنشانی گذرواژه صادر شد (پیش‌نمایش — متن کامل نزد گیرنده است).'
+      : 'A single-use password-reset link was issued (preview — the full body belongs to the recipient).',
+    items: [],
+    subtotalMinor: 0,
+    shippingMinor: 0,
+    totalMinor: 0,
+    footerNote: m.locale === 'fa' ? 'پرس‌پیکس — وین' : 'Persepix — Vienna',
+  }))
+
+  const items = [...orderEmails, ...bisEmails, ...mailEmails].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   return json({ items })
 }

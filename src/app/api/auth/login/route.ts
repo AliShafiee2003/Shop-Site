@@ -1,8 +1,12 @@
-// POST /api/auth/login — verify credentials, start session, merge guest cart (rate limited).
+// POST /api/auth/login — verify credentials, start session, merge guest cart.
+// Two layers of brute-force defence: per-IP fixed window (in-memory) AND a
+// per-ACCOUNT lockout (DB-backed LoginThrottle, S5) keyed by the ATTEMPTED
+// email so lockouts never confirm which addresses really exist (S9).
 import { z } from 'zod'
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { createSession, publicUser, verifyPassword } from '@/lib/server/auth'
+import { loginThrottleCheck, loginThrottleFail, loginThrottleReset } from '@/lib/server/password-reset'
 import { mergeGuestCartOnLogin } from '@/lib/server/cart'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, clientIp, json, zodMessage } from '@/lib/server/utils'
@@ -27,17 +31,26 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return apiError(400, 'VALIDATION_ERROR', zodMessage(parsed.error))
   const email = parsed.data.email.toLowerCase().trim()
 
+  // S5: account-level lockout — checked before ANY credential work.
+  const throttle = await loginThrottleCheck(email)
+  if (throttle.locked) {
+    return apiError(429, 'RATE_LIMITED', `Too many failed attempts. Try again in ${Math.ceil(throttle.retryAfterSec / 60)} minute(s).`)
+  }
+
   const user = await db.user.findUnique({ where: { email } })
   // S9: a Google-linked account and a wrong password produce the SAME code and
   // message — a distinct "use Google" response would confirm the email exists.
   // (The UI keeps offering the Google button unconditionally.)
   if (!user || !user.passwordHash || !verifyPassword(parsed.data.password, user.passwordHash)) {
+    // Count the failure against the ATTEMPTED address regardless of existence.
+    await loginThrottleFail(email)
     return apiError(401, 'INVALID_CREDENTIALS', 'Email or password is incorrect')
   }
   if (user.status !== 'ACTIVE') {
     return apiError(403, 'ACCOUNT_UNAVAILABLE', 'This account is not available')
   }
 
+  await loginThrottleReset(email)
   await createSession(user.id, req.headers.get('user-agent'))
   await mergeGuestCartOnLogin(user.id)
 

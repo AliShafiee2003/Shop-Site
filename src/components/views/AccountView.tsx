@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban } from 'lucide-react'
+import { Package, Truck, RotateCcw, LifeBuoy, Download, Trash2, LogOut, Plus, Loader2, UserRound, Gift, Ban, Monitor, MonitorSmartphone, Smartphone, Tablet, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { navigate, useRoute } from '@/lib/router'
-import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api'
+import { apiGet, apiPost, apiPatch, apiDelete, apiPut } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
 import { formatMoney, formatDate, formatDateTime, faDigits, compactOrderNumber } from '@/lib/format'
 import { Spinner, EmptyState, Breadcrumbs, Badge } from '@/components/storefront/bits'
@@ -824,6 +824,23 @@ function TicketDetail({ locale, id }: { locale: Locale; id: string }) {
   )
 }
 
+/** S11 — describe a session's device from its UA string (best effort, no deps). */
+function describeUa(ua: string | null): { kind: 'phone' | 'tablet' | 'desktop'; browser: string } {
+  const s = ua ?? ''
+  const browser = /Edg\//.test(s) ? 'Edge'
+    : /OPR\//.test(s) ? 'Opera'
+    : /SamsungBrowser/.test(s) ? 'Samsung Internet'
+    : /Firefox\//.test(s) ? 'Firefox'
+    : /Chrome\//.test(s) ? 'Chrome'
+    : /Safari\//.test(s) ? 'Safari'
+    : 'Browser'
+  const kind: 'phone' | 'tablet' | 'desktop' =
+    /iPad|Tablet/i.test(s) ? 'tablet'
+    : /Mobi|iPhone|Android.*Mobile/i.test(s) ? 'phone'
+    : 'desktop'
+  return { kind, browser }
+}
+
 function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUser: (u: UserDTO) => void }) {
   const t = getDict(locale)
   const isFa = locale === 'fa'
@@ -886,6 +903,8 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
           <span className="text-ink-2">{t.account.marketingConsent}</span>
         </label>
       </div>
+      <SecurityCard locale={locale} user={user} />
+      <SessionsCard locale={locale} />
       <div className="grid gap-3 sm:grid-cols-2">
         <Button variant="outline" onClick={exportData} disabled={busy} className="h-11 gap-2">
           <Download className="h-4 w-4" aria-hidden />{t.account.exportData}
@@ -900,5 +919,176 @@ function Privacy({ locale, user, onUser }: { locale: Locale; user: UserDTO; onUs
       <p className="text-xs leading-relaxed text-ink-3">{t.account.deleteWarning}</p>
       <p className="text-xs text-ink-3 bdi" dir="ltr">{user.email}</p>
     </div>
+  )
+}
+
+/** S13/S11 — change password with re-auth; every OTHER device signs out. */
+function SecurityCard({ locale, user }: { locale: Locale; user: UserDTO }) {
+  const t = getDict(locale)
+  const { toast } = useToast()
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [noLocalPw, setNoLocalPw] = useState(false)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (next !== confirm) { setError(t.account.passwordMismatch); return }
+    setBusy(true)
+    try {
+      await apiPut('/api/account/password', { currentPassword: current, newPassword: next })
+      setCurrent(''); setNext(''); setConfirm('')
+      toast({ title: t.account.passwordChanged })
+    } catch (err) {
+      const e2 = err as { code?: string }
+      if (e2.code === 'WRONG_PASSWORD') setError(t.account.wrongPassword)
+      else if (e2.code === 'NO_LOCAL_PASSWORD') setNoLocalPw(true)
+      else if (e2.code === 'SAME_PASSWORD') setError(locale === 'fa' ? 'گذرواژهٔ تازه باید با گذرواژهٔ کنونی متفاوت باشد.' : 'The new password must be different from the current one.')
+      else setError(locale === 'fa' ? 'تغییر گذرواژه ناموفق بود — دوباره تلاش کنید.' : 'Could not change the password — please try again.')
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <section aria-label={t.account.security} className="overflow-hidden rounded-lg border border-line">
+      <header className="flex items-center gap-2 border-b border-line bg-soft/60 px-4 py-3">
+        <Shield className="h-4 w-4 text-brand" aria-hidden />
+        <h3 className="text-sm font-semibold text-ink">{t.account.security}</h3>
+      </header>
+      <div className="p-4">
+        {noLocalPw ? (
+          <p className="text-sm text-ink-3">{t.account.noLocalPassword}</p>
+        ) : (
+          <form onSubmit={submit} className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <Label htmlFor="pw-current" className="mb-1.5 text-xs">{t.account.currentPassword}</Label>
+              <Input id="pw-current" type="password" required autoComplete="current-password" dir="ltr" value={current} onChange={(e) => setCurrent(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="pw-next" className="mb-1.5 text-xs">{t.auth.newPassword}</Label>
+              <Input id="pw-next" type="password" required minLength={8} autoComplete="new-password" dir="ltr" value={next} onChange={(e) => setNext(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="pw-confirm" className="mb-1.5 text-xs">{t.auth.confirmNewPassword}</Label>
+              <Input id="pw-confirm" type="password" required minLength={8} autoComplete="new-password" dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+            </div>
+            {error && <p role="alert" className="text-sm text-error sm:col-span-3">{error}</p>}
+            <div className="sm:col-span-3">
+              <Button type="submit" size="sm" disabled={busy} className="h-10 gap-2">
+                {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+                {t.account.changePassword}
+              </Button>
+              <p className="mt-2 text-xs text-ink-3">
+                {locale === 'fa'
+                  ? 'با تغییر گذرواژه، از همه دستگاه‌های دیگر خارج می‌شوید.'
+                  : 'Changing your password signs out every other device.'}
+              </p>
+            </div>
+          </form>
+        )}
+        {!noLocalPw && user.googleLinked && (
+          <p className="mt-3 rounded-md bg-soft px-3 py-2 text-xs text-ink-3">
+            {locale === 'fa' ? 'این حساب به گوگل نیز متصل است.' : 'This account is also linked to Google.'}
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** S11 — active sessions list with per-device sign-out. */
+function SessionsCard({ locale }: { locale: Locale }) {
+  const t = getDict(locale)
+  const isFa = locale === 'fa'
+  const { toast } = useToast()
+  const setUser = useApp((s) => s.setUser)
+  const [sessions, setSessions] = useState<{ id: string; userAgent: string | null; createdAt: string; current: boolean }[] | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+
+  const load = useCallback(() => {
+    apiGet<{ sessions: { id: string; userAgent: string | null; createdAt: string; current: boolean }[] }>('/api/auth/sessions')
+      .then((r) => setSessions(r.sessions))
+      .catch(() => setSessions([]))
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  const revoke = async (id: string) => {
+    setBusyId(id)
+    try {
+      await apiDelete(`/api/auth/sessions?id=${encodeURIComponent(id)}`)
+      toast({ title: t.account.sessionRevoked })
+      const wasCurrent = sessions?.find((s) => s.id === id)?.current
+      if (wasCurrent) {
+        // Revoked THIS device: the cookie is gone server-side — reset the UI.
+        setUser(null)
+        navigate(`/${locale}`)
+      } else {
+        load()
+      }
+    } catch {
+      toast({ title: t.account.sessionRevokeFailed, variant: 'destructive' })
+    } finally { setBusyId(null) }
+  }
+
+  return (
+    <section aria-label={t.account.activeSessions} className="overflow-hidden rounded-lg border border-line">
+      <header className="flex items-center justify-between gap-2 border-b border-line bg-soft/60 px-4 py-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <MonitorSmartphone className="h-4 w-4 text-brand" aria-hidden />
+          {t.account.activeSessions}
+        </h3>
+        {sessions && sessions.length > 0 && (
+          <span className="rounded-full bg-soft px-2 py-0.5 text-[11px] font-semibold text-ink-2">
+            {isFa ? faDigits(String(sessions.length)) : sessions.length}
+          </span>
+        )}
+      </header>
+      <ul className="max-h-72 divide-y divide-line overflow-y-auto">
+        {sessions === null && (
+          <li className="flex items-center justify-center px-4 py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-ink-3" aria-hidden />
+          </li>
+        )}
+        {sessions?.length === 0 && (
+          <li className="px-4 py-6 text-center text-sm text-ink-3">{t.account.signOutAllDone}</li>
+        )}
+        {sessions?.map((s) => {
+          const { kind, browser } = describeUa(s.userAgent)
+          const Icon = kind === 'phone' ? Smartphone : kind === 'tablet' ? Tablet : Monitor
+          return (
+            <li key={s.id} className="flex items-center gap-3 px-4 py-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-soft text-ink-2" aria-hidden>
+                <Icon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-2 truncate text-sm font-medium text-ink">
+                  {browser}
+                  {s.current && (
+                    <span className="shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">
+                      {t.account.currentDevice}
+                    </span>
+                  )}
+                </p>
+                <p className="truncate text-xs text-ink-3">
+                  {t.account.sessionSignedIn} · {formatDateTime(s.createdAt, locale)}
+                </p>
+              </div>
+              <Button
+                variant="ghost" size="sm"
+                onClick={() => revoke(s.id)}
+                disabled={busyId === s.id}
+                aria-label={`${t.account.sessionRevoke} — ${browser}`}
+                className="h-8 shrink-0 gap-1.5 px-2 text-xs text-ink-3 hover:bg-error/10 hover:text-error"
+              >
+                {busyId === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <X className="h-3.5 w-3.5" aria-hidden />}
+                {t.account.sessionRevoke}
+              </Button>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
