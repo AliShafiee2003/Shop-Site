@@ -1,7 +1,7 @@
 // GET /api/account/summary — dashboard tiles for the logged-in customer.
 import { db } from '@/lib/db'
 import { getSessionUser } from '@/lib/server/auth'
-import { apiError, json } from '@/lib/server/utils'
+import { apiError, json, safeTrackingUrl } from '@/lib/server/utils'
 
 /** A "current" order = still moving through fulfillment (user requirement:
  *  the dashboard's Recent orders tile lists ONLY current orders — history
@@ -50,7 +50,7 @@ export async function GET() {
           orderNumber: shipment.order.orderNumber,
           carrier: shipment.carrier,
           trackingNumber: shipment.trackingNumber,
-          trackingUrl: shipment.trackingUrl,
+          trackingUrl: safeTrackingUrl(shipment.trackingUrl),
           status: shipment.status,
           estimatedDeliveryAt: shipment.estimatedDeliveryAt ? shipment.estimatedDeliveryAt.toISOString() : null,
         }

@@ -177,6 +177,8 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
   const [publisher, setPublisher] = useState('PersePix')
   const [series, setSeries] = useState('')
   const [publicationDate, setPublicationDate] = useState('')
+  // ADM-004: scheduled auto-publish time (datetime-local, minutes precision).
+  const [publishAt, setPublishAt] = useState('')
   const [audience, setAudience] = useState('')
   const [safetyNote, setSafetyNote] = useState('')
   const [fixedPrice, setFixedPrice] = useState(false)
@@ -224,6 +226,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
         newProduct: 'کالای جدید',
         editProduct: 'ویرایش کالا',
         draft: 'پیش‌نویس',
+        scheduled: 'زمان‌بندی‌شده',
         published: 'منتشرشده',
         tabContent: 'محتوا',
         tabMedia: 'رسانه',
@@ -313,6 +316,8 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
         fixedPrice: 'قیمت مصوب کتاب (Fixed book price)',
         isFeatured: 'نمایش در منتخب‌ها',
         status: 'وضعیت',
+        publishAt: 'زمان انتشار برنامه‌ریزی‌شده',
+        needPublishAt: 'برای وضعیت «زمان‌بندی‌شده» باید زمان انتشار را مشخص کنید.',
         save: 'ذخیره',
         saving: 'در حال ذخیره…',
         cancel: 'انصراف',
@@ -337,6 +342,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
       newProduct: 'New product',
       editProduct: 'Edit product',
       draft: 'Draft',
+      scheduled: 'Scheduled',
       published: 'Published',
       tabContent: 'Content',
       tabMedia: 'Media',
@@ -426,6 +432,8 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
       fixedPrice: 'Fixed book price',
       isFeatured: 'Featured',
       status: 'Status',
+      publishAt: 'Scheduled publish time',
+      needPublishAt: 'SCHEDULED status needs a scheduled publish time.',
       save: 'Save',
       saving: 'Saving…',
       cancel: 'Cancel',
@@ -590,6 +598,14 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
         setPublisher(p.publisher ?? 'PersePix')
         setSeries(p.series ?? '')
         setPublicationDate(p.publicationDate ? String(p.publicationDate).slice(0, 10) : '')
+        // ISO (UTC) → datetime-local value in the viewer's local time.
+        setPublishAt(
+          p.publishAt
+            ? new Date(new Date(String(p.publishAt)).getTime() - new Date().getTimezoneOffset() * 60_000)
+                .toISOString()
+                .slice(0, 16)
+            : '',
+        )
         setAudience(p.audience ?? '')
         setSafetyNote(p.safetyNote ?? '')
         setFixedPrice(!!p.fixedPrice)
@@ -637,6 +653,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
       cancelled = true
     }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: editor reloads on open/productId only; toast/onClose are stable, inclusion risks a reload loop
   }, [open, productId])
 
   // ── Related search (debounced) ──
@@ -725,6 +742,13 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
       toast({ title: L.slugHint, variant: 'destructive' })
       return
     }
+    // ADM-004: SCHEDULED without a time would never auto-promote — guard both
+    // here (friendly toast) and server-side (400).
+    if (status === 'SCHEDULED' && !publishAt) {
+      setTab('classification')
+      toast({ title: L.needPublishAt, variant: 'destructive' })
+      return
+    }
 
     const variantsPayload = variants.map((v) => ({
       ...(v.id ? { id: v.id } : {}),
@@ -772,6 +796,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
           publisher: publisher.trim() || undefined,
           series: series.trim() || undefined,
           publicationDate: publicationDate || null,
+          publishAt: publishAt ? new Date(publishAt).toISOString() : null,
           audience: audience.trim() || undefined,
           safetyNote: safetyNote.trim() || undefined,
           fixedPrice,
@@ -804,6 +829,7 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
           publisher: publisher.trim() || null,
           series: series.trim() || null,
           publicationDate: publicationDate || null,
+          publishAt: publishAt ? new Date(publishAt).toISOString() : null,
           audience: audience.trim() || null,
           safetyNote: safetyNote.trim() || null,
           coverUrl: effectiveCover,
@@ -1900,9 +1926,23 @@ export function FullProductEditor({ productId, open, onClose, onSaved }: FullPro
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="DRAFT">{L.draft}</SelectItem>
+                          <SelectItem value="SCHEDULED">{L.scheduled}</SelectItem>
                           <SelectItem value="PUBLISHED">{L.published}</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pe-publishat" className="text-[13px] font-medium text-ink">
+                        {L.publishAt}
+                      </Label>
+                      <Input
+                        id="pe-publishat"
+                        dir="ltr"
+                        type="datetime-local"
+                        className={inputCls}
+                        value={publishAt}
+                        onChange={(e) => setPublishAt(e.target.value)}
+                      />
                     </div>
                   </section>
 

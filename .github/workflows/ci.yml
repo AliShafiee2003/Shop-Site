@@ -1,21 +1,27 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# CI — Persepix bookstore (task 1-c, audit OPS-002)
+# CI — PersePix bookstore (task 1-c, audit OPS-002; extended after audit v2)
 #
 # Gate → audit-finding map:
 #   • typecheck ........ QUALITY-001 (build ignored type errors; a seeded type
 #                        error must fail the pipeline, not ship)
-#   • lint ............. QUALITY-002/003 (eslint core rules re-enabled by the
-#                        quality-config task; CI must stay green with them on)
+#   • lint:ci .......... QUALITY-002 (audit v2: --max-warnings=0 — ANY seeded
+#                        warning fails the pipeline; deliberate waivers are
+#                        per-site eslint-disable comments with reasons)
+#   • check:routes ..... audit v2 P1 route-coverage guard — the static gate for
+#                        the REG-001 failure class (a deleted route whose UI
+#                        call-sites remain); catches it in seconds pre-build
 #   • prisma generate .. catches client/schema drift before build
 #   • migrate deploy ... proves the migration chain applies cleanly to a fresh
 #                        DB (audit 07-A "DB migration deploy: not a CI hook")
 #   • build ............ OPS-002 — the Next.js standalone bundle must compile
 #                        (next build + static/public copy into .next/standalone)
-#   • bun audit ........ DEP-001 — dependency CVE scan; non-blocking for now
-#                        (gates KNOWN CVEs without blocking day-to-day merges;
-#                        flip continue-on-error to false once baseline is clean)
-#   • smoke tests ...... QA-001 (future): register → checkout → track e2e plugs
-#                        in as a step after "build" — placeholder noted below
+#   • smoke ............ QA-001 (audit v2) — black-box HTTP against the built
+#                        server: healthz → register → login → add-to-cart →
+#                        checkout (sandbox) → guest track → 403 matrix →
+#                        admin login → admin upload (REG-001) → file served
+#   • bun audit ........ DEP-001 — dependency CVE scan; BLOCKING since audit v2
+#                        (audit advisories are pre-documented; a new CVE must
+#                        stop the pipeline, not scroll past in the log)
 #
 # Single job by design: four jobs would re-checkout + re-install 4× for a
 # ~2 min pipeline; the gates stay individually visible as named steps.
@@ -36,6 +42,15 @@ jobs:
       # Throwaway SQLite DB for the pipeline; `prisma migrate deploy` creates
       # the file from prisma/migrations — no service container needed.
       DATABASE_URL: file:/tmp/ci.db
+      # Smoke run's admin credentials: seeded by prisma/seed.ts from these env
+      # values (never hardcoded); the smoke script reuses them via SMOKE_*.
+      SEED_ADMIN_PASSWORD: ci-smoke-admin-password-1
+      SEED_CUSTOMER_PASSWORD: ci-smoke-customer-password-1
+      SMOKE_ADMIN_EMAIL: owner@persepix.ir
+      SMOKE_ADMIN_PASSWORD: ci-smoke-admin-password-1
+      # Sandbox runtime needs the simulated gateway explicitly (SEC-014: it is
+      # opt-in now; in dev the default is still SANDBOX, but be explicit in CI).
+      PAYMENT_PROVIDER: sandbox
     steps:
       # ── setup ────────────────────────────────────────────────────────────────
       - name: Checkout
@@ -56,8 +71,11 @@ jobs:
       - name: Typecheck (QUALITY-001)
         run: bun run typecheck
 
-      - name: Lint (QUALITY-002/003)
-        run: bun run lint
+      - name: Lint (QUALITY-002 — zero-warning gate)
+        run: bun run lint:ci
+
+      - name: Route-coverage guard (audit v2 — REG-001 class)
+        run: bun run check:routes
 
       # ── build (OPS-002) ──────────────────────────────────────────────────────
       - name: Apply migrations to fresh CI DB
@@ -66,13 +84,26 @@ jobs:
       - name: Build standalone bundle
         run: bun run build
 
-      # QA-001 placeholder — smoke tests (register → checkout → track) belong
-      # here once written; keep this slot reserved so the gate lands visibly.
+      # ── smoke (QA-001) ───────────────────────────────────────────────────────
+      - name: Seed smoke fixtures
+        run: bun prisma/seed.ts
+
+      - name: Start built server
+        run: |
+          bun run start &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/healthz >/dev/null && break
+            sleep 1
+          done
+        shell: bash
+
+      - name: Smoke test (register → cart → checkout → track → admin upload)
+        run: bun run smoke
 
       # ── audit (DEP-001) ──────────────────────────────────────────────────────
-      - name: Dependency audit (production deps only)
+      - name: Dependency audit (BLOCKING — DEP-001 closed)
         run: bun audit --production
-        # Non-blocking by policy (DEP-001): surfaces known CVEs without
-        # blocking merges. Review the log each run; make this blocking once
-        # the known-CVE baseline is resolved.
-        continue-on-error: true
+        # Blocking since audit v2: known advisories are documented in the
+        # security report; any NEW advisory must stop the pipeline. If a new
+        # advisory is accepted as a risk, pin it with `bun audit --ignore` and
+        # record the rationale in docs (never silent-pass).

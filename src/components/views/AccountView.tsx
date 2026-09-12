@@ -86,6 +86,7 @@ export function AccountView({ section, sub }: { section: string; sub?: string })
     if (route.query.welcome !== 'google') return
     toast({ title: getDict(route.locale).auth.googleWelcome, duration: 4000 })
     navigate('/account', { replace: true })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fires once per ?welcome=google arrival; navigate(replace) strips the param before locale/toast can change
   }, [route.query.welcome])
 
   const NAV = [

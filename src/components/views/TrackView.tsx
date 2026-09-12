@@ -74,6 +74,7 @@ export function TrackView() {
       }
     }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: auto-lookup runs once on checkout-redirect arrival; user-initiated lookups go through the form
   }, [])
 
   return (

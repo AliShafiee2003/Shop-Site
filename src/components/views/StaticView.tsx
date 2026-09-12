@@ -268,6 +268,7 @@ export function LegalView({ type }: { type: string }) {
       .catch(() => { if (alive) setState({ key, failed: true }) })
     return () => { alive = false }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates type+locale — the fetch's only intended triggers
   }, [key])
 
   const titles: Record<string, string> = {
@@ -278,6 +279,7 @@ export function LegalView({ type }: { type: string }) {
     accessibility: locale === 'fa' ? 'دسترس‌پذیری' : 'Accessibility statement',
     cookies: locale === 'fa' ? 'کوکی‌ها' : 'Cookie notice',
   }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: titles map is rebuilt every render; locale+type are the real triggers of the title
   useEffect(() => { document.title = `${titles[type] ?? t.static.legalTitle} — PersePix` }, [locale, type])  
 
   if (failed) {

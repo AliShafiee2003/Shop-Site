@@ -27,7 +27,7 @@ const variantSchema = z.object({
 
 const createSchema = z.object({
   slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9-]+$/, 'slug must be kebab-case (a-z, 0-9, dashes)').optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+  status: z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED']).optional(),
   titleEn: z.string().trim().min(1).max(300),
   titleFa: z.string().trim().max(300).optional(),
   subtitleEn: z.string().trim().max(300).optional(),
@@ -47,6 +47,13 @@ const createSchema = z.object({
   publicationDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/, 'publicationDate must be an ISO date (YYYY-MM-DD)')
+    .nullable()
+    .optional(),
+  /** ADM-004: scheduled auto-publish time — housekeeping promotes SCHEDULED →
+   *  PUBLISHED once this passes. ISO date or datetime; null to clear. */
+  publishAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/, 'publishAt must be an ISO datetime (YYYY-MM-DDTHH:mm)')
     .nullable()
     .optional(),
   audience: z.string().trim().max(120).optional(),
@@ -279,6 +286,14 @@ export async function POST(req: Request) {
   const coverUrl = d.coverUrl !== undefined ? d.coverUrl : d.media?.[0]?.url ?? null
 
   const publicationDate = d.publicationDate ? new Date(d.publicationDate) : null
+  const publishAt = d.publishAt ? new Date(d.publishAt) : null
+  if (d.publishAt && Number.isNaN(publishAt!.getTime())) {
+    return apiError(400, 'VALIDATION_ERROR', 'publishAt must be a valid ISO datetime')
+  }
+  // SCHEDULED without a publishAt would never auto-promote — reject up front.
+  if ((d.status ?? 'DRAFT') === 'SCHEDULED' && !publishAt) {
+    return apiError(400, 'VALIDATION_ERROR', 'SCHEDULED products need a publishAt datetime (the scheduled auto-publish time)')
+  }
 
   try {
     const created = await db.$transaction(async (tx) => {
@@ -287,6 +302,7 @@ export async function POST(req: Request) {
           slug: slug!,
           status: d.status ?? 'DRAFT',
           publicationDate,
+          publishAt,
           publisher: d.publisher || 'PersePix',
           series: d.series || null,
           coverUrl,

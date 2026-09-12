@@ -105,12 +105,20 @@ export async function POST(req: NextRequest) {
   const rl = rateLimit(`${ip}:checkout`, 5, 60_000)
   if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many checkout attempts. Please wait a minute.')
 
-  // COM-001: the simulation below accepts ANY 16-digit number — acceptable in
-  // the sandbox only. Fail closed when a real provider is configured but not
-  // integrated: PAYMENT_PROVIDER unset/'' defaults to 'SANDBOX' (historic
-  // behaviour); production MUST set PAYMENT_PROVIDER (e.g. stripe) and wire
-  // the PSP before this endpoint may take money.
-  const paymentProvider = (process.env.PAYMENT_PROVIDER ?? 'SANDBOX').trim().toUpperCase()
+  // COM-001 / SEC-014 (audit v2): the simulation below accepts ANY 16-digit
+  // number — acceptable in the sandbox only, and it must be OPT-IN.
+  // Fail closed:
+  //  - production with PAYMENT_PROVIDER unset/'' → 503 (the old `?? 'SANDBOX'`
+  //    default silently enabled the fake gateway in production).
+  //  - any explicitly configured non-sandbox provider → 503 until the PSP is
+  //    actually wired (no silent simulation of a real gateway).
+  //  - PAYMENT_PROVIDER=SANDBOX stays allowed in dev AND as an explicit
+  //    operator override (e.g. pre-launch smoke on staging).
+  const rawProvider = (process.env.PAYMENT_PROVIDER ?? '').trim().toUpperCase()
+  const paymentProvider = rawProvider || (process.env.NODE_ENV === 'production' ? '' : 'SANDBOX')
+  if (!paymentProvider) {
+    return apiError(503, 'PAYMENT_PROVIDER_UNAVAILABLE', 'PAYMENT_PROVIDER is not configured — checkout is disabled in production until a payment provider is set and the PSP is wired')
+  }
   if (paymentProvider !== 'SANDBOX') {
     return apiError(503, 'PAYMENT_PROVIDER_UNAVAILABLE', `Payment provider "${paymentProvider}" is not integrated — checkout is disabled until the PSP is wired`)
   }

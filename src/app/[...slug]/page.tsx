@@ -205,7 +205,7 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
         '@type': 'Organization',
         name: brand,
         url: absUrl(site, localePath(locale, '')),
-        logo: absUrl(site, '/logo.svg'),
+        logo: absUrl(site, '/images/logo.png'),
         ...(store.email ? { contactPoint: { '@type': 'ContactPoint', email: store.email, contactType: 'customer service' } } : {}),
         ...(sameAs.length ? { sameAs } : {}),
       })
@@ -320,7 +320,7 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
           author: a.byline
             ? { '@type': 'Person', name: a.byline }
             : { '@type': 'Organization', name: brand },
-          publisher: { '@type': 'Organization', name: brand, logo: { '@type': 'ImageObject', url: absUrl(site, '/logo.svg') } },
+          publisher: { '@type': 'Organization', name: brand, logo: { '@type': 'ImageObject', url: absUrl(site, '/images/logo.png') } },
           ...(t?.excerpt ? { description: t.excerpt } : {}),
         })
         payloads.push(crumb([

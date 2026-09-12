@@ -80,6 +80,7 @@ export function AuthorView({ slug }: { slug: string }) {
       .catch(() => { if (alive) setState({ key, failed: true }) })
     return () => { alive = false }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates slug+locale; adding person/locale would refetch the identical payload
   }, [key])
 
   if (failed) {

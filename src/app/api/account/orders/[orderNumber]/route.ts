@@ -7,7 +7,7 @@
 import { db } from '@/lib/db'
 import { getSessionUser } from '@/lib/server/auth'
 import { getPublicOrderTimeline } from '@/lib/server/order-timeline'
-import { apiError, json, parseJsonSafe } from '@/lib/server/utils'
+import { apiError, json, parseJsonSafe, safeTrackingUrl } from '@/lib/server/utils'
 
 export async function GET(_req: Request, ctx: { params: Promise<{ orderNumber: string }> }) {
   const user = await getSessionUser()
@@ -121,7 +121,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ orderNumber: s
         ? {
             carrier: shipment.carrier,
             trackingNumber: shipment.trackingNumber,
-            trackingUrl: shipment.trackingUrl,
+            trackingUrl: safeTrackingUrl(shipment.trackingUrl),
             status: shipment.status,
             shippedAt: shipment.shippedAt ? shipment.shippedAt.toISOString() : null,
             estimatedDeliveryAt: shipment.estimatedDeliveryAt ? shipment.estimatedDeliveryAt.toISOString() : null,

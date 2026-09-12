@@ -136,7 +136,8 @@ export function Shell() {
         // Bootstrap itself failed (offline?) — degrade to the standalone calls.
         fetchAndAdoptConsent().catch(() => {})
       })
-  }, [])
+    // Zustand actions are module-stable identities — listing them changes nothing.
+  }, [setUser, setCartSummary])
 
   const segs = route.segments
   const [root, second, third] = segs

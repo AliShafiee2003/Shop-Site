@@ -143,41 +143,78 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   }
 
   // ── Reviews (approved only) ──
-  const allReviews = await db.review.findMany({
-    where: { productId: p.id, moderationState: 'APPROVED' },
-    orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { votes: true } } },
-  })
-  // Review sort (R8): `helpful` orders by vote count (recency tie-break) BEFORE
-  // the top-20 slice; `recent` (default) preserves the historical order.
+  // PERF-002 (audit v2): the PDP previously loaded EVERY approved review row
+  // just to render 20 of them. Now: two cheap aggregates (count + avg), vote
+  // counts via groupBy (powers `helpful` sort + "most helpful" badge), and a
+  // bounded ≤20-row fetch. A 1,000-review product now costs the same as a
+  // 5-review one.
   const reviewsSort = searchParams.get('reviewsSort') === 'helpful' ? 'helpful' : 'recent'
-  const orderedReviews =
-    reviewsSort === 'helpful'
-      ? [...allReviews].sort((a, b) => b._count.votes - a._count.votes || +b.createdAt - +a.createdAt)
-      : allReviews
+
+  const agg = await db.review.aggregate({
+    where: { productId: p.id, moderationState: 'APPROVED' },
+    _count: { _all: true },
+    _avg: { rating: true },
+  })
+  const reviewCount = agg._count._all
+  const avg = reviewCount ? Math.round((agg._avg.rating ?? 0) * 10) / 10 : 0
+
+  const voteCounts = await db.reviewVote.groupBy({
+    by: ['reviewId'],
+    where: { review: { productId: p.id, moderationState: 'APPROVED' } },
+    _count: { _all: true },
+  })
+  const votesByReview = new Map(voteCounts.map((v) => [v.reviewId, v._count._all]))
   // The single most-helpful review (≥1 vote) is flagged regardless of sort so
   // the PDP can pin a "Most helpful" badge on it.
   let topReviewId: string | null = null
   let topVotes = 0
-  for (const r of allReviews) {
-    if (r._count.votes > topVotes) { topVotes = r._count.votes; topReviewId = r.id }
+  for (const [reviewId, votes] of votesByReview) {
+    if (votes > topVotes) { topVotes = votes; topReviewId = reviewId }
   }
-  // Helpfulness votes: fresh counts come from the include; `voted` is only
-  // resolved when a session exists (guests get the button in signed-out mode).
+
+  // R8: `helpful` orders by vote count (recency tie-break) BEFORE the top-20
+  // slice; `recent` (default) is a plain bounded createdAt-desc query.
+  let reviewRows
+  if (reviewsSort === 'helpful') {
+    const meta = await db.review.findMany({
+      where: { productId: p.id, moderationState: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, createdAt: true },
+    })
+    const orderedIds = meta
+      .sort((a, b) => (votesByReview.get(b.id) ?? 0) - (votesByReview.get(a.id) ?? 0) || +b.createdAt - +a.createdAt)
+      .slice(0, 20)
+      .map((r) => r.id)
+    reviewRows = orderedIds.length
+      ? await db.review.findMany({
+          where: { id: { in: orderedIds } },
+          include: { _count: { select: { votes: true } } },
+        })
+      : []
+    const rank = new Map(orderedIds.map((id, i) => [id, i]))
+    reviewRows.sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0))
+  } else {
+    reviewRows = await db.review.findMany({
+      where: { productId: p.id, moderationState: 'APPROVED' },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      include: { _count: { select: { votes: true } } },
+    })
+  }
+
+  // Helpfulness votes: `voted` is only resolved when a session exists (guests
+  // get the button in signed-out mode) — and only for the rendered 20.
   const viewer = await getSessionUser()
   const votedIds = viewer
     ? new Set(
         (
           await db.reviewVote.findMany({
-            where: { userId: viewer.id, reviewId: { in: allReviews.map((r) => r.id) } },
+            where: { userId: viewer.id, reviewId: { in: reviewRows.map((r) => r.id) } },
             select: { reviewId: true },
           })
         ).map((v) => v.reviewId),
       )
     : new Set<string>()
-  const avg = allReviews.length
-    ? Math.round((allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length) * 10) / 10
-    : 0
 
   const card = toProductCard(p, locale, promo)
 
@@ -201,9 +238,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
     promoExcluded: isPromoExcluded(promo, p.id),
     reviews: {
       avg,
-      count: allReviews.length,
+      count: reviewCount,
       topReviewId,
-      items: orderedReviews.slice(0, 20).map((r) => ({
+      items: reviewRows.map((r) => ({
         id: r.id,
         rating: r.rating,
         title: r.title,

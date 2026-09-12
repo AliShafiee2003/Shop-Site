@@ -10,7 +10,7 @@ import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { getPublicOrderTimeline } from '@/lib/server/order-timeline'
-import { apiError, clientIp, json } from '@/lib/server/utils'
+import { apiError, clientIp, json, safeTrackingUrl } from '@/lib/server/utils'
 
 /** PublicRef shape minted by checkout: PR-<base64url token>. */
 function isPublicRef(raw: string): boolean {
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ orderNumber
         ? {
             carrier: shipment.carrier,
             trackingNumber: shipment.trackingNumber,
-            trackingUrl: shipment.trackingUrl,
+            trackingUrl: safeTrackingUrl(shipment.trackingUrl),
             status: shipment.status,
             estimatedDeliveryAt: shipment.estimatedDeliveryAt ? shipment.estimatedDeliveryAt.toISOString() : null,
           }

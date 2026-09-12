@@ -33,6 +33,7 @@ export function SearchView({ q }: { q: string }) {
       .catch(() => { if (alive) setState({ key, results: { query: q, products: [], people: [], articles: [] } }) })
     return () => { alive = false }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates q+locale with a fetch-dedup guard; adding q would double-fetch per keystroke
   }, [key])
 
   useEffect(() => {

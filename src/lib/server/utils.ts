@@ -15,6 +15,17 @@ export function apiError(status: number, code: string, message?: string): NextRe
   )
 }
 
+/** BUG-002 (audit v2) defense-in-depth: legacy rows may still carry a broken
+ *  `https://…/{{number}}` TEMPLATE url from before the S19 fix. Shipments
+ *  returned to customers must never expose those — a template link 404s and
+ *  confuses the buyer. Anything without a placeholder passes through; anything
+ *  containing `{{` (or not starting with http) is dropped (UI hides the link). */
+export function safeTrackingUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  if (url.includes('{{') || url.includes('}}')) return null
+  return /^https?:\/\//i.test(url) ? url : null
+}
+
 /** Parse stored JSON safely with a fallback (never throws). */
 export function parseJsonSafe<T>(raw: string | null | undefined, fallback: T): T {
   if (raw === null || raw === undefined || raw === '') return fallback

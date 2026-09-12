@@ -234,6 +234,7 @@ export function AdminCustomersTable() {
 
   useEffect(() => {
     load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: load() is recreated each render (adding it loops); [q,sort,dir,page,pageSize] are the triggers
   }, [q, sort, dir, page, pageSize])
 
   const toggleSort = (key: SortKey) => {
@@ -282,6 +283,7 @@ export function AdminCustomersTable() {
     return () => {
       alive = false
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: detail modal loads once per detailId; toast/L.detailError are stable and add no value
   }, [detailId])
 
   const noteDirty = detail !== null && note !== (detail.adminNote ?? '')

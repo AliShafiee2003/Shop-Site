@@ -29,6 +29,7 @@ export function CartView() {
     refresh()
     document.title = `${t.cart.title} — PersePix`
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: refresh is recreated every render (would loop); locale is the real trigger for the title refetch
   }, [locale])
 
   const mutate = async (id: string, fn: () => Promise<CartDTO>) => {

@@ -20,7 +20,13 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "react-compiler/react-compiler": "off",
 
     // Next.js rules
-    "@next/next/no-img-element": "warn",
+    // no-img-element: OFF pending the PERF-003 next/image migration (audit v2
+    // P2). All 60 current <img> sites are local static assets (/images/*,
+    // /uploads/*) with explicit sizing; switching to next/image changes the
+    // emitted DOM (wrapper + srcset) and risks layout shifts across every
+    // storefront block — it is a dedicated visual-perf task, not lint noise.
+    // Re-enable this rule as part of that migration.
+    "@next/next/no-img-element": "off",
     "@next/next/no-html-link-for-pages": "off",
 
     // General JavaScript rules

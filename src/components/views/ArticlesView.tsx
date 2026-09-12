@@ -132,6 +132,7 @@ export function ArticleView({ slug }: { slug: string }) {
       .catch(() => { if (alive) setState({ key, failed: true }) })
     return () => { alive = false }
      
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates slug+locale; adding article/locale would refetch the identical payload
   }, [key])
 
   if (failed) {

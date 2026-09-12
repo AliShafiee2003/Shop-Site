@@ -37,6 +37,9 @@ const variantRowSchema = z.object({
 
 const patchSchema = z.object({
   status: z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED']).optional(),
+  /** ADM-004: scheduled auto-publish time (housekeeping promotes SCHEDULED →
+   *  PUBLISHED once this passes). ISO datetime or null to clear. */
+  publishAt: z.string().max(40).nullable().optional(),
   isFeatured: z.boolean().optional(),
   fixedPrice: z.boolean().optional(),
   stockAdjust: z
@@ -239,6 +242,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (!parsed.success) return apiError(400, 'VALIDATION_ERROR', zodMessage(parsed.error))
   const {
     status,
+    publishAt,
     isFeatured,
     fixedPrice,
     stockAdjust,
@@ -270,6 +274,19 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         return apiError(400, 'VALIDATION_ERROR', 'publicationDate must be an ISO date (YYYY-MM-DD) or null')
       }
       pubDate = parsedDate
+    }
+  }
+
+  // publishAt (ADM-004): '' / null clears; otherwise must parse as a datetime.
+  let publishAtDate: Date | null | undefined
+  if (publishAt !== undefined) {
+    if (publishAt === null || publishAt === '') publishAtDate = null
+    else {
+      const parsedPublish = new Date(publishAt)
+      if (Number.isNaN(parsedPublish.getTime())) {
+        return apiError(400, 'VALIDATION_ERROR', 'publishAt must be an ISO datetime (e.g. 2026-09-20T09:30) or null')
+      }
+      publishAtDate = parsedPublish
     }
   }
 
@@ -368,8 +385,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   }
 
   // ── Simple product fields (legacy status/isFeatured/fixedPrice + new detail fields) ──
+  // SCHEDULED without a publishAt would never auto-promote (housekeeping
+  // matches SCHEDULED + publishAt <= now) — reject that combination up front.
+  const effectiveStatus = status ?? product.status
+  if (effectiveStatus === 'SCHEDULED' && (publishAtDate === null || (publishAtDate === undefined && !product.publishAt))) {
+    return apiError(400, 'VALIDATION_ERROR', 'SCHEDULED products need a publishAt datetime (the scheduled auto-publish time)')
+  }
   const simple: Record<string, unknown> = {
     ...(status ? { status } : {}),
+    ...(publishAtDate !== undefined ? { publishAt: publishAtDate } : {}),
     ...(isFeatured !== undefined ? { isFeatured } : {}),
     ...(fixedPrice !== undefined ? { fixedPrice } : {}),
     ...(slug !== undefined && slug !== product.slug ? { slug } : {}),
@@ -387,6 +411,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (publisher !== undefined && (publisher || 'PersePix') !== product.publisher) simpleChanges.push('publisher')
   if (series !== undefined && (series || null) !== product.series) simpleChanges.push('series')
   if (pubDate !== undefined && pubDate?.toJSON() !== product.publicationDate?.toJSON()) simpleChanges.push('publicationDate')
+  if (publishAtDate !== undefined && publishAtDate?.toJSON() !== product.publishAt?.toJSON()) simpleChanges.push('publishAt')
   if (audience !== undefined && (audience || null) !== product.audience) simpleChanges.push('audience')
   if (safetyNote !== undefined && (safetyNote || null) !== product.safetyNote) simpleChanges.push('safetyNote')
   if (coverUrl !== undefined && (coverUrl || null) !== product.coverUrl) simpleChanges.push('coverUrl')

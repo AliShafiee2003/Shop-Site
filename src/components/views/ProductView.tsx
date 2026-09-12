@@ -108,6 +108,7 @@ export function ProductView({ slug }: { slug: string }) {
     // Let the review list finish painting before measuring the scroll target.
     const raf = requestAnimationFrame(() => jumpToReview(id))
     return () => cancelAnimationFrame(raf)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: anchorHandled guard makes this run-once per deep link; jumpToReview identity is irrelevant
   }, [product, reviewParam])
   useEffect(() => () => clearHighlight(), [])
   /** Hero image — gallery selection first, then cover; empty string → placeholder
@@ -205,6 +206,7 @@ export function ProductView({ slug }: { slug: string }) {
       })
       .catch(() => { if (alive) setFailed(true) })
     return () => { alive = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: ssrProduct only seeds first paint; the network fetch must key on slug+locale alone
   }, [slug, locale])
 
   const variant = useMemo(() => product?.variants.find((v) => v.id === variantId) ?? product?.variants[0] ?? null, [product, variantId])

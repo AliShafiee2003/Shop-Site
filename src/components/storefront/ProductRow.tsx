@@ -62,6 +62,7 @@ export function ProductRow({ products, locale, label }: { products: ProductCardD
     }
     if (!slider) { setSlider(true); setEnds({ atStart: true, atEnd: false }); return }
     measureEnds(el)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: RTL flip changes text metrics — re-measure must run even though isRtl is unread here
   }, [products.length, isRtl, slider, measureEnds])
 
   // Viewport resizes — and the initial geometry pass (RO fires once on

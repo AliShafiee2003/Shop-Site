@@ -71,7 +71,7 @@ export default async function HomePage() {
       '@type': 'Organization',
       name: brand,
       url: `${site}/`,
-      logo: `${site}/logo.svg`,
+      logo: `${site}/images/logo.png`,
     },
     {
       '@context': 'https://schema.org',

@@ -204,15 +204,25 @@ throughput bounded by SQLite, not the app.
 - Smoke/e2e tests in CI (QA-001 — slot reserved in `.github/workflows/ci.yml`).
 - Image build smoke test (§2.1) — first run happens outside this sandbox.
 
-## 8. Git history hygiene (C2 follow-up)
+## 8. Git history hygiene + secret rotation (C2 follow-up, audit v2 P0)
 
 The public repo's early commits still contain the leaked seed password
-(`Simorgh#2025`) even though HEAD is clean. Before (or right after) go-live:
+(`Simorgh#2025`) even though HEAD is clean. **Purging history does NOT
+invalidate values that were cloned before the purge — every secret that ever
+appeared in history must be treated as BURNED and rotated:**
 
-1. Rotate the credential anywhere it was reused (secrets never hardcode again —
-   seeds read `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` from the env).
-2. Run `scripts/rewrite-git-history.sh <remote-url>` — it purges the secret and
+1. Run `scripts/rewrite-git-history.sh <remote-url>` — it purges the secret and
    any tracked `db/*.db` blobs from ALL commits, then (with `--push`) force-pushes.
-3. Every collaborator re-clones afterwards; old clones keep the poisoned history.
-
-See the script header for the full pre-flight/post-flight checklist.
+2. Every collaborator re-clones afterwards; old clones keep the poisoned history.
+3. **Rotate (audit v2 P0 — history purge alone is not enough):**
+   - `STATE_SECRET` — generating a new value instantly invalidates every signed
+     newsletter confirm/unsubscribe link and OAuth state minted with the old
+     one (they fail HMAC verification → the old links are rejected).
+   - `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` — reseed or UPDATE the
+     password hashes; the old `Simorgh#2025` must return 401 (verified in the
+     sandbox on 2026-09-13).
+   - Any OAuth client secrets, SMTP credentials or PSP keys that ever lived in
+     the old `.env`: rotate at the provider (Google Cloud Console, mail host,
+     gateway dashboard) — code-side values are never stored for these.
+4. Going forward: secrets only ever enter via the environment (`.env` is
+   gitignored; `.env.example` documents every variable).

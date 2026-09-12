@@ -56,6 +56,7 @@ export function AuthView({ mode }: { mode: 'login' | 'register' }) {
       setError(map[g] ?? t.auth.googleFailed)
       navigate(`${mode === 'register' ? '/register' : '/login'}`, { replace: true })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: one-shot error mapping per ?google= arrival; navigate(replace) clears the param immediately
   }, [route.query.google])
 
   const submit = async (e: React.FormEvent) => {
