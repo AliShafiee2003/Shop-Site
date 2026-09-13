@@ -11,9 +11,8 @@ import { NextResponse, type NextRequest } from 'next/server'
  * 2. Audit SEC-003: issues the Content-Security-Policy header. In production
  *    script-src uses a per-request nonce + 'strict-dynamic' (NO 'unsafe-inline')
  *    — Next.js picks the nonce up from the CSP request header and applies it to
- *    its own bootstrap scripts; the legacy-hash migration script in layout.tsx
- *    receives it via the `x-nonce` request header. JSON-LD blocks are data
- *    blocks (never executed) and need no nonce. In development the policy keeps
+ *    its own bootstrap scripts. JSON-LD blocks are data blocks (never executed)
+ *    and need no nonce. In development the policy keeps
  *    'unsafe-inline'/'unsafe-eval' for HMR/react-refresh (a nonce there would
  *    make browsers ignore 'unsafe-inline' and break next dev).
  *
@@ -47,7 +46,6 @@ export default function proxy(req: NextRequest) {
   let csp: string
   if (isProd) {
     const nonce = btoa(crypto.randomUUID()).replace(/=+$/, '')
-    headers.set('x-nonce', nonce)
     // Request header → Next.js applies the nonce to its own <script> tags.
     headers.set('content-security-policy', buildCsp(nonce))
     csp = buildCsp(nonce)

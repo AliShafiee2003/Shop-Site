@@ -4,6 +4,7 @@
 // Publish through the normal audited flow. Restoring replaces ALL draft
 // sections (same replace-all contract as the editor's PUT draft path).
 import { db } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 import { requireContentAdmin } from '@/lib/server/auth'
 import { apiError, audit, json } from '@/lib/server/utils'
 
@@ -28,24 +29,34 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     settingsJson: s.settingsJson,
   }))
 
-  // Upsert the DRAFT version (replace all sections) — mirrors the editor's
-  // own draft path so the editor state and the DB stay in the same shape.
-  const existingDraft = await db.homepageVersion.findFirst({
-    where: { locale: version.locale, status: 'DRAFT' },
-    orderBy: { createdAt: 'desc' },
-  })
+  // Single-source config: the homepage editor writes are mirrored to BOTH
+  // locales (settings are bilingual), so a restore must mirror too — otherwise
+  // the next editor save would resurrect the pre-restore order in one locale.
+  const otherLocale: 'en' | 'fa' = version.locale === 'en' ? 'fa' : 'en'
   const summary = `Restored from ${version.status === 'PUBLISHED' ? 'current' : ''} version published ${version.publishedAt?.toISOString().slice(0, 10) ?? version.createdAt.toISOString().slice(0, 10)}`.replace('  ', ' ')
 
-  const draft = existingDraft
-    ? await db.homepageVersion.update({
-        where: { id: existingDraft.id },
-        data: { changeSummary: summary, sections: { deleteMany: {}, create: sectionData } },
-      })
-    : await db.homepageVersion.create({
-        data: { locale: version.locale, status: 'DRAFT', changeSummary: summary, sections: { create: sectionData } },
-      })
+  const restoreDraftFor = async (loc: 'en' | 'fa', tx: Prisma.TransactionClient) => {
+    const existingDraft = await tx.homepageVersion.findFirst({
+      where: { locale: loc, status: 'DRAFT' },
+      orderBy: { createdAt: 'desc' },
+    })
+    return existingDraft
+      ? await tx.homepageVersion.update({
+          where: { id: existingDraft.id },
+          data: { changeSummary: summary, sections: { deleteMany: {}, create: sectionData } },
+        })
+      : await tx.homepageVersion.create({
+          data: { locale: loc, status: 'DRAFT', changeSummary: summary, sections: { create: sectionData } },
+        })
+  }
 
-  await audit(user.email, 'HOMEPAGE_RESTORE', 'HomepageVersion', version.id, `Restored ${version.status.toLowerCase()} homepage version (${version.locale}) into the draft (${sectionData.length} sections)`)
+  const draft = await db.$transaction(async (tx) => {
+    const restored = await restoreDraftFor(version.locale as 'en' | 'fa', tx)
+    await restoreDraftFor(otherLocale, tx) // single-source config: mirror to the other locale's draft
+    return restored
+  })
+
+  await audit(user.email, 'HOMEPAGE_RESTORE', 'HomepageVersion', version.id, `Restored ${version.status.toLowerCase()} homepage version (${version.locale}) into both drafts en+fa (${sectionData.length} sections each)`)
 
   return json({
     draft: {

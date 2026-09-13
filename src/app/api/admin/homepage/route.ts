@@ -79,57 +79,75 @@ export async function PUT(req: Request) {
     settingsJson: JSON.stringify(s.settings),
   }))
 
-  // ── Upsert the DRAFT version (replace all sections) ──
-  const existingDraft = await db.homepageVersion.findFirst({ where: { locale, status: 'DRAFT' }, orderBy: { createdAt: 'desc' } })
-  const draftVersion = existingDraft
-    ? await db.homepageVersion.update({
-        where: { id: existingDraft.id },
-        data: { changeSummary: changeSummary ?? existingDraft.changeSummary, sections: { deleteMany: {}, create: sectionData } },
-      })
-    : await db.homepageVersion.create({
-        data: { locale, status: 'DRAFT', changeSummary: changeSummary ?? null, sections: { create: sectionData } },
-      })
+  // ── Single-source config (user-reported bug: «تغییر ترتیب در فارسی روی انگلیسی اثر ندارد») ──
+  // Every section setting is bilingual (headingEn/headingFa, titleEn/titleFa, …),
+  // so per-locale versions are pure duplication and WILL drift. Whatever the
+  // editor saves is therefore mirrored to BOTH locales atomically; the admin
+  // UI locale toggle only switches the interface language, never the data.
+  const mirrorLocales: Array<'en' | 'fa'> = locale === 'en' ? ['en', 'fa'] : ['fa', 'en']
+  const now = new Date()
 
-  let published: { id: string; publishedAt: string; changeSummary: string | null } | null = null
+  const { requestedDraftId, published } = await db.$transaction(async (tx) => {
+    let requestedDraftId: string | null = null
+    let published: { id: string; publishedAt: string; changeSummary: string | null } | null = null
+
+    for (const loc of mirrorLocales) {
+      const existingDraft = await tx.homepageVersion.findFirst({ where: { locale: loc, status: 'DRAFT' }, orderBy: { createdAt: 'desc' } })
+      const draftVersion = existingDraft
+        ? await tx.homepageVersion.update({
+            where: { id: existingDraft.id },
+            data: { changeSummary: changeSummary ?? existingDraft.changeSummary, sections: { deleteMany: {}, create: sectionData } },
+          })
+        : await tx.homepageVersion.create({
+            data: { locale: loc, status: 'DRAFT', changeSummary: changeSummary ?? null, sections: { create: sectionData } },
+          })
+      if (loc === locale) requestedDraftId = draftVersion.id
+
+      if (action === 'publish') {
+        // Archive the previous published version, then create a fresh PUBLISHED one.
+        await tx.homepageVersion.updateMany({
+          where: { locale: loc, status: 'PUBLISHED' },
+          data: { status: 'ARCHIVED' },
+        })
+        const newPublished = await tx.homepageVersion.create({
+          data: {
+            locale: loc,
+            status: 'PUBLISHED',
+            publishedAt: now,
+            publishedBy: user.email,
+            changeSummary: changeSummary ?? null,
+            sections: { create: sectionData },
+          },
+        })
+        if (loc === locale) {
+          published = { id: newPublished.id, publishedAt: now.toISOString(), changeSummary: newPublished.changeSummary }
+        }
+        // Retention cap: every publish leaves an ARCHIVED version row — keep the
+        // newest 20 per locale and hard-delete older ones (sections cascade).
+        const kept = await tx.homepageVersion.findMany({
+          where: { locale: loc, status: 'ARCHIVED' },
+          orderBy: { publishedAt: 'desc' },
+          take: 20,
+          select: { id: true },
+        })
+        if (kept.length === 20) {
+          await tx.homepageVersion.deleteMany({
+            where: { locale: loc, status: 'ARCHIVED', id: { notIn: kept.map((v) => v.id) } },
+          })
+        }
+      }
+    }
+    return { requestedDraftId, published }
+  })
 
   if (action === 'publish') {
-    // Archive the previous published version, then create a fresh PUBLISHED one.
-    await db.homepageVersion.updateMany({
-      where: { locale, status: 'PUBLISHED' },
-      data: { status: 'ARCHIVED' },
-    })
-    const now = new Date()
-    const newPublished = await db.homepageVersion.create({
-      data: {
-        locale,
-        status: 'PUBLISHED',
-        publishedAt: now,
-        publishedBy: user.email,
-        changeSummary: changeSummary ?? null,
-        sections: { create: sectionData },
-      },
-    })
-    published = { id: newPublished.id, publishedAt: now.toISOString(), changeSummary: newPublished.changeSummary }
-    await audit(user.email, 'HOMEPAGE_PUBLISH', 'HomepageVersion', newPublished.id, `Published homepage (${locale}) with ${sections.length} sections`)
-    // Retention cap: every publish leaves an ARCHIVED version row — keep the
-    // newest 20 per locale and hard-delete older ones (sections cascade).
-    const kept = await db.homepageVersion.findMany({
-      where: { locale, status: 'ARCHIVED' },
-      orderBy: { publishedAt: 'desc' },
-      take: 20,
-      select: { id: true },
-    })
-    if (kept.length === 20) {
-      await db.homepageVersion.deleteMany({
-        where: { locale, status: 'ARCHIVED', id: { notIn: kept.map((v) => v.id) } },
-      })
-    }
+    await audit(user.email, 'HOMEPAGE_PUBLISH', 'HomepageVersion', published!.id, `Published homepage (en+fa mirrored) with ${sections.length} sections`)
   }
 
   const draftDto = {
-    id: draftVersion.id,
-    changeSummary: draftVersion.changeSummary,
-    sections: sectionData.map((s, i) => ({ ...s, id: `s-${draftVersion.id}-${i}`, settings: sections[i].settings })),
+    id: requestedDraftId,
+    changeSummary: changeSummary ?? null,
+    sections: sectionData.map((s, i) => ({ ...s, id: `s-${requestedDraftId}-${i}`, settings: sections[i].settings })),
   }
 
   return json({ draft: draftDto, published })

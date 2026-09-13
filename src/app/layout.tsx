@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { LegacyHashRedirect } from "@/components/storefront/LegacyHashRedirect";
 import { BRAND_NAME } from "@/lib/site";
 
 /**
@@ -44,38 +45,29 @@ export const viewport: Viewport = {
 };
 
 /**
- * Legacy-hash migration. This app previously routed inside location.hash
- * (#/books/x, #/fa/books/x). Old shared links land on /#/…, which the server
- * cannot see. Rendered as a plain <script> as the FIRST child of <body>:
- * the HTML parser executes it BEFORE any (deferred) Next bundle, so the
- * rewrite happens pre-hydration and Next captures the canonical URL from
- * the very start. It stays part of the React tree (identical on server and
- * client), so hydration stays consistent — a manual <head> element was
- * tried and broke App Router head hydration (radix useId mismatch,
- * user-reported console error), and next/script beforeInteractive lands
- * too late in the Turbopack flight payload. In-page anchors (#main,
- * #section-3) are left untouched.
+ * Legacy-hash link migration — moved OUT of the React tree (see
+ * components/storefront/LegacyHashRedirect.tsx). The previous inline
+ * <script> as the first child of <body> executed before the (deferred) Next
+ * bundles, but a <script> element inside the React tree triggers React 19's
+ * dev-only "Encountered a script tag while rendering React component"
+ * console error on every page load (user-reported). The migration now runs
+ * as a client effect after mount; legacy /#/… links cost one extra paint +
+ * full reload, which is acceptable for a pre-launch artifact.
  */
-const LEGACY_HASH_MIGRATION =
-  "try{var h=location.hash;if(h.length>1&&h.charCodeAt(1)===47){var p=h.slice(1);if(location.search&&p.indexOf('?')<0)p+=location.search;location.replace(p)}}catch(e){}";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Audit SEC-003: in production the proxy mints a per-request nonce (header
-  // `x-nonce`) and CSP script-src drops 'unsafe-inline' — this inline bootstrap
-  // script MUST carry the nonce to keep executing. In dev there is no nonce
-  // header and the dev CSP still allows 'unsafe-inline', so the attribute is
-  // simply omitted. All storefront routes are force-dynamic, so reading
-  // headers() here forces nothing that wasn't already dynamic.
-  const reqHeaders = await headers();
-  const nonce = reqHeaders.get("x-nonce") ?? undefined;
   // Audit SEO-401: /fa content was served with <html lang="en" dir="ltr"> —
   // wrong for crawlers and screen readers. The proxy exposes the real request
   // path via `x-sp-path`; the fa locale is the /fa prefix (isomorphic with the
-  // KNOWN_ROOTS routing used by Shell).
+  // KNOWN_ROOTS routing used by Shell). (The proxy's per-request CSP nonce is
+  // consumed by Next itself from the CSP request header — the layout no
+  // longer needs the x-nonce header now that the inline migration script is
+  // gone.)
+  const reqHeaders = await headers();
   const spPath = reqHeaders.get("x-sp-path") ?? "/";
   const isFa = spPath === "/fa" || spPath.startsWith("/fa/");
   return (
@@ -85,11 +77,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased bg-background text-foreground font-sans">
-        <script
-          id="sp-legacy-hash-migration"
-          nonce={nonce}
-          dangerouslySetInnerHTML={{ __html: LEGACY_HASH_MIGRATION }}
-        />
+        <LegacyHashRedirect />
         {/* React 19 hoists <link rel="preload"> into <head> on the server and
             the client, so these land in <head> of the SSR HTML — both font
             families start downloading with the document, long before any

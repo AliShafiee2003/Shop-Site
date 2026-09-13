@@ -170,7 +170,17 @@ export function AdminHomepage() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-ink">{t.admin.homepage} <span className="text-sm font-normal text-ink-3">({locale.toUpperCase()})</span></h2>
+        <div>
+          <h2 className="text-lg font-semibold text-ink">{t.admin.homepage}</h2>
+          {/* Single-source config: sections carry bilingual fields (headingEn/headingFa),
+              so one configuration drives BOTH storefront languages — a save or publish
+              here is mirrored to en+fa atomically (user-reported drift bug, fixed). */}
+          <p className="mt-0.5 text-xs text-ink-3">
+            {locale === 'fa'
+              ? 'این پیکربندی برای هر دو زبان مشترک است؛ متن‌های EN/FA هر بخش داخل همان بخش ویرایش می‌شوند و ذخیره/انتشار به هر دو زبان اعمال می‌شود.'
+              : 'This configuration is shared by both languages — each section holds its own EN/FA texts, and every save/publish applies to EN and FA alike.'}
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <Input placeholder={t.admin.changeSummary} value={summary} onChange={(e) => setSummary(e.target.value)} className="h-9 w-48" />
           <Button variant="outline" className="h-9" disabled={busy} onClick={() => save('draft')}>{t.admin.draft}</Button>

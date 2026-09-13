@@ -119,30 +119,90 @@ export function AdminSettings() {
   const enabledChanged = enabled !== data.enabled
 
   // ── Store dirty detection + save ──
+  // Validation mirrors PATCH /api/admin/settings' zod schema EXACTLY and is
+  // enforced ONLY for fields actually included in the patch (unchanged values
+  // already live in the DB and pass). The previous UI hard-required legalName
+  // (which the DB row does not even have) — the save button stayed silently
+  // disabled forever and store info could not be updated (user bug report).
   const stThresholdMinor = Math.round(Number(stThreshold) * 100)
-  const storeValid =
-    stName.trim().length >= 2 && stNameFa.trim().length >= 2 && stLegal.trim().length >= 2
-    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stEmail.trim())
-    && (stPhone.trim().length === 0 || stPhone.trim().length >= 6)
-    && (stAddress.trim().length === 0 || stAddress.trim().length >= 6)
-    && Number.isFinite(stThresholdMinor) && stThresholdMinor >= 0 && stThresholdMinor <= 200_000
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isHttpUrl = (v: string) => {
+    try {
+      const u = new URL(v)
+      return u.protocol === 'http:' || u.protocol === 'https:'
+    } catch {
+      return false
+    }
+  }
+  const buildStorePatch = (): { patch: Record<string, unknown>; errors: string[] } => {
+    if (!store) return { patch: {}, errors: [] }
+    const errors: string[] = []
+    const patch: Record<string, unknown> = {}
+    if (stName !== store.name) {
+      if (stName.trim().length < 2) errors.push(t.admin.storeName)
+      else patch.name = stName.trim()
+    }
+    if (stNameFa !== store.nameFa) {
+      if (stNameFa.trim().length < 2) errors.push(t.admin.storeNameFa)
+      else patch.nameFa = stNameFa.trim()
+    }
+    // legalName is OPTIONAL in the API — empty stays unsent (can never 400).
+    if (stLegal !== store.legalName && stLegal.trim() !== '') {
+      if (stLegal.trim().length < 2) errors.push(t.admin.storeLegal)
+      else patch.legalName = stLegal.trim()
+    }
+    if (stEmail.trim() !== store.email) {
+      if (stEmail.trim() === '' || !EMAIL_RE.test(stEmail.trim())) errors.push(t.admin.storeEmail)
+      else patch.email = stEmail.trim()
+    }
+    if (stPhone.trim() !== store.phone) {
+      // API enforces min(6) — a set phone can never be cleared to ''.
+      if (stPhone.trim() === '' || stPhone.trim().length < 6) errors.push(t.admin.storePhone)
+      else patch.phone = stPhone.trim()
+    }
+    if (stAddress.trim() !== store.address) {
+      if (stAddress.trim() === '' || stAddress.trim().length < 6) errors.push(t.admin.storeAddress)
+      else patch.address = stAddress.trim()
+    }
+    if (stThresholdMinor !== store.freeShippingThresholdMinor) {
+      if (!Number.isFinite(stThresholdMinor) || stThresholdMinor < 0 || stThresholdMinor > 200_000) errors.push(t.admin.commerceThreshold)
+      else patch.freeShippingThresholdMinor = stThresholdMinor
+    }
+    // Socials: '' always allowed (clears the link); non-empty must be an
+    // absolute http(s) URL (SEC-012 rule mirrored client-side).
+    if (stInstagram.trim() !== (store.instagram ?? '')) {
+      if (stInstagram.trim() !== '' && !isHttpUrl(stInstagram.trim())) errors.push('Instagram')
+      else patch.instagram = stInstagram.trim()
+    }
+    if (stX.trim() !== (store.x ?? '')) {
+      if (stX.trim() !== '' && !isHttpUrl(stX.trim())) errors.push('X (Twitter)')
+      else patch.x = stX.trim()
+    }
+    if (stYoutube.trim() !== (store.youtube ?? '')) {
+      if (stYoutube.trim() !== '' && !isHttpUrl(stYoutube.trim())) errors.push('YouTube')
+      else patch.youtube = stYoutube.trim()
+    }
+    return { patch, errors }
+  }
+  const { patch: storePatch, errors: storeErrors } = buildStorePatch()
+  const fieldHasError = (label: string) => storeErrors.includes(label)
   const saveStore = async () => {
-    if (!store || !storeValid) return
+    if (!store || storeBusy) return
+    if (storeErrors.length > 0) {
+      toast({
+        title: isFa ? 'ذخیره ممکن نیست — این موارد را اصلاح کنید:' : 'Cannot save — fix these fields:',
+        description: storeErrors.join(isFa ? '، ' : ', '),
+        variant: 'destructive',
+      })
+      return
+    }
+    if (Object.keys(storePatch).length === 0) {
+      toast({ title: isFa ? 'تغییری برای ذخیره نیست' : 'No changes to save' })
+      return
+    }
     setStoreBusy(true)
     try {
-      const patch: Record<string, unknown> = {}
-      if (stName !== store.name) patch.name = stName.trim()
-      if (stNameFa !== store.nameFa) patch.nameFa = stNameFa.trim()
-      if (stLegal !== store.legalName) patch.legalName = stLegal.trim()
-      if (stEmail !== store.email) patch.email = stEmail.trim()
-      if (stPhone.trim() !== store.phone) patch.phone = stPhone.trim()
-      if (stAddress.trim() !== store.address) patch.address = stAddress.trim()
-      if (stThresholdMinor !== store.freeShippingThresholdMinor) patch.freeShippingThresholdMinor = stThresholdMinor
-      if (stInstagram.trim() !== (store.instagram ?? '')) patch.instagram = stInstagram.trim()
-      if (stX.trim() !== (store.x ?? '')) patch.x = stX.trim()
-      if (stYoutube.trim() !== (store.youtube ?? '')) patch.youtube = stYoutube.trim()
-      if (Object.keys(patch).length === 0) return
-      const r = await apiPatch<{ store: Record<string, unknown> }>('/api/admin/settings', { store: patch })
+      const r = await apiPatch<{ store: Record<string, unknown> }>('/api/admin/settings', { store: storePatch })
       const s = r.store as Partial<StoreRow>
       setStore((prev) => prev ? {
         ...prev,
@@ -186,33 +246,33 @@ export function AdminSettings() {
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <div className={cn('rounded-md border p-3', stName !== store.name ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div className={cn('rounded-md border p-3', fieldHasError(t.admin.storeName) ? 'border-destructive' : stName !== store.name ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-name" className="text-xs">{t.admin.storeName}</Label>
-              <Input id="store-name" value={stName} onChange={(e) => { setStName(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={60} />
+              <Input id="store-name" value={stName} onChange={(e) => { setStName(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={60} aria-invalid={fieldHasError(t.admin.storeName) || undefined} />
             </div>
-            <div lang="fa" dir="rtl" className={cn('rounded-md border p-3', stNameFa !== store.nameFa ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div lang="fa" dir="rtl" className={cn('rounded-md border p-3', fieldHasError(t.admin.storeNameFa) ? 'border-destructive' : stNameFa !== store.nameFa ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-name-fa" className="text-xs">{t.admin.storeNameFa}</Label>
-              <Input id="store-name-fa" value={stNameFa} onChange={(e) => { setStNameFa(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={60} />
+              <Input id="store-name-fa" value={stNameFa} onChange={(e) => { setStNameFa(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={60} aria-invalid={fieldHasError(t.admin.storeNameFa) || undefined} />
             </div>
-            <div className={cn('rounded-md border p-3', stLegal !== store.legalName ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div className={cn('rounded-md border p-3', fieldHasError(t.admin.storeLegal) ? 'border-destructive' : stLegal !== store.legalName ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-legal" className="text-xs">{t.admin.storeLegal}</Label>
-              <Input id="store-legal" value={stLegal} onChange={(e) => { setStLegal(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={120} />
+              <Input id="store-legal" value={stLegal} onChange={(e) => { setStLegal(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9" maxLength={120} aria-invalid={fieldHasError(t.admin.storeLegal) || undefined} />
             </div>
-            <div className={cn('rounded-md border p-3', stEmail !== store.email ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div className={cn('rounded-md border p-3', fieldHasError(t.admin.storeEmail) ? 'border-destructive' : stEmail !== store.email ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-email" className="text-xs">{t.admin.storeEmail}</Label>
-              <Input id="store-email" type="email" dir="ltr" value={stEmail} onChange={(e) => { setStEmail(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9 font-mono text-[13px]" maxLength={120} />
+              <Input id="store-email" type="email" dir="ltr" value={stEmail} onChange={(e) => { setStEmail(e.target.value); setStoreDirty(true) }} className="mt-1.5 h-9 font-mono text-[13px]" maxLength={120} aria-invalid={fieldHasError(t.admin.storeEmail) || undefined} />
             </div>
-            <div className={cn('rounded-md border p-3', stPhone.trim() !== store.phone ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div className={cn('rounded-md border p-3', fieldHasError(t.admin.storePhone) ? 'border-destructive' : stPhone.trim() !== store.phone ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-phone" className="text-xs">{t.admin.storePhone}</Label>
               <div className="relative mt-1.5">
-                <Input id="store-phone" type="tel" dir="ltr" value={stPhone} onChange={(e) => { setStPhone(e.target.value); setStoreDirty(true) }} className="h-9 ps-8 font-mono text-[13px]" maxLength={40} placeholder="+43 …" />
+                <Input id="store-phone" type="tel" dir="ltr" value={stPhone} onChange={(e) => { setStPhone(e.target.value); setStoreDirty(true) }} className="h-9 ps-8 font-mono text-[13px]" maxLength={40} placeholder="+43 …" aria-invalid={fieldHasError(t.admin.storePhone) || undefined} />
                 <Phone className="pointer-events-none absolute inset-y-0 start-2.5 my-auto h-3.5 w-3.5 text-ink-3" aria-hidden />
               </div>
             </div>
-            <div className={cn('rounded-md border p-3 sm:col-span-2', stAddress.trim() !== store.address ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
+            <div className={cn('rounded-md border p-3 sm:col-span-2', fieldHasError(t.admin.storeAddress) ? 'border-destructive' : stAddress.trim() !== store.address ? 'border-brand/40 bg-white' : 'border-line bg-white/60')}>
               <Label htmlFor="store-address" className="text-xs">{t.admin.storeAddress}</Label>
               <div className="relative mt-1.5">
-                <Input id="store-address" value={stAddress} onChange={(e) => { setStAddress(e.target.value); setStoreDirty(true) }} className="h-9 ps-8" maxLength={200} />
+                <Input id="store-address" value={stAddress} onChange={(e) => { setStAddress(e.target.value); setStoreDirty(true) }} className="h-9 ps-8" maxLength={200} aria-invalid={fieldHasError(t.admin.storeAddress) || undefined} />
                 <MapPin className="pointer-events-none absolute inset-y-0 start-2.5 my-auto h-3.5 w-3.5 text-ink-3" aria-hidden />
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-ink-3">{t.admin.storeCardHint}</p>
@@ -260,7 +320,7 @@ export function AdminSettings() {
             <p className="text-[11px] text-ink-3">
               {store.updatedBy ? tf(t.admin.gwUpdatedBy, { email: store.updatedBy, date: formatDateTime(store.updatedAt ?? new Date().toISOString(), locale) }) : null}
             </p>
-            <Button size="sm" className="h-9" disabled={storeBusy || !storeDirty || !storeValid} onClick={saveStore}>
+            <Button size="sm" className="h-9" disabled={storeBusy || !storeDirty} onClick={saveStore}>
               {storeBusy ? t.common.saving : t.admin.storeSave}
             </Button>
           </div>
