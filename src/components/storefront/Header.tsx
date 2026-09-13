@@ -168,7 +168,12 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
         {loading && <Loader2 className="absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-ink-3" aria-hidden />}
       </div>
       {results && q.trim().length >= 2 && (
-        <div className="absolute inset-x-0 top-[calc(100%+8px)] z-50 max-h-[420px] overflow-y-auto rounded-lg border border-line bg-white p-2 shadow-lg scrollbar-slim">
+        /* Results card — centered on the input (physical left-1/2 + -translate-x-1/2
+           is direction-agnostic, same trick as the ≤md compact card below).
+           Base: exactly the input's width (w-full centered ≡ inset-x-0).
+           lg+: widens past the input to 512px so product/price rows breathe,
+           still viewport-capped for small windows. */
+        <div className="absolute left-1/2 top-[calc(100%+8px)] z-50 max-[1088px]:w-full max-h-[420px] min-[1089px]:w-[min(32rem,calc(100vw-2rem))] -translate-x-1/2 overflow-y-auto rounded-lg border border-line bg-white p-2 shadow-lg scrollbar-slim">
           {results.products.length === 0 && results.people.length === 0 && results.articles.length === 0 ? (
             <p className="px-3 py-4 text-sm text-ink-3">{t.common.noResults} “{q}”</p>
           ) : (
@@ -643,8 +648,13 @@ export function Header() {
             {/* Inline search box — web (≥md) only (user: «بخش سرچ میتونه یک باکس
                 برای تایپ داشته باشه، به جای اینکه فقط آیکون باشه»). Below md
                 it collapses back to an icon (user: «اگر از یه حدی کوچکتر شد…
-                آیکون بشه»). */}
-            <div className="relative hidden w-full max-w-[15rem] md:block lg:max-w-sm">
+                آیکون بشه»). Width: 280px at md, 450px from a 1089px viewport up
+                (user: «تا سایز ۱۰۸۹ پیکسل هم میخوام تا ۴۵۰ پیکسل باشه — میتونه
+                کمتر هم بشه») — arbitrary min-[1089px] variant instead of lg
+                (1024px). NOTE: explicit widths are required — the deck parent
+                is content-sized, so max-w alone never stretched the box beyond
+                the input's intrinsic ~284px. */}
+            <div className="relative hidden md:block max-[1088px]:w-[280px] min-[1089px]:w-[450px]">
               <SearchOverlay locale={locale} autoFocus={false} inputClassName="h-10 rounded-full border-line bg-soft/70 focus:bg-white" />
             </div>
 

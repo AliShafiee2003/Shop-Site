@@ -679,9 +679,55 @@ async function main() {
       },
     }
   }
+  /** Restored for audit-v3 (user: «در نسخهٔ اصلی صفحهٔ اصلی یک اسلایدر داستانی
+   *  داشت که با اسکرول شدن اسلاید تغییر می‌شد»): the pinned SCROLL_STORY
+   *  module. The component (storefront/ScrollStory.tsx) was never removed —
+   *  only its DATA was lost with the sandbox db reset, and no seed version
+   *  ever carried it (it had been configured through the admin Homepage
+   *  editor at runtime). Assets survived in public/images/story/ (4 scenes
+   *  + mobile variants + floating cover), so the module is rebuilt from
+   *  them, bilingually, as a brand story about a thousand years of
+   *  Persian storytelling. */
+  function storySection() {
+    return {
+      type: 'SCROLL_STORY', sortOrder: 1, enabled: true,
+      settings: {
+        eyebrowEn: 'From the Book of Kings', eyebrowFa: 'از شاهنامه',
+        ctaEn: 'Browse the library', ctaFa: 'کتابخانه را ببینید', ctaHref: '/books',
+        heightPreset: 'cinematic', layout: 'backdrop',
+        coverImage: '/images/story/shahnameh-cover.png',
+        slides: [
+          {
+            image: '/images/story/shahnameh-1.png', imageMobile: '/images/story/shahnameh-1-mobile.png',
+            eyebrowEn: 'A thousand years of stories', eyebrowFa: 'هزار سال قصه',
+            titleEn: 'Where Persian storytelling begins.', titleFa: 'جایی که قصه‌گویی فارسی آغاز می‌شود.',
+            textEn: 'Ferdowsi’s verses have carried kings, heroes and heartbreak across thirty generations of readers.', textFa: 'ابراهیم حکیم ابوالقاسم فردوسی، پایتان و شگفتی‌ها را سی نسل به دوش کشیده است.',
+          },
+          {
+            image: '/images/story/shahnameh-2.png', imageMobile: '/images/story/shahnameh-2-mobile.png',
+            eyebrowEn: 'Scene II', eyebrowFa: 'صحنهٔ دوم',
+            titleEn: 'Heroes written in ink and gold.', titleFa: 'پهلوانان به مرکب زر و بند.',
+            textEn: 'Every manuscript was a small universe — painted, gilded, and read aloud across winter nights.', textFa: 'هر نسخه، گیتی کوچکی بود — نگارگری‌شده و طلاندوز که در شب‌های زمستان بلند خوانده می‌شد.',
+          },
+          {
+            image: '/images/story/shahnameh-3.png', imageMobile: '/images/story/shahnameh-3-mobile.png',
+            eyebrowEn: 'Scene III', eyebrowFa: 'صحنهٔ سوم',
+            titleEn: 'The bridge we translate across.', titleFa: 'پلی که ما ترجمه می‌کنیم.',
+            textEn: 'PersePix carries that same river of stories into new languages — page by page, border by border.', textFa: 'نشر پرسی‌پیکس همین رود قصه را به زبان‌های تازه می‌برد — صفحه به صفحه، مرز به مرز.',
+          },
+          {
+            image: '/images/story/shahnameh-4.png', imageMobile: '/images/story/shahnameh-4-mobile.png',
+            eyebrowEn: 'Scene IV', eyebrowFa: 'صحنهٔ چهارم',
+            titleEn: 'Your shelf is the next chapter.', titleFa: 'قفسهٔ شما، فصل بعدی است.',
+            textEn: 'Bilingual editions, new voices, old epics — all shipping from Vienna across Europe.', textFa: 'نسخه‌های دوزبانه، صداهای تازه، حماسه‌های کهن — همه از وین به سراسر اروپا.',
+          },
+        ],
+      },
+    }
+  }
   function categorySection() {
     return {
-      type: 'CATEGORY_CAROUSEL', sortOrder: 1, enabled: true,
+      type: 'CATEGORY_CAROUSEL', sortOrder: 2, enabled: true,
       settings: { headingEn: 'Browse the shelves', headingFa: 'گشت‌وگذار در قفسه‌ها', descriptionEn: 'Six rooms of our small library.', descriptionFa: 'شش اتاق از کتابخانهٔ کوچک ما.', slugs: ['fiction','poetry','non-fiction','childrens-books','art-photography','biography-memoir'] },
     }
   }
@@ -690,14 +736,14 @@ async function main() {
       type: 'PRODUCT_SHELF', sortOrder, enabled: true,
       settings: {
         headingEn: 'New releases', headingFa: 'تازه‌های نشر', descriptionEn: 'Fresh from the presses.', descriptionFa: 'تازه از چاپخانه.',
-        source: 'latest', layout: 'grid', limit: 4, hideOutOfStock: false,
+        source: 'latest', layout: 'carousel', limit: 8, hideOutOfStock: false,
         ctaEn: 'All books', ctaFa: 'همهٔ کتاب‌ها', ctaHref: '/books',
       },
     }
   }
   function posterSection() {
     return {
-      type: 'POSTER_GRID', sortOrder: 3, enabled: true,
+      type: 'POSTER_GRID', sortOrder: 4, enabled: true,
       settings: {
         template: 'one_plus_two',
         posters: [
@@ -710,7 +756,7 @@ async function main() {
   }
   function quoteSection() {
     return {
-      type: 'EDITORIAL_FEATURE', sortOrder: 4, enabled: true,
+      type: 'EDITORIAL_FEATURE', sortOrder: 5, enabled: true,
       settings: {
         layout: 'image-right', bg: 'soft', accentOrange: true, image: '/images/face-shirin.png',
         eyebrowEn: 'From the author', eyebrowFa: 'از زبان نویسنده',
@@ -722,7 +768,7 @@ async function main() {
   }
   function bestShelf() {
     return {
-      type: 'PRODUCT_SHELF', sortOrder: 5, enabled: true,
+      type: 'PRODUCT_SHELF', sortOrder: 6, enabled: true,
       settings: {
         headingEn: 'Readers’ favourites', headingFa: 'محبوب خوانندگان', descriptionEn: 'The books that keep leaving our shelves.', descriptionFa: 'کتاب‌هایی که پیوسته از قفسهٔ ما می‌روند.',
         source: 'bestselling', layout: 'carousel', limit: 8, hideOutOfStock: false,
@@ -731,7 +777,7 @@ async function main() {
   }
   function articleFeature() {
     return {
-      type: 'EDITORIAL_FEATURE', sortOrder: 6, enabled: true,
+      type: 'EDITORIAL_FEATURE', sortOrder: 7, enabled: true,
       settings: {
         layout: 'image-left', bg: 'white', accentOrange: false, image: '/images/article-translation.png',
         eyebrowEn: 'From the journal', eyebrowFa: 'از دفتر نشر',
@@ -741,7 +787,7 @@ async function main() {
       },
     }
   }
-  const sections = [heroSection(), categorySection(), newShelf(2), posterSection(), quoteSection(), bestShelf(), articleFeature()]
+  const sections = [heroSection(), storySection(), categorySection(), newShelf(3), posterSection(), quoteSection(), bestShelf(), articleFeature()]
   for (const locale of ['en', 'fa']) {
     const pub = await db.homepageVersion.create({ data: { locale, status: 'PUBLISHED', publishedAt: new Date(Date.now() - 7 * 86400000), publishedBy: admin.email, changeSummary: 'Seasonal campaign refresh' } })
     for (const s of sections) await db.homepageSection.create({ data: { versionId: pub.id, type: s.type, sortOrder: s.sortOrder, enabled: s.enabled, settingsJson: JSON.stringify(s.settings) } })

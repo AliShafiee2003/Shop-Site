@@ -178,7 +178,13 @@ export function ScrollStory({ section, locale, fullBleed = false }: { section: E
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
+      // Reset the rAF stamp, not just cancel: StrictMode's dev double-mount
+      // runs effect → cleanup → effect, and a stale truthy stamp made the
+      // second mount believe a frame was already scheduled — so paint()
+      // never ran again and the story froze on scene 1 (scroll scrub dead).
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      rafRef.current = 0
+      lastProgress.current = -1
     }
   }, [onScroll])
 
