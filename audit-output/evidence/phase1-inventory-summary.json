@@ -1,0 +1,33 @@
+{
+  "total_files": 415,
+  "by_type": {
+    "other": 10,
+    "ci": 1,
+    "config/root": 7,
+    "docs": 3,
+    "prisma": 9,
+    "asset": 101,
+    "public-asset": 1,
+    "script": 8,
+    "app-route/page": 7,
+    "api-route": 112,
+    "app-other": 2,
+    "component": 105,
+    "hook": 2,
+    "server-lib": 47
+  },
+  "lines_by_type": {
+    "component": 26051,
+    "api-route": 9930,
+    "server-lib": 6056,
+    "prisma": 3075,
+    "config/root": 2180,
+    "app-route/page": 1059,
+    "script": 708,
+    "other": 610,
+    "app-other": 491,
+    "docs": 396,
+    "hook": 211,
+    "ci": 109
+  }
+}

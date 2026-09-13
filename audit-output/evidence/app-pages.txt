@@ -1,0 +1,7 @@
+src/app/[...slug]/page.tsx
+src/app/layout.tsx
+src/app/llms.txt/route.ts
+src/app/not-found.tsx
+src/app/page.tsx
+src/app/robots.ts
+src/app/sitemap.xml/route.ts

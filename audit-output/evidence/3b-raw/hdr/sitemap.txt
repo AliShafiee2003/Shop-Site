@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+cache-control: public, max-age=3600
+content-type: application/xml
+Date: Sun, 13 Sep 2026 05:38:48 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+

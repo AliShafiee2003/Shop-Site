@@ -1,0 +1,7 @@
+[
+  {
+    "from": "lib/router.ts",
+    "to": "components/storefront/SsrProviders.tsx",
+    "kind": "lib imports component/page"
+  }
+]

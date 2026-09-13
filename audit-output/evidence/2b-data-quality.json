@@ -1,0 +1,678 @@
+{
+  "db_file": "db/custom.db (copy /tmp/audit-v4/db-copy.custom.db, sha256 039ae1d6cc6409b4\u2026)",
+  "generated_at_utc": "2026-09-13T05:14:55.489124+00:00",
+  "integrity_check": "ok",
+  "journal_mode": "delete",
+  "page_count": 237,
+  "page_size": 4096,
+  "freelist_count": 3,
+  "db_bytes": 970752,
+  "foreign_keys_default": 0,
+  "table_count": 55,
+  "row_counts": {
+    "Address": 2,
+    "AnalyticsEvent": 0,
+    "Announcement": 0,
+    "Article": 4,
+    "ArticleCategory": 4,
+    "ArticleCategoryLink": 4,
+    "ArticleCategoryTranslation": 8,
+    "ArticleRelation": 6,
+    "ArticleTranslation": 8,
+    "AuditLog": 4,
+    "BackInStockSubscriber": 0,
+    "Cart": 8,
+    "CartItem": 1,
+    "Category": 6,
+    "CategoryTranslation": 12,
+    "ConsentRecord": 0,
+    "CookieConsent": 1,
+    "DiscountCode": 0,
+    "EmailChangeToken": 0,
+    "EmailVerificationToken": 0,
+    "HomepageSection": 32,
+    "HomepageVersion": 4,
+    "LegalDocument": 12,
+    "LoginThrottle": 2,
+    "MailMessage": 2,
+    "NewsletterSubscriber": 0,
+    "Order": 3,
+    "OrderEvent": 10,
+    "OrderItem": 5,
+    "PasswordResetToken": 0,
+    "Payment": 3,
+    "Person": 12,
+    "PersonTranslation": 24,
+    "PriceHistory": 0,
+    "Product": 10,
+    "ProductCategory": 10,
+    "ProductContributor": 17,
+    "ProductMedia": 18,
+    "ProductTranslation": 20,
+    "Promotion": 0,
+    "Refund": 0,
+    "RelatedProduct": 12,
+    "ReturnItem": 0,
+    "ReturnRequest": 0,
+    "Review": 14,
+    "ReviewVote": 0,
+    "Session": 3,
+    "Settings": 3,
+    "Shipment": 2,
+    "TasteSignal": 0,
+    "Ticket": 2,
+    "TicketMessage": 3,
+    "User": 2,
+    "Variant": 11,
+    "WishlistItem": 0
+  },
+  "main_row_counts": {
+    "User": 2,
+    "Product": 10,
+    "Variant": 11,
+    "Order": 3,
+    "OrderItem": 5,
+    "Cart": 8,
+    "CartItem": 1,
+    "Review": 14,
+    "Session": 3,
+    "Payment": 3,
+    "Shipment": 2,
+    "AuditLog": 4,
+    "ConsentRecord": 0,
+    "NewsletterSubscriber": 0,
+    "Article": 4,
+    "Address": 2,
+    "OrderEvent": 10,
+    "MailMessage": 2
+  },
+  "audit_now_utc": "2026-09-13T05:14:55.491910+00:00",
+  "duplicates": {
+    "User.email": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "User.googleSub": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "NewsletterSubscriber.email": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Product.slug": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Category.slug": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Article.slug": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Person.slug": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "ArticleCategory.slug": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Variant.sku": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Variant.isbn13": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Variant.isbn10": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Variant.barcode": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Order.orderNumber": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Order.publicRef": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "DiscountCode.code": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "Ticket.ticketNumber": {
+      "duplicates": 0,
+      "samples": []
+    },
+    "isbn13_across_products": {
+      "count": 0,
+      "samples": []
+    }
+  },
+  "orphan_fk_scan": {
+    "relations_checked": 48,
+    "total_orphan_rows": 0,
+    "details": {}
+  },
+  "orphan_soft_slug_refs": {
+    "WishlistItem.productSlug \u2192 Product.slug": 0,
+    "TasteSignal.productSlug \u2192 Product.slug": 0,
+    "AnalyticsEvent.productSlug \u2192 Product.slug": 0,
+    "Product.seriesSlug \u2192 Product.slug": 3
+  },
+  "audit_log_integrity": {
+    "total": 4,
+    "dangling": {}
+  },
+  "value_domains": {
+    "Variant.stock_negative": 0,
+    "Variant.stock_negative_samples": [],
+    "Variant.priceMinor_le0_all": 0,
+    "Variant.priceMinor_le0_publishedActive": 0,
+    "Variant.soldCount_negative": 0,
+    "OrderItem.quantity_le0": 0,
+    "CartItem.quantity_le0": 0,
+    "Review.rating_out_of_1_5": 0,
+    "DiscountCode.timesUsed_negative": 0,
+    "DiscountCode.value_invalid": 0,
+    "User.role_values": [
+      {
+        "role": "CUSTOMER",
+        "c": 1
+      },
+      {
+        "role": "OWNER",
+        "c": 1
+      }
+    ],
+    "User.status_values": [
+      {
+        "status": "ACTIVE",
+        "c": 2
+      }
+    ],
+    "Product.status_values": [
+      {
+        "status": "PUBLISHED",
+        "c": 10
+      }
+    ],
+    "Article.status_values": [
+      {
+        "status": "PUBLISHED",
+        "c": 4
+      }
+    ],
+    "Variant.format_values": [
+      {
+        "format": "HARDCOVER",
+        "c": 4
+      },
+      {
+        "format": "PAPERBACK",
+        "c": 7
+      }
+    ],
+    "Order.status_values": [
+      {
+        "status": "DELIVERED",
+        "c": 1
+      },
+      {
+        "status": "PAID",
+        "c": 1
+      },
+      {
+        "status": "SHIPPED",
+        "c": 1
+      }
+    ],
+    "Order.paymentStatus_values": [
+      {
+        "paymentStatus": "SUCCEEDED",
+        "c": 3
+      }
+    ],
+    "Payment.status_values": [
+      {
+        "status": "SUCCEEDED",
+        "c": 3
+      }
+    ],
+    "Review.moderationState_values": [
+      {
+        "moderationState": "APPROVED",
+        "c": 12
+      },
+      {
+        "moderationState": "PENDING",
+        "c": 2
+      }
+    ],
+    "NewsletterSubscriber.status_values": [],
+    "currency_sets": {
+      "Variant": [
+        "EUR"
+      ],
+      "Cart": [
+        "EUR"
+      ],
+      "Order": [
+        "EUR"
+      ],
+      "Payment": [
+        "EUR"
+      ]
+    },
+    "currency_unexpected": {},
+    "locale_sets": {
+      "User.preferredLocale": {
+        "values": [
+          "en"
+        ],
+        "unexpected": []
+      },
+      "CategoryTranslation.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "ProductTranslation.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "PersonTranslation.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "ArticleTranslation.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "ArticleCategoryTranslation.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "Cart.locale": {
+        "values": [
+          "en"
+        ],
+        "unexpected": []
+      },
+      "Order.locale": {
+        "values": [
+          "en"
+        ],
+        "unexpected": []
+      },
+      "Review.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "CookieConsent.locale": {
+        "values": [
+          "en"
+        ],
+        "unexpected": []
+      },
+      "HomepageVersion.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "LegalDocument.locale": {
+        "values": [
+          "en",
+          "fa"
+        ],
+        "unexpected": []
+      },
+      "MailMessage.locale": {
+        "values": [
+          "en"
+        ],
+        "unexpected": []
+      }
+    }
+  },
+  "translation_completeness": {
+    "products_missing_en": 0,
+    "products_missing_fa": 0,
+    "articles_missing_en": 0,
+    "articles_missing_fa": 0,
+    "categories_missing_en": 0,
+    "categories_missing_fa": 0,
+    "persons_missing_en": 0,
+    "persons_missing_fa": 0,
+    "articleCategories_missing_en": 0,
+    "articleCategories_missing_fa": 0,
+    "published_products_missing_en": 0,
+    "published_products_missing_fa": 0,
+    "published_products_missing_both": 0
+  },
+  "published_product_quality": {
+    "published_total": 10,
+    "published_without_active_variant": 0,
+    "published_without_any_variant": 0,
+    "published_without_en_description": 0,
+    "published_without_longDescription": 0,
+    "published_without_seoTitle": 0,
+    "published_without_seoDesc": 0,
+    "published_without_coverUrl": 0,
+    "published_without_cover_and_media": 0,
+    "published_without_translation_title": 0,
+    "published_zero_stock_all_variants": 1,
+    "published_with_variant_no_price_history": 10
+  },
+  "order_money_integrity": {
+    "orders_total": 3,
+    "subtotal_vs_sum_items_mismatch": 0,
+    "subtotal_mismatch_samples": [],
+    "total_formula_mismatch": 0,
+    "total_mismatch_samples": [],
+    "negative_amount_orders": 0,
+    "item_line_total_mismatch": 0,
+    "paid_without_succeeded_payment": 0,
+    "succeeded_payment_on_pending_order": 0,
+    "order_total_vs_paid_amount": 0,
+    "paid_orders_without_payment_row": 0,
+    "pending_orders_with_succeeded_payment": 0,
+    "refund_sum_exceeds_paid_count": 0,
+    "refund_samples": [],
+    "refund_without_succeeded_payment": 0,
+    "return_qty_exceeds_ordered_count": 0,
+    "return_on_unfulfillable_order": 0
+  },
+  "cart_session_hygiene": {
+    "carts_total": 8,
+    "carts_expiresAt_null": 8,
+    "carts_expiresAt_null_by_status": [
+      {
+        "status": "ACTIVE",
+        "c": 8
+      }
+    ],
+    "carts_active_user_token_mismatch": 0,
+    "carts_converted_with_items": 0,
+    "carts_active_empty_guest": 7,
+    "sessions_total": 3,
+    "sessions_expired": 0,
+    "sessions_revoked": 1,
+    "sessions_idle_expired_7d": 0,
+    "sessions_lastSeen_null": 0,
+    "sessions_expired_not_swept": 0,
+    "reset_tokens_expired": 0,
+    "reset_tokens_used": 0,
+    "emailverify_expired": 0,
+    "emailchange_expired": 0,
+    "loginthrottle_locked": 0,
+    "loginthrottle_rows": 2
+  },
+  "consent_state": {
+    "consent_records_total": 0,
+    "consent_policy_versions": [],
+    "legal_current_versions": [
+      {
+        "type": "ACCESSIBILITY",
+        "locale": "en",
+        "v": "1.0-draft"
+      },
+      {
+        "type": "COOKIES",
+        "locale": "en",
+        "v": "1.0-draft"
+      },
+      {
+        "type": "IMPRINT",
+        "locale": "en",
+        "v": "1.0-draft"
+      },
+      {
+        "type": "PRIVACY",
+        "locale": "en",
+        "v": "1.0-draft"
+      },
+      {
+        "type": "TERMS",
+        "locale": "en",
+        "v": "1.0-draft"
+      },
+      {
+        "type": "WITHDRAWAL",
+        "locale": "en",
+        "v": "1.0-draft"
+      }
+    ],
+    "stale_consent_vs_current_legal": 0,
+    "cookie_consents_total": 1,
+    "cookie_consent_distinct_subjects": 1
+  },
+  "qa_demo_rows": {
+    "users_example_com": 1,
+    "users_example_com_samples": [
+      "c***@example.com"
+    ],
+    "newsletter_example": 0,
+    "users_test_named": 0,
+    "orders_test_emails": 3,
+    "products_test_slug": 0,
+    "mail_to_example": 0,
+    "products_draft": 0,
+    "products_archived": 0,
+    "articles_draft": 0,
+    "users_total": 2,
+    "admin_users": 1
+  },
+  "json_string_validity": {
+    "Settings.valueJson": {
+      "rows_checked": 3,
+      "invalid": 0,
+      "samples": []
+    },
+    "HomepageSection.settingsJson": {
+      "rows_checked": 32,
+      "invalid": 0,
+      "samples": []
+    },
+    "DiscountCode.scopeJson": {
+      "rows_checked": 0,
+      "invalid": 0,
+      "samples": []
+    },
+    "Promotion.excludedProductIds": {
+      "rows_checked": 0,
+      "invalid": 0,
+      "samples": []
+    },
+    "Order.shippingAddressJson": {
+      "rows_checked": 3,
+      "invalid": 0,
+      "samples": []
+    },
+    "Order.billingAddressJson": {
+      "rows_checked": 1,
+      "invalid": 0,
+      "samples": []
+    },
+    "Order.consentsJson": {
+      "rows_checked": 3,
+      "invalid": 0,
+      "samples": []
+    },
+    "Person.socialLinks": {
+      "rows_checked": 12,
+      "invalid": 0,
+      "samples": []
+    },
+    "ProductTranslation.longDescription": {
+      "rows_checked": 20,
+      "invalid": 0,
+      "samples": []
+    },
+    "ArticleTranslation.body": {
+      "rows_checked": 8,
+      "invalid": 0,
+      "samples": []
+    }
+  },
+  "pii_anonymization": {
+    "anonymized_users": 0,
+    "anonymized_with_email_left": 0,
+    "anonymized_with_name_left": 0,
+    "anonymized_with_passwordHash": 0,
+    "anonymized_with_googleSub": 0,
+    "anonymized_addresses_remaining": 0,
+    "anonymized_orders_remaining": 0,
+    "anonymized_reviews_with_author": 0,
+    "blocked_users_remaining_sessions": 0,
+    "order_emails_of_anonymized": []
+  },
+  "counters": {
+    "variant_soldCount_mismatch": 11,
+    "variant_soldCount_samples": [
+      {
+        "sku": "SP-978-3-011-0\u2026",
+        "stored": 142,
+        "computed": 1
+      },
+      {
+        "sku": "SP-978-3-011-0\u2026",
+        "stored": 38,
+        "computed": 0
+      },
+      {
+        "sku": "SP-978-3-011-0\u2026",
+        "stored": 97,
+        "computed": 0
+      },
+      {
+        "sku": "SP-978-3-011-0\u2026",
+        "stored": 76,
+        "computed": 1
+      },
+      {
+        "sku": "SP-978-3-011-0\u2026",
+        "stored": 64,
+        "computed": 0
+      }
+    ],
+    "discount_timesUsed_mismatch": 0,
+    "discount_timesUsed_samples": [],
+    "user_marketingConsent_vs_latest": 0
+  },
+  "misc_structure": {
+    "products_without_categories": 0,
+    "products_without_contributors": 0,
+    "homepage_published_versions": 2,
+    "homepage_sections_per_version": [
+      {
+        "versionId": "cmtz91hun007tnjdx54nqmbud",
+        "c": 8
+      },
+      {
+        "versionId": "cmtz91hus008anjdxm74j8nll",
+        "c": 8
+      },
+      {
+        "versionId": "cmtz91huw008rnjdxhl966tpa",
+        "c": 8
+      },
+      {
+        "versionId": "cmtz91hv00098njdx0g9wsr46",
+        "c": 8
+      }
+    ],
+    "legal_current_flags_per_type_locale": [],
+    "active_promotions": 0,
+    "active_discount_codes": 0,
+    "orders_without_user_and_without_publicRef": 1,
+    "orders_guest": 1,
+    "reviews_unowned": 14,
+    "settings_keys": [
+      "features",
+      "shipping",
+      "store"
+    ]
+  },
+  "explain_query_plan": {
+    "published_listing_scan": [
+      "3| 0| 61| SEARCH Product USING INDEX Product_status_idx (status=?)"
+    ],
+    "product_by_slug": [
+      "3| 0| 39| SEARCH Product USING INDEX Product_slug_key (slug=?)"
+    ],
+    "order_by_orderNumber": [
+      "3| 0| 39| SEARCH Order USING INDEX Order_orderNumber_key (orderNumber=?)"
+    ],
+    "session_by_tokenHash": [
+      "3| 0| 39| SEARCH Session USING INDEX Session_tokenHash_key (tokenHash=?)"
+    ],
+    "cart_by_token": [
+      "3| 0| 39| SEARCH Cart USING INDEX Cart_token_key (token=?)"
+    ],
+    "orderitems_by_order": [
+      "3| 0| 61| SEARCH OrderItem USING INDEX OrderItem_orderId_idx (orderId=?)"
+    ],
+    "reviews_by_product": [
+      "3| 0| 61| SEARCH Review USING INDEX Review_productId_moderationState_idx (productId=? AND moderationState=?)"
+    ],
+    "cartitems_by_cart": [
+      "4| 0| 62| SEARCH CartItem USING INDEX CartItem_cartId_variantId_key (cartId=?)",
+      "19| 0| 0| USE TEMP B-TREE FOR ORDER BY"
+    ],
+    "search_contains_title": [
+      "3| 0| 61| SEARCH ProductTranslation USING INDEX ProductTranslation_locale_idx (locale=?)"
+    ],
+    "search_contains_variants": [
+      "2| 0| 216| SCAN Variant"
+    ],
+    "storefront_category_filter": [
+      "3| 0| 61| SEARCH p USING INDEX Product_status_idx (status=?)",
+      "9| 0| 0| CORRELATED SCALAR SUBQUERY 1",
+      "15| 9| 46| SEARCH c USING INDEX Category_slug_key (slug=?)",
+      "22| 9| 45| SEARCH pc USING COVERING INDEX ProductCategory_productId_categoryId_key (productId=? AND categoryId=?)"
+    ],
+    "order_status_created": [
+      "5| 0| 61| SEARCH Order USING INDEX Order_status_createdAt_idx (status=?)"
+    ],
+    "variant_by_product_active": [
+      "3| 0| 50| SEARCH Variant USING INDEX Variant_productId_isActive_stock_idx (productId=? AND isActive=? AND stock>?)"
+    ],
+    "auditlog_by_entity": [
+      "3| 0| 61| SEARCH AuditLog USING INDEX AuditLog_entityType_entityId_idx (entityType=? AND entityId=?)"
+    ],
+    "analytics_by_type_time": [
+      "5| 0| 50| SEARCH AnalyticsEvent USING INDEX AnalyticsEvent_type_createdAt_idx (type=? AND createdAt>?)"
+    ],
+    "mail_outbox_sweep": [
+      "4| 0| 183| SEARCH MailMessage USING INDEX MailMessage_sentAt_createdAt_idx (sentAt>? AND sentAt<?)"
+    ]
+  }
+}

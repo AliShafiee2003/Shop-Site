@@ -1,0 +1,16 @@
+== / | { "bodyLen": 4329, "dir": "ltr", "h1": "PersePix — Independent books from Tehran & Vienna", "p": "/", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /fa | { "bodyLen": 3863, "dir": "rtl", "h1": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین", "p": "/fa", "t": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین"} | consoleErrors=0
+== /books | { "bodyLen": 2150, "dir": "ltr", "h1": "All books", "p": "/books", "t": "All books — PersePix"} | consoleErrors=0
+== /categories/fiction | { "bodyLen": 1841, "dir": "ltr", "h1": "Fiction", "p": "/categories/fiction", "t": "All books — PersePix"} | consoleErrors=0
+== /books/the-cartographer-of-silence | { "bodyLen": 3807, "dir": "ltr", "h1": "The Cartographer of Silence", "p": "/books/the-cartographer-of-silence", "t": "The Cartographer of Silence — PersePix"} | consoleErrors=0
+== /authors/neda-ahmadi | { "bodyLen": 1141, "dir": "ltr", "h1": "", "p": "/authors/neda-ahmadi", "t": "Neda Ahmadi — PersePix"} | consoleErrors=0
+== /articles | { "bodyLen": 1972, "dir": "ltr", "h1": "Journal", "p": "/articles", "t": "Journal — PersePix"} | consoleErrors=0
+== /articles/why-translate | { "bodyLen": 2850, "dir": "ltr", "h1": "Why Translate? On Bringing Persian Stories to Euro", "p": "/articles/why-translate", "t": "Why Translate? On Bringing Persian Stories to"} | consoleErrors=0
+== /search?q=tea | { "bodyLen": 1251, "dir": "ltr", "h1": "Search results for “tea”", "p": "/search", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /cart | { "bodyLen": 1193, "dir": "ltr", "h1": "Your cart", "p": "/cart", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /checkout | { "bodyLen": 1167, "dir": "ltr", "h1": "", "p": "/checkout", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /login | { "bodyLen": 1334, "dir": "ltr", "h1": "Welcome back", "p": "/login", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /register | { "bodyLen": 1270, "dir": "ltr", "h1": "Create your account", "p": "/register", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /account | { "bodyLen": 1171, "dir": "ltr", "h1": "", "p": "/account", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /admin | { "bodyLen": 1181, "dir": "ltr", "h1": "", "p": "/admin", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0
+== /legal/privacy | { "bodyLen": 1683, "dir": "ltr", "h1": "Privacy Notice (Placeholder)", "p": "/legal/privacy", "t": "PersePix — Independent books from Tehran & Vi"} | consoleErrors=0

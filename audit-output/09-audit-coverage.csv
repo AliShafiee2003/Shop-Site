@@ -1,0 +1,416 @@
+Path,Type,Size,Lines,Reviewed,ReviewDepth,RelatedFindings,ExclusionReason,Notes
+.dockerignore,other,1171,50,COUNTED,-,QA-411,,misc root files counted
+.env.example,other,6026,88,COUNTED,-,QA-411,,misc root files counted
+.github/workflows/ci.yml,ci,5735,109,YES,FULL,QA-401; OPS-401,,.github/workflows full read incl. byte-level check
+.gitignore,config/root,1063,78,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+Caddyfile,config/root,1883,48,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+Dockerfile,other,5160,81,COUNTED,-,QA-411,,misc root files counted
+GOOGLE-OAUTH-SETUP.md,docs,5443,75,COUNTED,SUMMARY,OPS-402; OPS-403,,counted; production-deploy.md claims cross-checked in 3-d
+bun.lock,config/root,334441,1791,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+components.json,other,430,21,COUNTED,-,QA-411,,misc root files counted
+db/custom.db,other,970752,,COUNTED,-,QA-411,,misc root files counted
+deploy/Caddyfile.production,other,3423,72,COUNTED,-,QA-411,,misc root files counted
+docs/postgres-migration.md,docs,4286,92,COUNTED,SUMMARY,OPS-402; OPS-403,,counted; production-deploy.md claims cross-checked in 3-d
+docs/production-deploy.md,docs,10910,229,COUNTED,SUMMARY,OPS-402; OPS-403,,counted; production-deploy.md claims cross-checked in 3-d
+eslint.config.mjs,config/root,2227,54,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+next.config.ts,config/root,2887,77,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+package.json,config/root,2962,87,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read
+postcss.config.mjs,other,81,5,COUNTED,-,QA-411,,misc root files counted
+prisma/migrations/0_init/migration.sql,prisma,35008,1047,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/migrations/20260912133904_hot_path_indexes/migration.sql,prisma,415,11,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/migrations/20260912141836_persepix_defaults/migration.sql,prisma,3372,62,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/migrations/20260912200000_drop_dead_tables/migration.sql,prisma,328,6,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/migrations/20260913040000_session_idle_timeout/migration.sql,prisma,272,4,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/migrations/migration_lock.toml,prisma,124,3,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/schema.prisma,prisma,34678,986,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/seed-discounts.ts,prisma,2051,42,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+prisma/seed.ts,prisma,95178,914,YES,FULL,DB-401..429,,schema.prisma full read + migrations + data-quality on disposable copy (2-b)
+public/fonts/Vazirmatn-Bold.woff2,asset,51020,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/Vazirmatn-Medium.woff2,asset,51128,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/Vazirmatn-Regular.woff2,asset,50684,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/Vazirmatn-SemiBold.woff2,asset,51032,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/inter-latin-400-normal.woff2,asset,23692,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/inter-latin-500-normal.woff2,asset,24368,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/inter-latin-600-normal.woff2,asset,24304,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/fonts/inter-latin-700-normal.woff2,asset,24352,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/about-studio.png,asset,138700,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/article-covers.png,asset,131084,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/article-interview.png,asset,141804,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/article-printing.png,asset,143844,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/article-translation.png,asset,117698,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-archivist.png,asset,100899,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-blueprints.png,asset,170480,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-cartographer.png,asset,90623,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-fieldnotes.png,asset,160368,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-letters.png,asset,89877,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-nightingale.png,asset,163923,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-orchard.png,asset,163040,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-rust.png,asset,224535,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-songs.png,asset,179002,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/cover-tea.png,asset,84128,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-dariush.png,asset,155129,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-farhad.png,asset,138312,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-golnar.png,asset,139006,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-kaveh.png,asset,153769,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-leila.png,asset,159677,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-martin.png,asset,130163,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-mehrnaz.png,asset,109361,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-neda.png,asset,95290,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-omid.png,asset,170349,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-parvaneh.png,asset,127137,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-sarah.png,asset,105486,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/face-shirin.png,asset,108664,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-persepix-1-mobile.png,asset,124226,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-persepix-1.webp,asset,307478,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-persepix-2-mobile.png,asset,208321,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-persepix-2.webp,asset,253226,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-poetry-mobile.png,asset,201900,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-poetry.png,asset,135099,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-season-mobile.png,asset,96761,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/hero-season.png,asset,138596,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/life-hands.png,asset,84152,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/life-reading.png,asset,146517,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/life-shelf.png,asset,87953,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/life-stack.png,asset,111385,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/logo.png,asset,301619,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/poster-art.png,asset,123252,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/poster-children.png,asset,137189,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/poster-poetry.png,asset,111574,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/gallery-1.png,asset,905706,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/gallery-2.png,asset,1908835,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/gallery-3.png,asset,2790864,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/gallery-4.png,asset,2472328,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/gallery-5.png,asset,701552,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-botany-encyclopedia/main.png,asset,905706,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/gallery-1.png,asset,499662,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/gallery-2.png,asset,562297,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/gallery-3.png,asset,522074,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/gallery-4.png,asset,2659949,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/gallery-5.png,asset,2194109,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol1-4/main.png,asset,499662,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-1.png,asset,1395148,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-2.png,asset,1346419,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-3.png,asset,1400500,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-4.png,asset,2578915,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-5.png,asset,1717848,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-6.png,asset,2482211,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-7.png,asset,2217162,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/gallery-8.png,asset,1595039,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/illustrated-history-iran-vol5-8/main.png,asset,1395148,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-dawn-of-history/gallery-1.png,asset,1193041,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-dawn-of-history/gallery-2.png,asset,824003,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-dawn-of-history/gallery-3.png,asset,499662,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-dawn-of-history/gallery-4.png,asset,1264131,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-dawn-of-history/main.png,asset,1193041,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-1.png,asset,1334932,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-2.png,asset,1802866,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-3.png,asset,1007822,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-4.png,asset,1743919,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-5.png,asset,2291348,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-6.png,asset,562297,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/gallery-7.png,asset,2170111,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/iran-seleucid-parthian/main.png,asset,1334932,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/gallery-1.png,asset,124146,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/gallery-2.png,asset,1173436,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/gallery-3.png,asset,2096057,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/gallery-4.png,asset,1552192,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/gallery-5.png,asset,316828,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/products/religious-political-currents-pahlavi-ii/main.png,asset,124146,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-1-mobile.png,asset,184621,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-1.png,asset,151265,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-2-mobile.png,asset,175445,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-2.png,asset,163213,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-3-mobile.png,asset,148233,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-3.png,asset,143864,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-4-mobile.png,asset,179833,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-4.png,asset,147288,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/images/story/shahnameh-cover.png,asset,236982,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/logo.svg,asset,1065,,COUNTED,-,PERF-401,,binary/static; sizes+formats counted (3-c image audit)
+public/uploads/.gitkeep,public-asset,0,,COUNTED,-,-,,-
+scripts/backup-db.sh,script,3744,71,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/check-db.ts,script,423,9,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/check-routes.ts,script,5179,117,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/check-stock.ts,script,450,7,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/pg-transfer.ts,script,4621,110,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/restore-db.sh,script,4001,88,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/rewrite-git-history.sh,script,3635,81,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+scripts/smoke.ts,script,10601,225,YES,TARGETED,QA-408; QA-410,,smoke.ts + check-routes.ts FULL; others targeted
+src/app/[...slug]/page.tsx,app-route/page,31205,600,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/api/account/addresses/[id]/route.ts,api-route,2696,74,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/addresses/route.ts,api-route,2007,64,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/data-export/route.ts,api-route,3170,93,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/deletion-request/route.ts,api-route,4200,103,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/email/change/route.ts,api-route,4474,83,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/email/verification-request/route.ts,api-route,2343,39,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/orders/[orderNumber]/cancel/route.ts,api-route,4589,108,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/orders/[orderNumber]/route.ts,api-route,5894,147,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/orders/route.ts,api-route,1638,48,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/password/route.ts,api-route,2922,79,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/profile/route.ts,api-route,1666,51,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/returns/route.ts,api-route,3915,111,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/summary/route.ts,api-route,2407,61,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/tickets/[id]/messages/route.ts,api-route,1654,44,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/tickets/[id]/route.ts,api-route,1213,36,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/account/tickets/route.ts,api-route,2371,76,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/analytics/route.ts,api-route,3597,92,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/announcements/[id]/route.ts,api-route,5139,125,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/announcements/route.ts,api-route,3995,113,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/articles/[id]/route.ts,api-route,5993,136,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/articles/route.ts,api-route,5529,143,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/audit-log/route.ts,api-route,827,29,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/back-in-stock/[id]/route.ts,api-route,2325,58,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/back-in-stock/notify/route.ts,api-route,1731,46,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/back-in-stock/route.ts,api-route,1658,45,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/categories/[id]/route.ts,api-route,4405,105,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/categories/route.ts,api-route,3384,104,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/customers/[id]/route.ts,api-route,7679,183,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/customers/route.ts,api-route,3777,89,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/dashboard/route.ts,api-route,6857,171,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/discounts/[id]/route.ts,api-route,6679,147,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/discounts/route.ts,api-route,6903,154,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/emails/dispatch/route.ts,api-route,649,14,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/emails/route.ts,api-route,15356,283,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/homepage/route.ts,api-route,5283,136,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/homepage/versions/[id]/restore/route.ts,api-route,2631,58,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/homepage/versions/route.ts,api-route,2567,61,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/legal/route.ts,api-route,4906,146,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/newsletter/route.ts,api-route,1283,33,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/orders/[id]/refund/route.ts,api-route,4659,107,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/orders/[id]/route.ts,api-route,9738,244,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/orders/[id]/ship/route.ts,api-route,4802,112,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/orders/route.ts,api-route,2426,70,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/people/[id]/route.ts,api-route,3627,87,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/people/route.ts,api-route,2744,85,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/[id]/duplicate/route.ts,api-route,2101,61,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/[id]/route.ts,api-route,36172,837,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/bulk-stock/route.ts,api-route,4326,100,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/export/route.ts,api-route,6243,155,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/import/route.ts,api-route,8646,203,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/products/route.ts,api-route,15605,375,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/promotions/[id]/route.ts,api-route,4110,93,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/promotions/route.ts,api-route,3244,82,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/reports/digest/route.ts,api-route,1694,39,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/reports/export/route.ts,api-route,3863,91,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/reports/route.ts,api-route,4201,98,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/reviews/[id]/route.ts,api-route,1958,51,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/reviews/route.ts,api-route,1301,38,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/settings/route.ts,api-route,7473,157,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/tickets/[id]/messages/route.ts,api-route,1500,42,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/tickets/[id]/route.ts,api-route,2807,81,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/tickets/route.ts,api-route,1188,36,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/admin/upload/route.ts,api-route,3143,62,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/analytics/event/route.ts,api-route,3265,90,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/articles/[slug]/route.ts,api-route,668,14,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/articles/route.ts,api-route,458,9,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/confirm-email-change/route.ts,api-route,4240,79,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/forgot-password/route.ts,api-route,3010,60,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/google/callback/route.ts,api-route,6440,164,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/google/start/route.ts,api-route,2269,54,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/google/status/route.ts,api-route,447,9,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/login/route.ts,api-route,2601,58,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/logout/route.ts,api-route,240,8,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/me/route.ts,api-route,286,8,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/register/route.ts,api-route,4077,84,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/reset-password/route.ts,api-route,2098,57,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/sessions/route.ts,api-route,3000,77,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/auth/verify-email/route.ts,api-route,1460,34,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/back-in-stock/route.ts,api-route,2366,52,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/bootstrap/route.ts,api-route,2551,58,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/cart/items/[itemId]/route.ts,api-route,2841,66,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/cart/items/route.ts,api-route,2295,57,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/cart/route.ts,api-route,639,16,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/categories/route.ts,api-route,963,32,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/checkout/quote/route.ts,api-route,3938,101,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/checkout/route.ts,api-route,21842,468,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/contact/route.ts,api-route,2502,69,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/cron/tick/route.ts,api-route,1882,40,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/discount/validate/route.ts,api-route,2098,52,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/for-you/route.ts,api-route,4232,96,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/healthz/route.ts,api-route,1716,34,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/homepage/route.ts,api-route,422,9,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/legal/[type]/route.ts,api-route,1186,37,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/newsletter/confirm/route.ts,api-route,1823,45,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/newsletter/route.ts,api-route,4892,82,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/newsletter/unsubscribe/route.ts,api-route,1115,26,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/orders/[orderNumber]/route.ts,api-route,4807,117,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/people/[slug]/route.ts,api-route,2638,66,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/people/route.ts,api-route,1088,31,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/privacy/consent/route.ts,api-route,1953,53,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/privacy/cookies/route.ts,api-route,527,13,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/products/[slug]/route.ts,api-route,1208,21,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/products/facets/route.ts,api-route,3356,78,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/products/route.ts,api-route,488,10,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/reviews/[id]/helpful/route.ts,api-route,2240,50,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/reviews/route.ts,api-route,3394,89,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/route.ts,api-route,134,5,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/search/route.ts,api-route,5423,150,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/series/[slug]/route.ts,api-route,710,15,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/series/route.ts,api-route,791,21,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/settings/route.ts,api-route,465,10,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/api/wishlist/route.ts,api-route,2153,62,YES,FULL,API-401..412,,2-c read all 112 route files (inventory+guards); auth-sensitive read fully
+src/app/globals.css,app-other,17327,491,YES,TARGETED,ARCH-401; SEO-401,,layout/not-found etc. via 2-d/3-b
+src/app/icon.png,app-other,61748,,YES,TARGETED,ARCH-401; SEO-401,,layout/not-found etc. via 2-d/3-b
+src/app/layout.tsx,app-route/page,4094,101,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/llms.txt/route.ts,app-route/page,4482,113,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/not-found.tsx,app-route/page,1272,30,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/page.tsx,app-route/page,3405,95,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/robots.ts,app-route/page,1351,33,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/app/sitemap.xml/route.ts,app-route/page,5588,87,YES,FULL,SEO-401..407,,SEO runtime raw-HTML + code read (3-b) + 2-d Shell/layout
+src/components/storefront/CookieBanner.tsx,component,5756,136,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/CookiePreferencesDialog.tsx,component,7303,163,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/Footer.tsx,component,12591,243,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/ForYouShelf.tsx,component,2450,57,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/FreeShippingBar.tsx,component,1865,36,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/Header.tsx,component,43323,873,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/HeroSlider.tsx,component,23665,524,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/HomeSections.tsx,component,42906,861,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/OrderStepper.tsx,component,6982,170,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/ProductCard.tsx,component,7229,170,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/ProductRow.tsx,component,11037,249,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/RecentlyViewed.tsx,component,2614,59,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/ScrollStory.tsx,component,19296,362,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/Shell.tsx,component,12528,279,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/SsrProviders.tsx,component,2480,63,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/bits.tsx,component,18069,386,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/storefront/shelf-icons.tsx,component,8666,256,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/accordion.tsx,component,2053,66,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/alert-dialog.tsx,component,3864,157,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/alert.tsx,component,1614,66,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/aspect-ratio.tsx,component,280,11,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/avatar.tsx,component,1097,53,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/badge.tsx,component,1631,46,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/breadcrumb.tsx,component,2357,109,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/button.tsx,component,2123,59,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/calendar.tsx,component,7660,213,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/card.tsx,component,1989,92,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/carousel.tsx,component,5556,241,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/chart.tsx,component,9781,353,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/checkbox.tsx,component,1226,32,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/collapsible.tsx,component,800,33,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/command.tsx,component,4818,184,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/context-menu.tsx,component,8222,252,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/dialog.tsx,component,3982,143,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/drawer.tsx,component,4255,135,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/dropdown-menu.tsx,component,8284,257,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/form.tsx,component,3759,167,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/hover-card.tsx,component,1532,44,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/input-otp.tsx,component,2254,77,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/input.tsx,component,967,21,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/label.tsx,component,611,24,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/menubar.tsx,component,8394,276,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/navigation-menu.tsx,component,6664,168,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/pagination.tsx,component,2712,127,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/popover.tsx,component,1635,48,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/progress.tsx,component,740,31,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/radio-group.tsx,component,1466,45,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/resizable.tsx,component,2028,56,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/scroll-area.tsx,component,1645,58,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/select.tsx,component,6253,185,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/separator.tsx,component,699,28,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/sheet.tsx,component,4090,139,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/sidebar.tsx,component,21633,726,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/skeleton.tsx,component,276,13,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/slider.tsx,component,2001,63,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/sonner.tsx,component,564,25,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/switch.tsx,component,1527,36,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/table.tsx,component,2448,116,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/tabs.tsx,component,1969,66,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/textarea.tsx,component,759,18,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/toast.tsx,component,4829,129,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/toaster.tsx,component,785,35,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/toggle-group.tsx,component,1925,73,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/toggle.tsx,component,1570,47,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/ui/tooltip.tsx,component,1891,61,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/AccountView.tsx,component,66396,1227,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/AdminView.tsx,component,7343,123,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/ArticlesView.tsx,component,12428,261,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/AuthView.tsx,component,7964,160,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/CartView.tsx,component,9064,156,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/CatalogView.tsx,component,34797,632,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/CheckoutView.tsx,component,34710,591,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/ConfirmEmailChangeView.tsx,component,4701,105,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/FavoritesView.tsx,component,3540,79,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/HomeView.tsx,component,4448,105,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/NewsletterConfirmView.tsx,component,3723,92,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/PasswordResetView.tsx,component,8398,168,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/PeopleView.tsx,component,8359,179,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/ProductView.tsx,component,49052,873,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/SearchView.tsx,component,4987,109,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/SeriesIndexView.tsx,component,7096,143,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/SeriesView.tsx,component,4781,106,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/StaticView.tsx,component,20191,305,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/TrackView.tsx,component,10319,196,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/VerifyEmailView.tsx,component,4042,96,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminAnalyticsSection.tsx,component,8424,147,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminCategoriesSection.tsx,component,21288,370,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminDashboardSection.tsx,component,17678,329,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminDiscountsSection.tsx,component,52854,957,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminHomepageSection.tsx,component,67466,920,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminMarketingSection.tsx,component,29099,443,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminOrdersSection.tsx,component,22166,341,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminPeopleSection.tsx,component,12501,240,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminProductsSection.tsx,component,57876,1071,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminReportsSection.tsx,component,12870,233,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminReviewsSection.tsx,component,7032,121,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminSettingsSection.tsx,component,23754,401,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AdminTicketsSection.tsx,component,9277,158,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/AnnouncementsEditor.tsx,component,15736,380,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/ArticlesAdmin.tsx,component,29469,618,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/CustomersTable.tsx,component,30104,677,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/ForbiddenSection.tsx,component,952,23,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/LegalEditor.tsx,component,18765,440,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/ProductEditor.tsx,component,99778,2120,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/components/views/admin/shared.tsx,component,2644,65,YES,TARGETED,ARCH-401..432; A11Y-401..406,,Top-15 deepest (2-d) + pattern sweeps (hooks/forms/fetch) + runtime a11y (3-c)
+src/hooks/use-mobile.ts,hook,565,19,YES,TARGETED,ARCH-418..426,,2-d React hooks sweep
+src/hooks/use-toast.ts,hook,3864,192,YES,TARGETED,ARCH-418..426,,2-d React hooks sweep
+src/lib/analytics.ts,server-lib,2055,63,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/api.ts,server-lib,2231,63,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/bookLabels.ts,server-lib,2112,69,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/consent-client.ts,server-lib,2010,69,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/db.ts,server-lib,972,28,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/format.ts,server-lib,2527,69,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/i18n.ts,server-lib,107276,1216,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/markdown.ts,server-lib,9443,268,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/recent.ts,server-lib,753,24,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/route-state.ts,server-lib,2771,72,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/router.ts,server-lib,6210,151,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/article-detail.ts,server-lib,3349,98,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/article-list.ts,server-lib,1206,32,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/articles.ts,server-lib,2417,49,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/auth.ts,server-lib,6941,193,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/cart.ts,server-lib,10459,300,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/catalog.ts,server-lib,5697,150,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/consent.ts,server-lib,9904,271,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/discounts.ts,server-lib,7363,183,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/email-change.ts,server-lib,2061,43,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/email-verification.ts,server-lib,1804,40,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/giftwrap.ts,server-lib,1038,22,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/google.ts,server-lib,5388,120,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/home-sections.ts,server-lib,1355,37,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/homepage.ts,server-lib,1238,36,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/housekeeping.ts,server-lib,3916,79,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/mail-dispatch.ts,server-lib,4005,103,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/money.ts,server-lib,797,19,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/newsletter.ts,server-lib,1568,32,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/order-mail.ts,server-lib,6551,166,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/order-timeline.ts,server-lib,2125,43,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/password-reset.ts,server-lib,4014,91,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/product-detail.ts,server-lib,9175,258,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/product-list.ts,server-lib,7354,147,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/promotions.ts,server-lib,3510,93,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/rate-limit.ts,server-lib,1212,38,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/report-mail.ts,server-lib,16175,315,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/series.ts,server-lib,4147,109,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/shipping.ts,server-lib,1072,33,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/store-settings.ts,server-lib,2827,89,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/server/utils.ts,server-lib,7618,192,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/site.ts,server-lib,1626,32,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/sp-path.ts,server-lib,627,20,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/types.ts,server-lib,14927,362,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/use-settings.ts,server-lib,1221,34,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/utils.ts,server-lib,781,19,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/lib/view-cache.ts,server-lib,3397,116,YES,TARGETED,SEC-401..416; API-402..409,,Core libs full read (auth/cart/checkout/google/session/rate-limit/housekeeping/mail/seo helpers) across 2-c/2-d/3-a/3-d
+src/proxy.ts,other,2663,69,COUNTED,-,QA-411,,misc root files counted
+src/store/store.ts,other,6061,160,COUNTED,-,QA-411,,misc root files counted
+tailwind.config.ts,other,1696,64,COUNTED,-,QA-411,,misc root files counted
+tsconfig.json,config/root,778,45,YES,FULL,QA-404..409; PERF-403,,package.json/tsconfig/eslint/next.config/proxy/Caddyfile/gitignore full read

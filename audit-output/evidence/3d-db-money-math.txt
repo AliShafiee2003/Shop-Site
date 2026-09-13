@@ -1,0 +1,16 @@
+# money-math cross-check on /tmp/audit-v4/db-copy.custom.db (read-only)
+orders: 3
+{'orderNumber': 'SP-2025-00041', 'subtotalMinor': 4000, 'discountMinor': 0, 'shippingMinor': 490, 'giftWrapMinor': 0, 'taxMinor': 408, 'totalMinor': 4490, 'status': 'SHIPPED', 'paymentStatus': 'SUCCEEDED'} math_ok= True tax_ok= True
+{'orderNumber': 'SP-2025-00042', 'subtotalMinor': 3200, 'discountMinor': 0, 'shippingMinor': 790, 'giftWrapMinor': 0, 'taxMinor': 363, 'totalMinor': 3990, 'status': 'PAID', 'paymentStatus': 'SUCCEEDED'} math_ok= True tax_ok= True
+{'orderNumber': 'SP-2025-00033', 'subtotalMinor': 3800, 'discountMinor': 0, 'shippingMinor': 490, 'giftWrapMinor': 0, 'taxMinor': 390, 'totalMinor': 4290, 'status': 'DELIVERED', 'paymentStatus': 'SUCCEEDED'} math_ok= True tax_ok= True
+negative_total: []
+zero_total: []
+Payment 3
+Refund 0
+Shipment 2
+ReturnRequest 0
+ReturnItem 0
+MailMessage 2
+OrderEvent 10
+mail kinds: [{'kind': 'SALES_DIGEST', 'c': 2}]
+INCONSISTENT_ORDERS: 0

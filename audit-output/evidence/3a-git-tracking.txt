@@ -1,0 +1,171 @@
+=== tracked .env? ===
+.env.example
+public/uploads/.gitkeep
+=== gitignore ===
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+local-*
+.claude
+.z-ai-config
+*.log
+dev.log
+dev.out.log
+test
+prompt
+
+server.log
+# Skills directory
+/skills/
+# persisted tool output
+tool-results/
+
+# ── Audit cleanups (C2, repo hygiene) ──
+# Real customer DB must never be committed (PII + credentials).
+/db/
+/db/*.db
+/db/*.db-journal
+# runtime uploads
+/upload/
+# agent/runtime artifacts
+/tool-results/
+/agent-ctx/
+/.zscripts/
+/.initial_snapshot.json
+/worklog.md
+.dev.log
+server.out.log
+download/
+
+# OPS-001: runtime-uploaded media never belongs in git (keep .gitkeep)
+/public/uploads/*
+!/public/uploads/.gitkeep
+=== .env.example ===
+# ─────────────────────────────────────────────────────────────────────────────
+# PersePix — environment template (.env.example)
+# Copy to `.env` and fill in real values. NEVER commit the real .env
+# (audit SEC-001: it was once tracked — history has been purged, keep it so).
+# Variables verified against code as of the security-remediation pass.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Database ─────────────────────────────────────────────────────────────────
+# Prisma datasource. Sandbox uses SQLite; the Postgres migration path is
+# documented in docs/postgres-migration.md.
+DATABASE_URL=file:/home/z/my-project/db/custom.db
+
+# ── Site origin (SEC-002) ────────────────────────────────────────────────────
+# REQUIRED IN PRODUCTION. The canonical deployment origin used for canonicals,
+# OG URLs, JSON-LD, the sitemap and email links. Without it the app FAILS FAST
+# at runtime in production (host-header fallback is dev/sandbox only — a
+# spoofed Host header must not poison generated URLs).
+# Example: https://persepix.example
+NEXT_PUBLIC_SITE_URL=
+# Alternative/override origin (also consumed by the Google OAuth redirect_uri
+# builder). Same trailing-slash handling; either NEXT_PUBLIC_SITE_URL or this
+# must be set in production.
+APP_URL=
+
+# ── Signing secret (SEC-006) ─────────────────────────────────────────────────
+# REQUIRED IN PRODUCTION. HMAC key for signed newsletter confirm/unsubscribe
+# links (and OAuth state hardening). Generate with: openssl rand -hex 32
+# Missing in production → runtime error; in dev a random per-process key is
+# derived so the sandbox works without config (links reset on restart).
+STATE_SECRET=
+
+# ── Reverse proxy trust (SEC-003) ────────────────────────────────────────────
+# Set to 0 ONLY when the app is exposed directly (no trusted reverse proxy in
+# front that overwrites X-Forwarded-For) — clientIp() then ignores XFF entirely
+# so rate limits cannot be bypassed with a spoofed header.
+# Default (unset/anything else): XFF is trusted — the sandbox sits behind Caddy.
+# TRUST_PROXY=0
+
+# ── Dev-only token exposure (SEC-008) ────────────────────────────────────────
+# DEV/SANDBOX ONLY. When =1 AND NODE_ENV != production, reset/verify/confirm
+# URLs are echoed in API responses so the sandbox flows are testable without
+# SMTP. Production NEVER exposes tokens, regardless of this value.
+# DEV_EXPOSE_RESET_LINK=1
+
+# ── Payments (sandbox checkout) ──────────────────────────────────────────────
+# SEC-014 (audit v2): fail-closed. UNSET/'' in production → checkout answers
+# 503 PAYMENT_PROVIDER_UNAVAILABLE (the sandbox card simulation is NEVER
+# silently enabled). =sandbox opts into the simulated gateway explicitly
+# (dev, or a deliberate pre-launch smoke on staging). Any other value
+# (e.g. stripe) → 503 until the PSP is actually wired.
+# PAYMENT_PROVIDER=sandbox
+
+# ── Scheduler / housekeeping ─────────────────────────────────────────────────
+# Bearer token guarding /api/cron/tick (the scheduler entrypoint that replaces
+# healthz side effects). UNSET = the cron endpoint stays disabled.
+# CRON_SECRET=
+# =1 explicitly keeps the LEGACY healthz behavior (housekeeping runs inside
+# the health probe). UNSET: dev keeps '1', production defaults to '0' (pure
+# probe — SEC-015). Pair =0 with CRON_SECRET and an external scheduler hitting
+# /api/cron/tick.
+# HEALTHZ_OPS=0
+
+# ── Transactional mail (SMTP dispatch seam) ──────────────────────────────────
+# Without SMTP_HOST/SMTP_PORT the dispatcher is a strict no-op: MailMessage
+# rows stay queued in the sandbox outbox (admin → Outbox). With SMTP configured
+# the queue drains through nodemailer.
+# SMTP_HOST=
+# SMTP_PORT=587
+# SMTP_USER=
+# SMTP_PASS=
+# SMTP_FROM=PersePix <no-reply@persepix.example>
+
+# ── Google OAuth ─────────────────────────────────────────────────────────────
+# From Google Cloud Console (authorized redirect URI must point at
+# {origin}/api/auth/google/callback). Unset → "Continue with Google" disabled.
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+
+# ── Seeding (prisma/seed.ts) ─────────────────────────────────────────────────
+# Seed credentials are NEVER hardcoded: set these before `prisma db seed`;
+# any unset value falls back to a random unusable-but-strong password.
+# Minimum length 12 characters. Never logged, never committed.
+# SEED_ADMIN_PASSWORD=
+# SEED_CUSTOMER_PASSWORD=
+
+# ── Debug ────────────────────────────────────────────────────────────────────
+# =1 logs every Prisma query (src/lib/db.ts). Leave unset in production.
+# PRISMA_QUERY_LOG=1

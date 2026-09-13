@@ -1,0 +1,64 @@
+# 3c bundle-signal greps (2026-09-13T06:13:24Z)
+
+## next/image imports (src):
+src/components/views/admin/AdminHomepageSection.tsx
+
+## raw <img counts by file (top):
+src/components/views/AccountView.tsx:6
+src/components/storefront/Header.tsx:6
+src/components/views/admin/ProductEditor.tsx:5
+src/components/storefront/ScrollStory.tsx:5
+src/components/storefront/HomeSections.tsx:5
+src/components/views/admin/ArticlesAdmin.tsx:4
+src/components/views/ProductView.tsx:3
+src/components/views/PeopleView.tsx:3
+src/components/views/CatalogView.tsx:3
+src/components/views/ArticlesView.tsx:3
+src/components/views/admin/AdminPeopleSection.tsx:2
+src/components/views/admin/AdminCategoriesSection.tsx:2
+src/components/storefront/HeroSlider.tsx:2
+src/components/views/admin/AdminProductsSection.tsx:1
+src/components/views/admin/AdminHomepageSection.tsx:1
+src/components/views/TrackView.tsx:1
+src/components/views/StaticView.tsx:1
+src/components/views/SeriesIndexView.tsx:1
+src/components/views/SearchView.tsx:1
+src/components/views/CheckoutView.tsx:1
+src/components/views/CartView.tsx:1
+src/components/storefront/shelf-icons.tsx:1
+src/components/storefront/bits.tsx:1
+src/components/storefront/ProductCard.tsx:1
+
+## dynamic() imports:
+src/components/storefront/Shell.tsx:45:const AdminView = dynamic(
+
+## 'use client' files: 65 of 275 ts/ts files; components: 57/105
+
+## heavy-dep importers (exact import lines):
+-- recharts:
+src/components/ui/chart.tsx:4:import * as RechartsPrimitive from "recharts"
+-- embla-carousel-react:
+src/components/ui/carousel.tsx:6:} from "embla-carousel-react"
+-- react-day-picker:
+src/components/ui/calendar.tsx:9:import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+-- vaul:
+src/components/ui/drawer.tsx:4:import { Drawer as DrawerPrimitive } from "vaul"
+-- react-hook-form:
+src/components/ui/form.tsx:14:} from "react-hook-form"
+-- cmdk:
+src/components/ui/command.tsx:4:import { Command as CommandPrimitive } from "cmdk"
+-- input-otp:
+src/components/ui/input-otp.tsx:4:import { OTPInput, OTPInputContext } from "input-otp"
+-- react-resizable-panels:
+src/components/ui/resizable.tsx:5:import * as ResizablePrimitive from "react-resizable-panels"
+-- effect:
+
+## font-face + font-display:
+8
+17:  font-display: swap;
+24:  font-display: swap;
+31:  font-display: swap;
+
+## /public/images formats:
+     90 png
+      2 webp

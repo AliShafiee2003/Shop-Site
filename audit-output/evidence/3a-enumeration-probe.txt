@@ -1,0 +1,12 @@
+== email=customer@example.com (wrong password) ==
+status=401 time=0.064729s
+{"error":"INVALID_CREDENTIALS","message":"Email or password is incorrect"}
+== email=nonexistent-3a@example.com (wrong password) ==
+status=401 time=0.014060s
+{"error":"INVALID_CREDENTIALS","message":"Email or password is incorrect"}
+== invalid email format ==
+status=400 time=0.009377s
+{"error":"VALIDATION_ERROR","message":"Invalid email address"}
+== forgot-password: existing vs nonexistent ==
+{"ok":true,"resetUrl":"/forgot-password?token=6f2779a97a5c169b2215277bf84a8b3286d3683b834a23c2d86ca08f40bbe1d4"} status=200
+{"ok":true} status=200

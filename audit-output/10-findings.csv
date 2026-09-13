@@ -1,0 +1,149 @@
+ID,Title,Domain,Severity,Status,Confidence,DetailsFile,ReproducibleEvidence
+QA-401,"CI triggers corrupted: ci.yml:34,36 literal 'branches: ain]' — push/PR filters match nothing; entire gate chain (typecheck/lint:ci/check-routes/migrate-deploy/build/smoke/bun audit) never runs",Build/Toolchain/Tests,Critical,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-402,"prisma migrate status exit 1 — 0/5 migrations applied, _prisma_migrations absent (DB built via db push); migrate deploy would fail",Build/Toolchain/Tests,High,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-403,"No test framework at all (no vitest/jest/playwright, 0 *.test.*) — zero unit/integration/E2E for business logic",Build/Toolchain/Tests,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-404,"ESLint narrowed: any/unused/exhaustive-deps=warn; ban-ts-comment, no-non-null-assertion, react-hooks/purity, react-compiler, no-img-element, no-console OFF",Build/Toolchain/Tests,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-405,Typecheck include depends on .next/dev/types + gitignored next-env.d.ts; skipLibCheck=true — cold CI weaker,Build/Toolchain/Tests,Low,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-406,No engines/packageManager pin; CI installs bun@latest,Build/Toolchain/Tests,Low,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-407,Dead prod dependency 'effect' (0 references; contradicts worklog claim),Build/Toolchain/Tests,Low,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-408,bun run smoke without SMOKE_ADMIN_PASSWORD structurally exits 1; smoke performs real DB writes,Build/Toolchain/Tests,Low,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-409,tailwind.config.ts dead under Tailwind v4 (no @config; content globs point to nonexistent dirs),Build/Toolchain/Tests,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-410,"check-routes limits: method-agnostic, two-sided wildcards, literal-only",Build/Toolchain/Tests,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-411,Stray 0-byte untracked xaa/xab in repo root,Build/Toolchain/Tests,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+QA-412,"Plaintext throwaway fixture creds in ci.yml (accepted, documented)",Build/Toolchain/Tests,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2a-build-tests.md,see DetailsFile + evidence/
+DB-401,"DB built via db push — _prisma_migrations missing; migrate deploy on this file fails (chain == schema, diff clean)",Database,High,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-402,"journal_mode=delete (no WAL), no busy_timeout/tuning in db.ts — SQLITE_BUSY under concurrent writes (observed live)",Database,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-403,35 enum-emulating String fields with no DB enforcement (observed values 100% valid today),Database,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-404,Zero CHECK constraints (SQLite),Database,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-405,JSON-in-String storage in 10 columns (0 invalid of 82 sampled),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-406,7 FK child sides unindexed → EXPLAIN QUERY PLAN SCAN (Payment/Refund/Shipment/ReturnRequest/ReturnItem by orderId; OrderItem.variantId; PriceHistory.variantId),Database,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-407,PriceHistory table empty (feature unused),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-408,ConsentRecord 0 rows (seed path bypasses; orders carry consentsJson),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-409,"Series modeled as free text, not normalized entity",Database,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-410,Slug-based soft references between entities,Database,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-411,isbn10/barcode non-unique (no unique constraint),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-412,AuditLog has no FKs (0 dangling rows found),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-413,Ticket→orderNumber FK-by-string,Database,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-414,"Seed soldCount inflated vs real orders (11/11 mismatch, display-only)",Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-415,3/3 orders without publicRef populated,Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-416,Catalog pagination/sort/price-filter in memory (fetchCards no take/skip + 5-deep includes) — breaks ~1-3k products,Database,High,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-417,contains() search = LIKE %…% full scan (SCAN Variant; locale-scan translations),Database,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-418,TEMP B-TREE sort on review createdAt,Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-419,TEMP B-TREE sort on cartItem addedAt,Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-420,Cart.expiresAt dead column (8/8 NULL),Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-428,"Demo/QA rows ship for prod (1 example.com user, 3 example.com orders)",Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+DB-429,Order delete cascades Payments/Refunds — financial-record destruction path,Database,Low,Confirmed,High,/home/z/my-project/audit-output/work/2b-database.md,see DetailsFile + evidence/
+API-401,Anon→admin returns uniform 403 (no 401 split; enumeration-neutral by design),Backend/API,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-402,429 responses lack Retry-After header (burst-verified),Backend/API,Low,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-403,No CSRF/Origin validation anywhere (mitigated by SameSite=Lax),Backend/API,Low,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-404,Rate-limit + idempotency in-memory (single-process only; documented deferral),Backend/API,Low,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-405,10 admin list endpoints unbounded (reviews/tickets/articles/people/categories/discounts/announcements/export/reports/customers),Backend/API,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-406,"Leftover GET /api → {""message"":""Hello, world!""}",Backend/API,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-407,Idempotency key not visitor-scoped — replay leaks orderNumber/publicRef; caches 402 responses,Backend/API,Low,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-408,Admin newsletter DELETE not audit-logged,Backend/API,Low,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-409,XFF trusted when TRUST_PROXY misconfigured,Backend/API,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-410,/api/me → 200 {user:null} contract (not 401),Backend/API,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-411,Content-Type not enforced on JSON routes,Backend/API,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+API-412,Dev-only token exposure double-gated (correct behavior),Backend/API,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2c-api-auth.md,see DetailsFile + evidence/
+ARCH-401,No error.tsx/global-error.tsx — client render throw = unbranded white screen,Architecture/Frontend,High,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-402,All pages force-dynamic; zero ISR/output cache (6 sites),Architecture/Frontend,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-403,In-memory singletons (rate-limit/idempotency/housekeeping) bounded but multi-instance unsafe,Architecture/Frontend,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-404,Route defined in 3+1 places (KNOWN_ROOTS/Shell/prefetch/hasOwnMain),Architecture/Frontend,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-405,lib/router→SsrProviders — only dependency-direction violation,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-406,RBAC logic duplicated across AdminView,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-407,DEV_EXPOSE_RESET_LINK guard duplicated ×4,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-408,No structured logging (3 console sites),Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-409,"ProductEditor = 1960-line component, 40 useState, inline fa dictionary",Architecture/Frontend,High,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-410,Calendar inconsistency: HomeSections:644 renders fa date as Gregorian vs formatDate jalali,Architecture/Frontend,Medium,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-411,faDigits pattern ×25+ duplication (two identical local dig() copies),Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-412,MAX_QTY=10 literal ×3 client vs server MAX_QTY_PER_ITEM,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-413,admin load=useCallback(apiGet) ×15 + window.confirm ×9 (radix AlertDialog unused),Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-414,quickAdd uses raw fetch instead of api() wrapper,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-415,"Verified dead code: view-cache.ts (117 lines), sp-path.ts, homeHref/latinDigits/stripInline/readStoredConsent (0 importers)",Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-416,Zero any/as-any; 10 justified as-unknown-as; zero TODO/FIXME,Architecture/Frontend,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-417,Magic numbers/strings clusters,Architecture/Frontend,Informational,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-418,SearchOverlay spinner stuck when query<2,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-419,onBlur setTimeout without cleanup,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-420,Zero AbortController vs 17 alive-flag patterns,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-421,~10 fetch-effects without alive flag,Architecture/Frontend,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-422,setEmail double-set in CheckoutView,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-423,use-settings sticky failure without retry,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-424,Quote effect object-shaped deps,Architecture/Frontend,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-425,Stale qty cap read from state,Architecture/Frontend,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-426,Index-as-key on static lists (currently safe),Architecture/Frontend,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-427,Large component state without reducer,Architecture/Frontend,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-428,Locale handling isomorphic and safe,Architecture/Frontend,Informational,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-429,Cache list duplication,Architecture/Frontend,Informational,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-430,navigate() bypasses prefetch,Architecture/Frontend,Informational,Confirmed,Medium,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-431,Contact form without maxLength / track input without inputMode,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+ARCH-432,toLatinDigits only in catalog,Architecture/Frontend,Low,Confirmed,High,/home/z/my-project/audit-output/work/2d-arch-frontend.md,see DetailsFile + evidence/
+SEC-401,PII residue after GDPR erasure — deletion transaction misses MailMessage (email+body incl. order/token) and AuditLog.summary (customer email),Security,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-402,Burned seed password literal still reachable in main-branch history (rotated; filter-repo rewrite not force-pushed),Security,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-403,bun audit exit 1: 43 advisories (30 high) — mostly build/dev chain; runtime server stack no direct advisory; dead dep 'effect' itself high; CI gate dead (QA-401),Security,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-404,Login timing enumeration ~50ms scrypt delta (bodies identical),Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-405,Open-redirect edge next=/\evil.com bypasses // guard in OAuth,Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-406,googleRedirectUri reads APP_URL not NEXT_PUBLIC_SITE_URL — header fallback in prod (bounded by registered redirect_uri),Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-407,sp_g_state cookie without Secure even in prod (manual Set-Cookie; runtime-verified),Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-408,reports/export lacks CSV formula neutralization (unlike products/export),Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-409,scrypt N=16384 below OWASP 2^17 recommendation,Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-410,Register password without max-length/quality policy,Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-411,scryptSync blocks event loop,Security,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-412,DEV_EXPOSE_RESET_LINK=1 on networked sandbox (two-condition prod guard verified),Security,Low,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-413,Unsubscribe link non-expiring,Security,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-414,verify-email/confirm-email-change without rate limit,Security,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-415,Markdown img-src without host whitelist (script-inert),Security,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEC-416,Logs free of PII (verified strength),Security,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3a-security.md,see DetailsFile + evidence/
+SEO-401,/fa served with lang=en dir=ltr (layout.tsx:75),SEO,High,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-402,Legal pages: no SSR body text/H1/title (client-only content),SEO,High,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-403,Category title/desc duplicate catalog (page.tsx:148),SEO,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-404,noindex pages carry home title/OG,SEO,Low,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-405,Checkout without <main>/H1,SEO,Low,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-406,Sitemap without xhtml:link alternates,SEO,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+SEO-407,JSON-LD emitted from 'use client' Shell component,SEO,Low,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+GEO-401,No sameAs in Organization,GEO/AEO,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+GEO-402,No FAQPage schema,GEO/AEO,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+GEO-403,Weak answer-first blocks in articles,GEO/AEO,Low,Confirmed,Medium,/home/z/my-project/audit-output/work/3b-seo-geo.md,see DetailsFile + evidence/
+PERF-401,next/image almost unused (storefront raw <img>); PNG monopoly 90/2/0; covers up to 225KB; logo.png 301KB preloaded,Performance,High,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+PERF-402,Dead UI wrappers + heavy deps with 0 importers (recharts/embla/calendar/day-picker/vaul/rhf/cmdk/input-otp/resizable/effect),Performance,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+PERF-403,Fonts served max-age=0 (missed by immutable rule),Performance,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+PERF-404,HTML/API zero cache headers (ref ARCH-402/PERF-002),Performance,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+PERF-405,CWV/bundle prod metrics unmeasured (no build/lighthouse in sandbox),Performance,Informational,Unverified,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-401,ink-3 token contrast 4.07:1 < 4.5 AA site-wide (EN+FA),Accessibility,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-402,Login error without aria-invalid/describedby,Accessibility,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-403,Catalog heading skip h1→h3,Accessibility,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-404,Search results use <button> instead of link,Accessibility,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-405,Focus not moved into mobile menu,Accessibility,Low,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+A11Y-406,"""1 items"" pluralization in live region",Accessibility,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3c-perf-a11y.md,see DetailsFile + evidence/
+COM-401,ReturnRequest dead-end — no admin approve/restock/refund path exists,Commerce,High,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-402,Back-in-stock notify only stamps notifiedAt — email never queued even with SMTP,Commerce,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-403,Customer-cancel refund ignores ceiling (currently shielded by status gate),Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-404,customerNote unbounded in checkout zod schema,Commerce,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-405,Idempotency key not visitor-scoped + caches 402 (ref API-407),Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-406,Order numbers count-based guessable (publicRef mitigates),Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-407,VAT 10% applied to total incl. shipping; EUR hardcoded,Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-408,Zero-total (100% discount) path; negatives impossible (verified),Commerce,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-409,Admin cancel lacks race guard → double-restock possible (refund safe),Commerce,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-410,Checkout email not tied to session user,Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-411,Address fields unbounded/unvalidated,Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-412,Stacking = sitewide promo + 1 code; PATCH can invert schedule,Commerce,Informational,Confirmed,Medium,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-413,Order state machine map verified,Commerce,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-414,PENDING_PAYMENT orders never cleaned,Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+COM-415,Guest orders can't self-cancel,Commerce,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-401,CI dead + no image/deploy job,DevOps/SRE,High,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-402,Live DB unmigrated vs docs claiming baseline done,DevOps/SRE,High,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-403,Runbook cron uses wrong header x-cron-secret vs actual Authorization Bearer → silent 403-forever in prod,DevOps/SRE,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-404,Observability zero (no metrics/error tracking/alerting),DevOps/SRE,High,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-405,Docker image never built,DevOps/SRE,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-406,"Backups DB-only: no uploads backup, no offsite, no restore drill",DevOps/SRE,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-407,No SIGTERM graceful shutdown handler,DevOps/SRE,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-408,Scale-out blocker inventory: per-process idempotency → duplicate orders,DevOps/SRE,Medium,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-409,No WAL (ref DB-402),DevOps/SRE,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-410,No resource limits / log rotation,DevOps/SRE,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-411,"bun unpinned, no dependabot",DevOps/SRE,Low,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-412,Caddy template good but undeployed,DevOps/SRE,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-413,"Secrets management solid (fail-fast, untracked)",DevOps/SRE,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-414,RPO/RTO unverified,DevOps/SRE,Low,Unverified,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-415,Fail-closed env defaults (strength),DevOps/SRE,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+OPS-416,Dockerfile comment drift,DevOps/SRE,Informational,Confirmed,High,/home/z/my-project/audit-output/work/3d-commerce-devops.md,see DetailsFile + evidence/
+E2E-401,Stale cart badge: header showed '0 items' right after direct /cart navigation while /api/cart had 2 items,E2E Verification,Low,Confirmed,High,/home/z/my-project/audit-output/work/4a-e2e.md,see DetailsFile + evidence/
+E2E-402,Language menu not openable via synthetic click (likely automation artifact — Radix pointerdown + eval blur),E2E Verification,Informational,Unverified,Medium,/home/z/my-project/audit-output/work/4a-e2e.md,see DetailsFile + evidence/

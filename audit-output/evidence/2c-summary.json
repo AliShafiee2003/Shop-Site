@@ -1,0 +1,81 @@
+{
+  "task": "2-c",
+  "date": "2026-09-13",
+  "scope": "API inventory + auth matrix + semantics + rate-limit + idempotency + envelope",
+  "requests_total_approx": 210,
+  "rate_test_requests": 82,
+  "identities": [
+    "anon",
+    "forged(sp_session=aaa..)",
+    "customer@example.com session",
+    "OWNER owner@persepix.ir session"
+  ],
+  "matrix_counts": {
+    "admin_routes_tested": 17,
+    "admin_calls": 68,
+    "anon_403": 17,
+    "forged_403": 17,
+    "customer_403": 17,
+    "admin_pass": 17,
+    "account_routes_tested": 10,
+    "anon_401": 10,
+    "forged_401": 10,
+    "customer_pass": 10,
+    "public_semantics_checks": 27,
+    "not_found_404": 6,
+    "method_not_allowed_405": 4,
+    "cron_403": 2
+  },
+  "rate_limit_bursts": {
+    "cart_add": {
+      "n": 65,
+      "result": "60x200 + 5x429",
+      "retry_after_header": false
+    },
+    "login_wrong_pw_nonexistent": {
+      "n": 12,
+      "result": "8x401 + 4x429",
+      "note": "IP 10/min + DB account lockout MAX_FAILS=8"
+    }
+  },
+  "inventory": {
+    "route_files": 112,
+    "auth_levels": {
+      "anon": 39,
+      "anon_token": 3,
+      "anon_sig": 1,
+      "anon_guest_cart": 2,
+      "customer": 19,
+      "requireAdmin": 19,
+      "requireContentAdmin": 25,
+      "requireOwner": 3,
+      "cron_secret": 1
+    },
+    "rate_limited_files": 24,
+    "zod_validated_approx": 90
+  },
+  "findings": [
+    "API-401",
+    "API-402",
+    "API-403",
+    "API-404",
+    "API-405(Medium)",
+    "API-406",
+    "API-407",
+    "API-408",
+    "API-409",
+    "API-410",
+    "API-411",
+    "API-412"
+  ],
+  "mutation_footprint": [
+    "user audit4api+5999@example.com (verified)",
+    "1 review PENDING on rust-and-turquoise",
+    "guest+customer cart rows created by probes (items deleted, rows empty)",
+    "1 CookieConsent row (own visitor)",
+    "1 LoginThrottle row (nonexistent address, 8 fails)",
+    "2 no-op admin dispatch calls (configured:false)"
+  ],
+  "seeded_data_touched": false,
+  "real_emails_sent": false
+}

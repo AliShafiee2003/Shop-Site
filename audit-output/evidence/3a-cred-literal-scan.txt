@@ -1,0 +1,1 @@
+src/lib/i18n.ts:124:    login: 'Sign in', register: 'Create account', email: 'Email', password: 'Password',

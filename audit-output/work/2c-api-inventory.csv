@@ -1,0 +1,113 @@
+Method,Route,File,AuthLevel,RateLimit,SideEffects,Transaction,Schema,Paginated,Notes
+PATCH|DELETE,/api/account/addresses/{id},src/app/api/account/addresses/[id]/route.ts,customer,,Update/delete own address (exclusive default rewrites),,zod,,Own-row scoping via userId; 404 on foreign id
+GET|POST,/api/account/addresses,src/app/api/account/addresses/route.ts,customer,,"List/create own addresses (PII: recipient, phone, address)",,zod,,
+POST,/api/account/data-export,src/app/api/account/data-export/route.ts,customer,3/h/user,GDPR JSON export of own data (read-only),,manual/none,,PRIV-002 throttle 3/h per user
+POST,/api/account/deletion-request,src/app/api/account/deletion-request/route.ts,customer,3/h/user,GDPR anonymize own account (irreversible!),yes,manual/none,,S11 password re-auth; big $transaction; rateLimit per user
+POST,/api/account/email/change,src/app/api/account/email/change/route.ts,customer,3/h/user,Mint EmailChangeToken + queue mail to NEW address,,zod,,Password re-auth; dev confirmUrl behind DEV_EXPOSE_RESET_LINK
+POST,/api/account/email/verification-request,src/app/api/account/email/verification-request/route.ts,customer,4/h/user,Mint verify token + queue mail,,manual/none,,
+POST,/api/account/orders/{orderNumber}/cancel,src/app/api/account/orders/[orderNumber]/cancel/route.ts,customer,,Cancel own PAID/PROCESSING order: flip + restock + full refund,yes,zod,yes,Guarded updateMany race-safe; 404 masks foreign orders
+GET,/api/account/orders/{orderNumber},src/app/api/account/orders/[orderNumber]/route.ts,customer,,"Own order detail (PII: address JSON, email)",,manual/none,yes,safeTrackingUrl; 404 on foreign
+GET,/api/account/orders,src/app/api/account/orders/route.ts,customer,,"Own order history, paginated 10/page",,manual/none,yes,
+PUT,/api/account/password,src/app/api/account/password/route.ts,customer,5/min/IP,Change password (current pw re-auth); revokes other sessions,yes,zod,,$transaction; rateLimit 5/min/IP
+PATCH,/api/account/profile,src/app/api/account/profile/route.ts,customer,,Update name/locale/marketingConsent; consent row on marketing change,,zod,,
+GET|POST,/api/account/returns,src/app/api/account/returns/route.ts,customer,,List own returns / create return request for paid order,,zod,,COM-006 overlap guard; ownership checks
+GET,/api/account/summary,src/app/api/account/summary/route.ts,customer,,Account dashboard tiles (bounded take),,manual/none,yes,
+POST,/api/account/tickets/{id}/messages,src/app/api/account/tickets/[id]/messages/route.ts,customer,,Reply to OWN ticket (reopens CLOSED),,zod,,Ownership scoping; body cap 5000
+GET,/api/account/tickets/{id},src/app/api/account/tickets/[id]/route.ts,customer,,Own ticket detail,,manual/none,,404 on foreign ticket
+GET|POST,/api/account/tickets,src/app/api/account/tickets/route.ts,customer,,List own tickets / create ticket,,zod,yes,Sequential TK number w/ retry on P2002
+GET,/api/admin/analytics,src/app/api/admin/analytics/route.ts,staff(ADMIN),,Analytics aggregates (read-only),,manual/none,yes,take-bounded reads
+PATCH|DELETE,/api/admin/announcements/{id},src/app/api/admin/announcements/[id]/route.ts,content-admin,,"Edit/delete announcements (raw SQL, audited)",,zod,,No rate limit; audit on change
+GET|POST,/api/admin/announcements,src/app/api/admin/announcements/route.ts,content-admin,,"List/create announcements (raw SQL, audited)",,zod,,
+PATCH|DELETE,/api/admin/articles/{id},src/app/api/admin/articles/[id]/route.ts,content-admin,,Update/delete article + translations + relations,yes,zod,,$transaction
+GET|POST,/api/admin/articles,src/app/api/admin/articles/route.ts,content-admin,,List ALL articles incl. drafts (unbounded findMany) / create,,zod,,
+GET,/api/admin/audit-log,src/app/api/admin/audit-log/route.ts,staff(ADMIN),,Audit log tail (limit 1..200),,manual/none,yes,Read-only
+PATCH|DELETE,/api/admin/back-in-stock/{id},src/app/api/admin/back-in-stock/[id]/route.ts,staff(ADMIN),,Mark notified / delete subscriber (PII email),,zod,,
+POST,/api/admin/back-in-stock/notify,src/app/api/admin/back-in-stock/notify/route.ts,staff(ADMIN),,Batch-mark subscribers notified,,zod,,
+GET,/api/admin/back-in-stock,src/app/api/admin/back-in-stock/route.ts,staff(ADMIN),,Back-in-stock list grouped by variant (take 200; PII emails),,manual/none,yes,
+PATCH|DELETE,/api/admin/categories/{id},src/app/api/admin/categories/[id]/route.ts,content-admin,,Update/delete category + translations,yes,zod,,$transaction
+GET|POST,/api/admin/categories,src/app/api/admin/categories/route.ts,content-admin,,List/create categories,,zod,,Slug auto-gen w/ suffix loop
+GET|PATCH,/api/admin/customers/{id},src/app/api/admin/customers/[id]/route.ts,staff(ADMIN),,Customer detail (PII) / note + BLOCK/UNBLOCK/role,yes,zod,yes,Role change OWNER-only; owner/self guarded; block revokes sessions in $transaction
+GET,/api/admin/customers,src/app/api/admin/customers/route.ts,staff(ADMIN),,Customer list w/ order aggregates,,manual/none,yes,In-JS pagination pageSize<=200; PII emails; no passwordHash leaked
+GET,/api/admin/dashboard,src/app/api/admin/dashboard/route.ts,staff(ADMIN),,"KPI tiles (read-only, bounded reads)",,manual/none,yes,orderItems30d windowed read
+GET|PATCH|DELETE,/api/admin/discounts/{id},src/app/api/admin/discounts/[id]/route.ts,content-admin,,Detail/CSV usage/PATCH/delete code,,zod,,
+GET|POST,/api/admin/discounts,src/app/api/admin/discounts/route.ts,content-admin,,List/create discount codes,,zod,,
+POST,/api/admin/emails/dispatch,src/app/api/admin/emails/dispatch/route.ts,owner,,Drain outbox via SMTP (external side effect!),,manual/none,,OWNER-only by design; no-op w/o SMTP
+GET,/api/admin/emails,src/app/api/admin/emails/route.ts,staff(ADMIN),,Render outbox previews (PII recipient emails),,manual/none,yes,window caps; pagination page/pageSize<=50
+GET|PUT,/api/admin/homepage,src/app/api/admin/homepage/route.ts,content-admin,,"Get draft/published; PUT upsert+publish (audited, retention cap 20)",,zod,yes,
+POST,/api/admin/homepage/versions/{id}/restore,src/app/api/admin/homepage/versions/[id]/restore/route.ts,content-admin,,Restore archived version into draft (audited),,manual/none,,
+GET,/api/admin/homepage/versions,src/app/api/admin/homepage/versions/route.ts,content-admin,,Version history (take 21),,manual/none,yes,
+GET|PUT,/api/admin/legal,src/app/api/admin/legal/route.ts,content-admin,,"List legal docs / publish new version ($transaction, versioned)",yes,zod,,
+GET|DELETE,/api/admin/newsletter,src/app/api/admin/newsletter/route.ts,staff(ADMIN),,Subscriber list (PII) / DELETE ?email= unsubscribe,,manual/none,yes,DELETE path has NO audit entry
+POST,/api/admin/orders/{id}/refund,src/app/api/admin/orders/[id]/refund/route.ts,owner,,Record refund (sandbox),yes,zod,yes,OWNER-only; $transaction + PG SELECT FOR UPDATE; ceiling recheck
+GET|PATCH,/api/admin/orders/{id},src/app/api/admin/orders/[id]/route.ts,staff(ADMIN),,Full order detail (PII) / PATCH status transitions,yes,zod,yes,CANCELLED path: restock+refund in $transaction
+POST,/api/admin/orders/{id}/ship,src/app/api/admin/orders/[id]/ship/route.ts,staff(ADMIN),,Create shipment + mark SHIPPED,,zod,,queueShippingNoticeEmail best-effort; carrier-aware tracking URL
+GET,/api/admin/orders,src/app/api/admin/orders/route.ts,staff(ADMIN),,"Order list, PAGE_SIZE=20, status/q filters (PII email)",,manual/none,yes,
+PATCH,/api/admin/people/{id},src/app/api/admin/people/[id]/route.ts,content-admin,,Update contributor + translations ($transaction),yes,zod,,
+GET|POST,/api/admin/people,src/app/api/admin/people/route.ts,content-admin,,List/create contributors,,zod,,
+POST,/api/admin/products/{id}/duplicate,src/app/api/admin/products/[id]/duplicate/route.ts,content-admin,,Clone product as DRAFT (no variants),,manual/none,,
+GET|PATCH|DELETE,/api/admin/products/{id},src/app/api/admin/products/[id]/route.ts,content-admin,,Full editor GET/PATCH / DELETE draft-only,yes,zod,yes,Up-front referential validation; $transactions; 409 guards
+POST,/api/admin/products/bulk-stock,src/app/api/admin/products/bulk-stock/route.ts,content-admin,,Bulk stock adjust (<=50) in one $transaction + audits,yes,zod,,
+GET,/api/admin/products/export,src/app/api/admin/products/export/route.ts,content-admin,,Full catalog CSV export (SEC-011 formula neutralization),,manual/none,,Audited; unbounded read (all products)
+POST,/api/admin/products/import,src/app/api/admin/products/import/route.ts,content-admin,,"CSV import (per-row validation, one $transaction)",yes,zod,,Skips bad rows w/ reasons; audited
+GET|POST,/api/admin/products,src/app/api/admin/products/route.ts,content-admin,,List (page/pageSize<=200) / atomic create (all-or-nothing $transaction),yes,zod,yes,
+PATCH|DELETE,/api/admin/promotions/{id},src/app/api/admin/promotions/[id]/route.ts,content-admin,,PATCH/DELETE promotion (single-active invariant),,zod,,
+GET|POST,/api/admin/promotions,src/app/api/admin/promotions/route.ts,content-admin,,List/create promotions,,zod,,
+GET|POST,/api/admin/reports/digest,src/app/api/admin/reports/digest/route.ts,staff(ADMIN),,Queue sales digest (mail!) GET status / POST ?force=1&days=,,manual/none,,Mail write; no rate limit (admin-only)
+GET,/api/admin/reports/export,src/app/api/admin/reports/export/route.ts,staff(ADMIN),,CSV report attachment (window<=365d),,manual/none,yes,
+GET,/api/admin/reports,src/app/api/admin/reports/route.ts,staff(ADMIN),,Aggregated report (window<=365d; in-JS aggregation),,manual/none,yes,
+PATCH,/api/admin/reviews/{id},src/app/api/admin/reviews/[id]/route.ts,content-admin,,Moderation decision + press reply (audited),,zod,,
+GET,/api/admin/reviews,src/app/api/admin/reviews/route.ts,content-admin,,Moderation queue (UNBOUNDED findMany - no pagination),,manual/none,,
+GET|PATCH,/api/admin/settings,src/app/api/admin/settings/route.ts,owner,,Feature/store settings GET/PATCH (SEC-012 URL validation),,zod,,OWNER-only; audit
+POST,/api/admin/tickets/{id}/messages,src/app/api/admin/tickets/[id]/messages/route.ts,staff(ADMIN),,Support reply (body<=5000),,zod,,
+GET|PATCH,/api/admin/tickets/{id},src/app/api/admin/tickets/[id]/route.ts,staff(ADMIN),,Ticket detail + status/priority PATCH (audited),,zod,,
+GET,/api/admin/tickets,src/app/api/admin/tickets/route.ts,staff(ADMIN),,Ticket list (UNBOUNDED findMany),,manual/none,yes,
+POST,/api/admin/upload,src/app/api/admin/upload/route.ts,content-admin,,"Multipart image upload: magic-byte sniff, <=5MB, random name",,manual/none,,Audited; no rate limit; writes public/uploads
+POST,/api/analytics/event,src/app/api/analytics/event/route.ts,anon,60/min/IP,Consent-gated analytics event + taste signal,,zod,,server-side consent verify fail-closed; silent drop
+GET,/api/articles/{slug},src/app/api/articles/[slug]/route.ts,anon,,Article detail (404 if missing),,manual/none,,
+GET,/api/articles,src/app/api/articles/route.ts,anon,,Published article list,,manual/none,,
+POST,/api/auth/confirm-email-change,src/app/api/auth/confirm-email-change/route.ts,anon(token),,Consume change token: swap email + revoke ALL sessions,yes,zod,,$transaction; 409 EMAIL_IN_USE
+POST,/api/auth/forgot-password,src/app/api/auth/forgot-password/route.ts,anon,5/10min/IP,Mint reset token + queue mail; ALWAYS {ok:true} (anti-enum),,zod,,dev resetUrl behind DEV_EXPOSE_RESET_LINK+dev
+GET,/api/auth/google/callback,src/app/api/auth/google/callback/route.ts,anon,,"OAuth callback: state verify, upsert/link user, session, cart merge",,manual/none,,external fetches; email_verified enforced (SEC-010)
+GET,/api/auth/google/start,src/app/api/auth/google/start/route.ts,anon,20/min/IP,OAuth start: HMAC state cookie + 302 to Google,,manual/none,,503 when unconfigured
+GET,/api/auth/google/status,src/app/api/auth/google/status/route.ts,anon,,Config status + redirect URI hint,,manual/none,,
+POST,/api/auth/login,src/app/api/auth/login/route.ts,anon,10/min/IP,Password login; session cookie + guest cart merge,,zod,,IP rateLimit 10/min + DB per-account lockout (S5); S9 uniform 401
+POST,/api/auth/logout,src/app/api/auth/logout/route.ts,anon,,Revoke session + clear cookie,,manual/none,,
+GET,/api/auth/me,src/app/api/auth/me/route.ts,anon,,Current user or null,,manual/none,,
+POST,/api/auth/register,src/app/api/auth/register/route.ts,anon,5/15min/IP,Create CUSTOMER + session + verify mail,,zod,,rateLimit 5/15min; 409 EMAIL_TAKEN/OAUTH_ACCOUNT; dev devVerifyUrl
+POST,/api/auth/reset-password,src/app/api/auth/reset-password/route.ts,anon,10/min/IP,Consume reset token: new pw + revoke ALL sessions + audit,yes,zod,,$transaction
+GET|DELETE,/api/auth/sessions,src/app/api/auth/sessions/route.ts,customer,,List own sessions / revoke one|all (S11),,manual/none,,current-flag computed
+POST,/api/auth/verify-email,src/app/api/auth/verify-email/route.ts,anon(token),,Consume verify token -> emailVerifiedAt + audit,,zod,,
+POST,/api/back-in-stock,src/app/api/back-in-stock/route.ts,anon,5/10min/IP,Upsert restock subscription (PII email),,zod,,"verified-email gate for own account; idempotent per (variant,email)"
+GET,/api/bootstrap,src/app/api/bootstrap/route.ts,anon,,Boot payload: user/cart(read-only)/settings/consent/wishlist,,manual/none,,never mints cart row (SEC-005); best-effort sections
+PATCH|DELETE,/api/cart/items/{itemId},src/app/api/cart/items/[itemId]/route.ts,anon(guest-cart),120/min/IP,PATCH qty (clamp to stock) / DELETE item,,zod,,ownership via cartId; 429 120/min
+POST,/api/cart/items,src/app/api/cart/items/route.ts,anon(guest-cart),60/min/IP,"Add item (merge, clamp to stock/MAX_QTY)",,zod,,creates cart lazily; 429 60/min
+GET|DELETE,/api/cart,src/app/api/cart/route.ts,anon,,"Cart payload (read-only, no minting) / DELETE clear items",,manual/none,,
+GET,/api/categories,src/app/api/categories/route.ts,anon,,Active categories + published counts,,manual/none,,
+POST,/api/checkout/quote,src/app/api/checkout/quote/route.ts,anon,,Shipping/discount/giftwrap quote (soft-fail discount),,zod,,no side effects
+POST,/api/checkout,src/app/api/checkout/route.ts,anon,5/min/IP,"Place order: sandbox payment, stock decrement, cart convert, consents, outbox mail",yes,zod,,BIG $transaction; TOCTOU price recheck; idempotency-key 15min in-memory; 429 5/min; fail-closed 503 w/o provider
+POST,/api/contact,src/app/api/contact/route.ts,anon,5/10min/IP,Guest contact -> Ticket + message (PII name/email),,zod,,429 5/10min; P2002 retry
+GET,/api/cron/tick,src/app/api/cron/tick/route.ts,cron-secret,,Housekeeping + mail dispatch + digest,,manual/none,,timing-safe Bearer CRON_SECRET; 403 DISABLED when unset
+POST,/api/discount/validate,src/app/api/discount/validate/route.ts,anon,10/min/IP,Validate code vs cart (422 on fail),,zod,,429 10/min
+GET,/api/for-you,src/app/api/for-you/route.ts,anon,,Personalized suggestions from taste signals (take<=12),,manual/none,yes,empty on doubt
+GET,/api/healthz,src/app/api/healthz/route.ts,anon,,Liveness+DB probe; side-effectful only when HEALTHZ_OPS=1,,manual/none,,503 on DB fail; dev default ops=1
+GET,/api/homepage,src/app/api/homepage/route.ts,anon,,Published homepage sections,,manual/none,,
+GET,/api/legal/{type},src/app/api/legal/[type]/route.ts,anon,,Current legal doc by type/locale (404 unknown type),,manual/none,,
+POST,/api/newsletter/confirm,src/app/api/newsletter/confirm/route.ts,anon(token),20/10min/IP,Double opt-in confirm (HMAC sig),,zod,,429 20/10min; idempotent
+POST,/api/newsletter,src/app/api/newsletter/route.ts,anon,5/10min/IP,Subscribe (PENDING) + signed confirm mail; uniform {ok:true} (S9),,zod,,429 5/10min; double opt-in
+GET,/api/newsletter/unsubscribe,src/app/api/newsletter/unsubscribe/route.ts,anon(sig),,"One-click unsubscribe via HMAC link (GET, redirect)",,manual/none,,sig = credential
+GET,/api/orders/{orderNumber},src/app/api/orders/[orderNumber]/route.ts,anon,10/min/IP,Guest order tracking: publicRef OR number+email (S9 uniform 404),,manual/none,yes,429 10/min; no giftMessage; safeTrackingUrl
+GET,/api/people/{slug},src/app/api/people/[slug]/route.ts,anon,,Person detail + books/articles,,manual/none,,
+GET,/api/people,src/app/api/people/route.ts,anon,,Published people directory,,manual/none,,
+GET|PUT,/api/privacy/consent,src/app/api/privacy/consent/route.ts,anon,20/min/IP(PUT),GET consent state / PUT decision (append-only + cookie),,zod,,429 20/min PUT
+GET,/api/privacy/cookies,src/app/api/privacy/cookies/route.ts,anon,,Cookie inventory metadata,,manual/none,,
+GET,/api/products/{slug},src/app/api/products/[slug]/route.ts,anon,,Product detail (thin delegate to getProductDetail),,manual/none,,404 unpublished/missing
+GET,/api/products/facets,src/app/api/products/facets/route.ts,anon,,Filter facets + price domain,,manual/none,,
+GET,/api/products,src/app/api/products/route.ts,anon,,Storefront listing (server paginated pageSize<=48),,manual/none,,
+POST,/api/reviews/{id}/helpful,src/app/api/reviews/[id]/helpful/route.ts,customer,30/min/IP,Toggle helpful vote (no self-vote; P2002 race-safe),,manual/none,,429 30/min
+POST,/api/reviews,src/app/api/reviews/route.ts,anon,3/10min/IP,Submit review (PENDING; guests need name; signed-in need verified email),,zod,,429 3/10min; caps 200/5000
+GET,/api,src/app/api/route.ts,anon,,"Legacy demo route {message:""Hello, world!""}",,manual/none,,inventory hygiene: leftover scaffold
+GET,/api/search,src/app/api/search/route.ts,anon,30/min/IP,"Cross-entity search (bounded take 200 products, 12 people/articles)",,manual/none,yes,429 30/min
+GET,/api/series/{slug},src/app/api/series/[slug]/route.ts,anon,,Series volumes detail,,manual/none,,
+GET,/api/series,src/app/api/series/route.ts,anon,,Series index,,manual/none,,
+GET,/api/settings,src/app/api/settings/route.ts,anon,,Public store/shipping/feature settings + promo + announcements,,manual/none,,
+GET|PUT,/api/wishlist,src/app/api/wishlist/route.ts,customer,,GET own slugs / PUT replace-all (max 48) in $transaction,yes,zod,,

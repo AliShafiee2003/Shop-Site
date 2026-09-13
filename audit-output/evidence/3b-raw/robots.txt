@@ -1,0 +1,91 @@
+User-Agent: Googlebot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: Bingbot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: Twitterbot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: facebookexternalhit
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: GPTBot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: PerplexityBot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: ClaudeBot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: Google-Extended
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+User-Agent: *
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+
+Sitemap: http://localhost:3000/sitemap.xml

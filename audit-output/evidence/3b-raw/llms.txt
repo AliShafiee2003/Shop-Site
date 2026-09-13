@@ -1,0 +1,57 @@
+# PersePix (پرس‌پیکس)
+
+> PersePix is an independent publishing house bringing contemporary Persian literature to European readers — in English and in bilingual editions.
+>
+> پرس‌پیکس ناشری مستقل است که ادبیات معاصر ایران را برای خوانندگان اروپایی می‌آورد — به انگلیسی و در نسخه‌های دوزبانه.
+
+## Books (کتاب‌ها)
+
+- [All books](http://localhost:3000/books): the complete published catalog.
+- [Rust and Turquoise](http://localhost:3000/books/rust-and-turquoise)
+- [The Cartographer of Silence](http://localhost:3000/books/the-cartographer-of-silence)
+- [Songs for a Burnt Bridge](http://localhost:3000/books/songs-for-a-burnt-bridge)
+- [The Archivist](http://localhost:3000/books/the-archivist)
+- [The Orchard Keeper’s Daughter](http://localhost:3000/books/the-orchard-keepers-daughter)
+- [The Nightingale’s Atlas](http://localhost:3000/books/the-nightingales-atlas)
+- [Field Notes from the Alborz](http://localhost:3000/books/field-notes-from-the-alborz)
+- [Tea at the Edge of Winter](http://localhost:3000/books/tea-at-the-edge-of-winter)
+- [Letters to My City](http://localhost:3000/books/letters-to-my-city)
+- [Blueprints of Exile](http://localhost:3000/books/blueprints-of-exile)
+
+## Book series (مجموعه‌های کتاب)
+
+- [Book series](http://localhost:3000/series): every collection, volume by volume.
+- [Contemporary Persian Prose](http://localhost:3000/series/contemporary-persian-prose)
+
+## Authors & translators (نویسندگان و مترجمان)
+
+- [Authors & translators](http://localhost:3000/authors)
+- [Sarah Berger](http://localhost:3000/authors/sarah-berger)
+- [Martin Ellison](http://localhost:3000/authors/martin-ellison)
+- [Golnar Bakhtiari](http://localhost:3000/authors/golnar-bakhtiari)
+- [Omid Sharifi](http://localhost:3000/authors/omid-sharifi)
+- [Mehrnaz Kian](http://localhost:3000/authors/mehrnaz-kian)
+- [Farhad Kamali](http://localhost:3000/authors/farhad-kamali)
+- [Leila Taheri](http://localhost:3000/authors/leila-taheri)
+- [Shirin Golzar](http://localhost:3000/authors/shirin-golzar)
+- [Dariush Alavi](http://localhost:3000/authors/dariush-alavi)
+- [Parvaneh Mostofi](http://localhost:3000/authors/parvaneh-mostofi)
+- [Kaveh Rostami](http://localhost:3000/authors/kaveh-rostami)
+- [Neda Ahmadi](http://localhost:3000/authors/neda-ahmadi)
+
+## Journal (مجلهٔ نشر)
+
+- [Journal](http://localhost:3000/articles): Essays, interviews and studio notes from the press.
+
+## House & Legal
+
+- [About](http://localhost:3000/about)
+- [Contact](http://localhost:3000/contact)
+- [FAQ](http://localhost:3000/faq)
+- [Shipping & Returns](http://localhost:3000/shipping-returns)
+- [Terms of sale](http://localhost:3000/legal/terms)
+- [Privacy notice](http://localhost:3000/legal/privacy)
+- [Right of withdrawal](http://localhost:3000/legal/withdrawal)
+- [Imprint](http://localhost:3000/legal/imprint)
+- [Accessibility](http://localhost:3000/legal/accessibility)
+- [Cookies](http://localhost:3000/legal/cookies)

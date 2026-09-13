@@ -1,0 +1,10 @@
+== is 05f137b an ancestor of HEAD? ==
+YES reachable from HEAD
+== branches/tags containing it ==
+* main
+(end)
+== first/last commit touching seed.ts with the literal (dates only) ==
+05f137b 2026-09-12 88952593-3cfc-46af-8bd1-505306eb322c
+0c01002 2026-09-12 94571266-414b-4afa-a963-eced726f7fee
+2631446 2026-09-12 refactor(audit-p2): dead-code purge, /api/bootstrap, AdminView split, PG ETL prep
+382b14e 2026-09-12 fix(audit): apply P0/P1 remediation from persepix-audit

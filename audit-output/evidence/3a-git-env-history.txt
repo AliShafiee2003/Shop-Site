@@ -1,0 +1,10 @@
+=== what did 382b14e add? ===
+    Security: SEC-001 (.env purged from history + rotation), SEC-002 (site origin
+ .env.example                                       |  85 +++++++++
+=== is that path tracked now? ===
+    Security: SEC-001 (.env purged from history + rotation), SEC-002 (site origin
+.env.example
+=== history files containing 'SECRET=' values (names only, redact) ===
+04cf388b7026650fc3d012f76763313681ce2303: .env.example
+=== does ANY historical blob contain STATE_SECRET with a value? (count only) ===
+done

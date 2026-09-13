@@ -1,0 +1,16 @@
+== anonymous upload (expect 403) ==
+{"error":"FORBIDDEN"}
+status=403
+== google start (unconfigured, expect 503) ==
+{"error":"NOT_CONFIGURED","message":"Google sign-in is not configured on this deployment. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (see GOOGLE-OAUTH-SETUP.md), then restart."}
+status=503
+== google callback without state (expect 302 invalid_state) ==
+HTTP/1.1 302 Found
+location: /login?google=invalid_state
+set-cookie: sp_g_state=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
+== cron wrong bearer (expect 403) ==
+{"error":"FORBIDDEN","message":"Invalid scheduler credentials"}
+status=403
+== cron no auth (expect 403) ==
+{"error":"FORBIDDEN","message":"Invalid scheduler credentials"}
+status=403

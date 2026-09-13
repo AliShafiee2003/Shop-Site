@@ -1,0 +1,5 @@
+200 /categories
+200 /categories/fiction
+200 /categories/non-fiction
+200 /authors
+200 /authors/kaveh-rostami

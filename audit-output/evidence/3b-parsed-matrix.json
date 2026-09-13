@@ -1,0 +1,3068 @@
+{
+ "home-en": {
+  "label": "home-en",
+  "status": "200",
+  "bytes": 82558,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "PersePix — Independent books from Tehran & Vienna"
+  ],
+  "headings_seq": "1222222222233322333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Organization",
+   "WebSite"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PersePix",
+    "url": "http://localhost:3000/",
+    "logo": "http://localhost:3000/images/logo.png"
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PersePix",
+    "url": "http://localhost:3000/",
+    "potentialAction": {
+     "@type": "SearchAction",
+     "target": "http://localhost:3000/search?q={search_term_string}",
+     "query-input": "required name=search_term_string"
+    }
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "home-fa": {
+  "label": "home-fa",
+  "status": "200",
+  "bytes": 82816,
+  "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+  "desc": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+  "desc_len": 119,
+  "canonical": "http://localhost:3000/fa",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "og:description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "پرس‌پیکس — کتاب‌های مستقل از تهران و وین"
+  ],
+  "headings_seq": "1222222222233322333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Organization",
+   "WebSite"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "پرس‌پیکس",
+    "url": "http://localhost:3000/fa",
+    "logo": "http://localhost:3000/images/logo.png",
+    "contactPoint": {
+     "@type": "ContactPoint",
+     "email": "hello@persepix.example",
+     "contactType": "customer service"
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "پرس‌پیکس",
+    "url": "http://localhost:3000/fa",
+    "potentialAction": {
+     "@type": "SearchAction",
+     "target": "http://localhost:3000/fa/search?q={search_term_string}",
+     "query-input": "required name=search_term_string"
+    }
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "home-legacy-en": {
+  "label": "home-legacy-en",
+  "status": "308",
+  "bytes": 22181,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-en": {
+  "label": "catalog-en",
+  "status": "200",
+  "bytes": 130013,
+  "title": "All books — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/books",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "All books — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/books",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "All books — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "All books"
+  ],
+  "headings_seq": "13333333333333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 53,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-fa": {
+  "label": "catalog-fa",
+  "status": "200",
+  "bytes": 129425,
+  "title": "همه کتاب‌ها — پرس‌پیکس",
+  "desc": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+  "desc_len": 119,
+  "canonical": "http://localhost:3000/fa/books",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "همه کتاب‌ها — پرس‌پیکس",
+   "og:description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/books",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "همه کتاب‌ها — پرس‌پیکس",
+   "description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "همهٔ کتاب‌ها"
+  ],
+  "headings_seq": "13333333333333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "http://localhost:3000/fa"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "همه کتاب‌ها",
+      "item": "http://localhost:3000/fa/books"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 53,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-paged": {
+  "label": "catalog-paged",
+  "status": "200",
+  "bytes": 70000,
+  "title": "All books — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/books",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "All books — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/books",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "All books — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "All books"
+  ],
+  "headings_seq": "13333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-sort": {
+  "label": "catalog-sort",
+  "status": "200",
+  "bytes": 130131,
+  "title": "All books — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/books",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "All books — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/books",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "All books — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "All books"
+  ],
+  "headings_seq": "13333333333333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 53,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-q": {
+  "label": "catalog-q",
+  "status": "200",
+  "bytes": 70019,
+  "title": "All books — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/books",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "All books — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/books",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "All books — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "All books"
+  ],
+  "headings_seq": "13333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "catalog-trailing": {
+  "label": "catalog-trailing",
+  "status": "308",
+  "bytes": 6,
+  "title": null,
+  "desc": null,
+  "desc_len": 0,
+  "canonical": null,
+  "hreflang": [],
+  "robots": null,
+  "og": {
+   "og:title": null,
+   "og:description": null,
+   "og:image": null,
+   "og:url": null,
+   "og:type": null,
+   "og:site_name": null,
+   "og:locale": null,
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": null,
+   "title": null,
+   "description": null,
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": null
+ },
+ "category-en": {
+  "label": "category-en",
+  "status": "200",
+  "bytes": 94721,
+  "title": "All books — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/categories/fiction",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "All books — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/categories/fiction",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "All books — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "All books"
+  ],
+  "headings_seq": "13333333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 35,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "category-fa": {
+  "label": "category-fa",
+  "status": "200",
+  "bytes": 94272,
+  "title": "همه کتاب‌ها — پرس‌پیکس",
+  "desc": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+  "desc_len": 119,
+  "canonical": "http://localhost:3000/fa/categories/fiction",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "همه کتاب‌ها — پرس‌پیکس",
+   "og:description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/categories/fiction",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "همه کتاب‌ها — پرس‌پیکس",
+   "description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "همهٔ کتاب‌ها"
+  ],
+  "headings_seq": "13333333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 35,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "product1-en": {
+  "label": "product1-en",
+  "status": "200",
+  "bytes": 94179,
+  "title": "Rust and Turquoise — PersePix",
+  "desc": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+  "desc_len": 112,
+  "canonical": "http://localhost:3000/books/rust-and-turquoise",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Rust and Turquoise — PersePix",
+   "og:description": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+   "og:image": "http://localhost:3000/images/cover-rust.png",
+   "og:url": "http://localhost:3000/books/rust-and-turquoise",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Rust and Turquoise — PersePix",
+   "description": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+   "image": "http://localhost:3000/images/cover-rust.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Rust and Turquoise"
+  ],
+  "headings_seq": "123223323333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Book",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "Rust and Turquoise",
+    "url": "http://localhost:3000/books/rust-and-turquoise",
+    "image": "http://localhost:3000/images/cover-rust.png",
+    "author": [
+     {
+      "@type": "Person",
+      "name": "Mehrnaz Kian"
+     }
+    ],
+    "isbn": "978-3-011-00009-7",
+    "numberOfPages": 256,
+    "publisher": {
+     "@type": "Organization",
+     "name": "PersePix"
+    },
+    "inLanguage": "English",
+    "aggregateRating": {
+     "@type": "AggregateRating",
+     "ratingValue": 5,
+     "reviewCount": 1
+    },
+    "offers": {
+     "@type": "Offer",
+     "price": "32.00",
+     "priceCurrency": "EUR",
+     "availability": "https://schema.org/InStock",
+     "itemCondition": "https://schema.org/NewCondition",
+     "url": "http://localhost:3000/books/rust-and-turquoise",
+     "priceValidUntil": "2026-10-13",
+     "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "AT",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+     },
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "4.90",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "AT"
+      }
+     }
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Rust and Turquoise",
+      "item": "http://localhost:3000/books/rust-and-turquoise"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 30,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "product1-fa": {
+  "label": "product1-fa",
+  "status": "200",
+  "bytes": 93893,
+  "title": "زنگار و فیروزه — پرس‌پیکس",
+  "desc": "نگاهی شاخص به کارگاه‌های رنگرزی، چاپ کَلام‌کاری و آرشیو خصوصی کم‌سروصداترین پژوهشگر پارچهٔ ایران.",
+  "desc_len": 97,
+  "canonical": "http://localhost:3000/fa/books/rust-and-turquoise",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "زنگار و فیروزه — پرس‌پیکس",
+   "og:description": "نگاهی شاخص به کارگاه‌های رنگرزی، چاپ کَلام‌کاری و آرشیو خصوصی کم‌سروصداترین پژوهشگر پارچهٔ ایران.",
+   "og:image": "http://localhost:3000/images/cover-rust.png",
+   "og:url": "http://localhost:3000/fa/books/rust-and-turquoise",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "زنگار و فیروزه — پرس‌پیکس",
+   "description": "نگاهی شاخص به کارگاه‌های رنگرزی، چاپ کَلام‌کاری و آرشیو خصوصی کم‌سروصداترین پژوهشگر پارچهٔ ایران.",
+   "image": "http://localhost:3000/images/cover-rust.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "زنگار و فیروزه"
+  ],
+  "headings_seq": "123223323333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Book",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "زنگار و فیروزه",
+    "url": "http://localhost:3000/fa/books/rust-and-turquoise",
+    "image": "http://localhost:3000/images/cover-rust.png",
+    "author": [
+     {
+      "@type": "Person",
+      "name": "Mehrnaz Kian"
+     }
+    ],
+    "isbn": "978-3-011-00009-7",
+    "numberOfPages": 256,
+    "publisher": {
+     "@type": "Organization",
+     "name": "پرس‌پیکس"
+    },
+    "inLanguage": "English",
+    "aggregateRating": {
+     "@type": "AggregateRating",
+     "ratingValue": 5,
+     "reviewCount": 1
+    },
+    "offers": {
+     "@type": "Offer",
+     "price": "32.00",
+     "priceCurrency": "EUR",
+     "availability": "https://schema.org/InStock",
+     "itemCondition": "https://schema.org/NewCondition",
+     "url": "http://localhost:3000/fa/books/rust-and-turquoise",
+     "priceValidUntil": "2026-10-13",
+     "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "AT",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+     },
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "4.90",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "AT"
+      }
+     }
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "http://localhost:3000/fa"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "همه کتاب‌ها",
+      "item": "http://localhost:3000/fa/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "زنگار و فیروزه",
+      "item": "http://localhost:3000/fa/books/rust-and-turquoise"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 30,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "product2-en": {
+  "label": "product2-en",
+  "status": "200",
+  "bytes": 130025,
+  "title": "The Cartographer of Silence — PersePix",
+  "desc": "A surveyor travels the small towns of Iran, mapping the places where people have lost their voice — and finds her own.",
+  "desc_len": 118,
+  "canonical": "http://localhost:3000/books/the-cartographer-of-silence",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "The Cartographer of Silence — PersePix",
+   "og:description": "A surveyor travels the small towns of Iran, mapping the places where people have lost their voice — and finds her own.",
+   "og:image": "http://localhost:3000/images/cover-cartographer.png",
+   "og:url": "http://localhost:3000/books/the-cartographer-of-silence",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "The Cartographer of Silence — PersePix",
+   "description": "A surveyor travels the small towns of Iran, mapping the places where people have lost their voice — and finds her own.",
+   "image": "http://localhost:3000/images/cover-cartographer.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "The Cartographer of Silence"
+  ],
+  "headings_seq": "12322333323333333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Book",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "The Cartographer of Silence",
+    "url": "http://localhost:3000/books/the-cartographer-of-silence",
+    "image": "http://localhost:3000/images/cover-cartographer.png",
+    "author": [
+     {
+      "@type": "Person",
+      "name": "Neda Ahmadi"
+     }
+    ],
+    "isbn": "978-3-011-00002-8",
+    "numberOfPages": 312,
+    "publisher": {
+     "@type": "Organization",
+     "name": "PersePix"
+    },
+    "inLanguage": "English",
+    "aggregateRating": {
+     "@type": "AggregateRating",
+     "ratingValue": 4.7,
+     "reviewCount": 3
+    },
+    "offers": {
+     "@type": "Offer",
+     "price": "22.00",
+     "priceCurrency": "EUR",
+     "availability": "https://schema.org/InStock",
+     "itemCondition": "https://schema.org/NewCondition",
+     "url": "http://localhost:3000/books/the-cartographer-of-silence",
+     "priceValidUntil": "2026-10-13",
+     "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "AT",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+     },
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "4.90",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "AT"
+      }
+     }
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "The Cartographer of Silence",
+      "item": "http://localhost:3000/books/the-cartographer-of-silence"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 39,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "product3-en": {
+  "label": "product3-en",
+  "status": "200",
+  "bytes": 109099,
+  "title": "Songs for a Burnt Bridge — PersePix",
+  "desc": "A bilingual edition of Shirin Golzar’s blazing second collection — Persian and English on facing pages.",
+  "desc_len": 103,
+  "canonical": "http://localhost:3000/books/songs-for-a-burnt-bridge",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Songs for a Burnt Bridge — PersePix",
+   "og:description": "A bilingual edition of Shirin Golzar’s blazing second collection — Persian and English on facing pages.",
+   "og:image": "http://localhost:3000/images/cover-songs.png",
+   "og:url": "http://localhost:3000/books/songs-for-a-burnt-bridge",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Songs for a Burnt Bridge — PersePix",
+   "description": "A bilingual edition of Shirin Golzar’s blazing second collection — Persian and English on facing pages.",
+   "image": "http://localhost:3000/images/cover-songs.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Songs for a Burnt Bridge"
+  ],
+  "headings_seq": "12322332333333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Book",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": "Songs for a Burnt Bridge",
+    "url": "http://localhost:3000/books/songs-for-a-burnt-bridge",
+    "image": "http://localhost:3000/images/cover-songs.png",
+    "author": [
+     {
+      "@type": "Person",
+      "name": "Shirin Golzar"
+     }
+    ],
+    "isbn": "978-3-011-00006-6",
+    "numberOfPages": 128,
+    "publisher": {
+     "@type": "Organization",
+     "name": "PersePix"
+    },
+    "inLanguage": "Bilingual",
+    "aggregateRating": {
+     "@type": "AggregateRating",
+     "ratingValue": 5,
+     "reviewCount": 1
+    },
+    "offers": {
+     "@type": "Offer",
+     "price": "16.00",
+     "priceCurrency": "EUR",
+     "availability": "https://schema.org/OutOfStock",
+     "itemCondition": "https://schema.org/NewCondition",
+     "url": "http://localhost:3000/books/songs-for-a-burnt-bridge",
+     "priceValidUntil": "2026-10-13",
+     "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "AT",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnMethod": "https://schema.org/ReturnByMail",
+      "returnFees": "https://schema.org/FreeReturn"
+     },
+     "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+       "@type": "MonetaryAmount",
+       "value": "4.90",
+       "currency": "EUR"
+      },
+      "shippingDestination": {
+       "@type": "DefinedRegion",
+       "addressCountry": "AT"
+      }
+     }
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Songs for a Burnt Bridge",
+      "item": "http://localhost:3000/books/songs-for-a-burnt-bridge"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 36,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "person-en": {
+  "label": "person-en",
+  "status": "200",
+  "bytes": 46390,
+  "title": "Neda Ahmadi — PersePix",
+  "desc": "Neda Ahmadi was born in Isfahan and worked for a decade as an urban surveyor before turning to fiction. Her novels map the emotional topography of provincial Ir",
+  "desc_len": 160,
+  "canonical": "http://localhost:3000/authors/neda-ahmadi",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Neda Ahmadi — PersePix",
+   "og:description": "Neda Ahmadi was born in Isfahan and worked for a decade as an urban surveyor before turning to fiction. Her novels map the emotional topography of provincial Ir",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/authors/neda-ahmadi",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Neda Ahmadi — PersePix",
+   "description": "Neda Ahmadi was born in Isfahan and worked for a decade as an urban surveyor before turning to fiction. Her novels map the emotional topography of provincial Ir",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Person",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Neda Ahmadi",
+    "url": "http://localhost:3000/authors/neda-ahmadi",
+    "image": "http://localhost:3000/images/face-neda.png",
+    "nationality": "Iranian"
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Authors & translators",
+      "item": "http://localhost:3000/authors"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Neda Ahmadi",
+      "item": "http://localhost:3000/authors/neda-ahmadi"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "person-fa": {
+  "label": "person-fa",
+  "status": "200",
+  "bytes": 46373,
+  "title": "ندا احمدی — پرس‌پیکس",
+  "desc": "ندا احمدی در اصفهان زاده شد و پیش از روی‌آوردن به داستان‌نویسی، یک دهه نقشه‌بردار شهری بود. رمان‌های او با دقتی کم‌نظیر، جغرافیای احساسی شهرهای کوچک ایران را تر",
+  "desc_len": 160,
+  "canonical": "http://localhost:3000/fa/authors/neda-ahmadi",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "ندا احمدی — پرس‌پیکس",
+   "og:description": "ندا احمدی در اصفهان زاده شد و پیش از روی‌آوردن به داستان‌نویسی، یک دهه نقشه‌بردار شهری بود. رمان‌های او با دقتی کم‌نظیر، جغرافیای احساسی شهرهای کوچک ایران را تر",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/authors/neda-ahmadi",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "ندا احمدی — پرس‌پیکس",
+   "description": "ندا احمدی در اصفهان زاده شد و پیش از روی‌آوردن به داستان‌نویسی، یک دهه نقشه‌بردار شهری بود. رمان‌های او با دقتی کم‌نظیر، جغرافیای احساسی شهرهای کوچک ایران را تر",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Person",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "ندا احمدی",
+    "url": "http://localhost:3000/fa/authors/neda-ahmadi",
+    "image": "http://localhost:3000/images/face-neda.png",
+    "nationality": "Iranian"
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "http://localhost:3000/fa"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "نویسندگان و مترجمان",
+      "item": "http://localhost:3000/fa/authors"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "ندا احمدی",
+      "item": "http://localhost:3000/fa/authors/neda-ahmadi"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "people-en": {
+  "label": "people-en",
+  "status": "200",
+  "bytes": 46224,
+  "title": "Authors & translators — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/authors",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Authors & translators — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/authors",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Authors &amp; translators — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Authors & translators"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Authors & translators",
+      "item": "http://localhost:3000/authors"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "article-list-en": {
+  "label": "article-list-en",
+  "status": "200",
+  "bytes": 50845,
+  "title": "Journal — PersePix",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/articles",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Journal — PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/articles",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Journal — PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Journal"
+  ],
+  "headings_seq": "12222333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Journal",
+      "item": "http://localhost:3000/articles"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "article-en": {
+  "label": "article-en",
+  "status": "200",
+  "bytes": 62248,
+  "title": "Why Translate? On Bringing Persian Stories to European Readers — PersePix",
+  "desc": "A short defence of the longest thing we do: carrying a book across a language border without dropping it.",
+  "desc_len": 105,
+  "canonical": "http://localhost:3000/articles/why-translate",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Why Translate? On Bringing Persian Stories to European Readers — PersePix",
+   "og:description": "A short defence of the longest thing we do: carrying a book across a language border without dropping it.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/articles/why-translate",
+   "og:type": "article",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": "2026-09-01T03:23:20.342Z"
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Why Translate? On Bringing Persian Stories to European Readers — PersePix",
+   "description": "A short defence of the longest thing we do: carrying a book across a language border without dropping it.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Why Translate? On Bringing Persian Stories to European Readers"
+  ],
+  "headings_seq": "12223333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Article",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Why Translate? On Bringing Persian Stories to European Readers",
+    "url": "http://localhost:3000/articles/why-translate",
+    "mainEntityOfPage": {
+     "@type": "WebPage",
+     "@id": "http://localhost:3000/articles/why-translate"
+    },
+    "datePublished": "2026-09-01T03:23:20.342Z",
+    "dateModified": "2026-09-13T03:23:20.343Z",
+    "inLanguage": "en",
+    "author": {
+     "@type": "Person",
+     "name": "The PersePix editors"
+    },
+    "publisher": {
+     "@type": "Organization",
+     "name": "PersePix",
+     "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:3000/images/logo.png"
+     }
+    },
+    "description": "A short defence of the longest thing we do: carrying a book across a language border without dropping it."
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Journal",
+      "item": "http://localhost:3000/articles"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Why Translate? On Bringing Persian Stories to European Readers",
+      "item": "http://localhost:3000/articles/why-translate"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 28,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "article-fa": {
+  "label": "article-fa",
+  "status": "200",
+  "bytes": 61955,
+  "title": "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا — پرس‌پیکس",
+  "desc": "دفاعی کوتاه از طولانی‌ترین کاری که می‌کنیم: عبور دادن یک کتاب از مرز زبان، بدون رها کردنش.",
+  "desc_len": 90,
+  "canonical": "http://localhost:3000/fa/articles/why-translate",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا — پرس‌پیکس",
+   "og:description": "دفاعی کوتاه از طولانی‌ترین کاری که می‌کنیم: عبور دادن یک کتاب از مرز زبان، بدون رها کردنش.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/articles/why-translate",
+   "og:type": "article",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": "2026-09-01T03:23:20.342Z"
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا — پرس‌پیکس",
+   "description": "دفاعی کوتاه از طولانی‌ترین کاری که می‌کنیم: عبور دادن یک کتاب از مرز زبان، بدون رها کردنش.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا"
+  ],
+  "headings_seq": "12223333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "Article",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا",
+    "url": "http://localhost:3000/fa/articles/why-translate",
+    "mainEntityOfPage": {
+     "@type": "WebPage",
+     "@id": "http://localhost:3000/fa/articles/why-translate"
+    },
+    "datePublished": "2026-09-01T03:23:20.342Z",
+    "dateModified": "2026-09-13T03:23:20.343Z",
+    "inLanguage": "fa",
+    "author": {
+     "@type": "Person",
+     "name": "The PersePix editors"
+    },
+    "publisher": {
+     "@type": "Organization",
+     "name": "پرس‌پیکس",
+     "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:3000/images/logo.png"
+     }
+    },
+    "description": "دفاعی کوتاه از طولانی‌ترین کاری که می‌کنیم: عبور دادن یک کتاب از مرز زبان، بدون رها کردنش."
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "http://localhost:3000/fa"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "مجله",
+      "item": "http://localhost:3000/fa/articles"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "چرا ترجمه؟ دربارهٔ رساندن قصه‌های فارسی به خوانندگان اروپا",
+      "item": "http://localhost:3000/fa/articles/why-translate"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 28,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "series-en": {
+  "label": "series-en",
+  "status": "200",
+  "bytes": 51435,
+  "title": "Book series — PersePix",
+  "desc": "The PersePix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.",
+  "desc_len": 141,
+  "canonical": "http://localhost:3000/series",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Book series — PersePix",
+   "og:description": "The PersePix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/series",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Book series — PersePix",
+   "description": "The PersePix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Book series"
+  ],
+  "headings_seq": "12333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "CollectionPage",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Book series",
+    "url": "http://localhost:3000/series",
+    "isPartOf": {
+     "@type": "WebSite",
+     "name": "PersePix",
+     "url": "http://localhost:3000/"
+    },
+    "mainEntity": {
+     "@type": "ItemList",
+     "itemListElement": [
+      {
+       "@type": "ListItem",
+       "position": 1,
+       "name": "Contemporary Persian Prose",
+       "url": "http://localhost:3000/series/contemporary-persian-prose"
+      }
+     ]
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Series",
+      "item": "http://localhost:3000/series"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 25,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "series-detail-en": {
+  "label": "series-detail-en",
+  "status": "200",
+  "bytes": 68516,
+  "title": "Contemporary Persian Prose — PersePix",
+  "desc": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+  "desc_len": 162,
+  "canonical": "http://localhost:3000/series/contemporary-persian-prose",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Contemporary Persian Prose — PersePix",
+   "og:description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/series/contemporary-persian-prose",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Contemporary Persian Prose — PersePix",
+   "description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Contemporary Persian Prose"
+  ],
+  "headings_seq": "1333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "CollectionPage",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Contemporary Persian Prose",
+    "url": "http://localhost:3000/series/contemporary-persian-prose",
+    "description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+    "isPartOf": {
+     "@type": "WebSite",
+     "name": "PersePix",
+     "url": "http://localhost:3000/"
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "http://localhost:3000/"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "All books",
+      "item": "http://localhost:3000/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Contemporary Persian Prose",
+      "item": "http://localhost:3000/series/contemporary-persian-prose"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 34,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "series-detail-fa": {
+  "label": "series-detail-fa",
+  "status": "200",
+  "bytes": 68376,
+  "title": "Contemporary Persian Prose — پرس‌پیکس",
+  "desc": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+  "desc_len": 162,
+  "canonical": "http://localhost:3000/fa/series/contemporary-persian-prose",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Contemporary Persian Prose — پرس‌پیکس",
+   "og:description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/series/contemporary-persian-prose",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Contemporary Persian Prose — پرس‌پیکس",
+   "description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "نثر معاصر فارسی"
+  ],
+  "headings_seq": "1333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 2,
+  "ldjson_types": [
+   "CollectionPage",
+   "BreadcrumbList"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Contemporary Persian Prose",
+    "url": "http://localhost:3000/fa/series/contemporary-persian-prose",
+    "description": "Contemporary Persian Prose — a PersePix book series with 3 published volumes. The complete collection, in English and bilingual editions. (فارسی: نثر معاصر فارسی)",
+    "isPartOf": {
+     "@type": "WebSite",
+     "name": "پرس‌پیکس",
+     "url": "http://localhost:3000/fa"
+    }
+   },
+   {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+     {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "خانه",
+      "item": "http://localhost:3000/fa"
+     },
+     {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "همه کتاب‌ها",
+      "item": "http://localhost:3000/fa/books"
+     },
+     {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Contemporary Persian Prose",
+      "item": "http://localhost:3000/fa/series/contemporary-persian-prose"
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 34,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "search-en": {
+  "label": "search-en",
+  "status": "200",
+  "bytes": 45693,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/search",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/search",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Search results for “test”"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "search-fa": {
+  "label": "search-fa",
+  "status": "200",
+  "bytes": 45860,
+  "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+  "desc": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+  "desc_len": 119,
+  "canonical": "http://localhost:3000/fa/search",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "og:description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/search",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "نتایج جست‌وجو برای “”"
+  ],
+  "headings_seq": "13333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "cart": {
+  "label": "cart",
+  "status": "200",
+  "bytes": 45548,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/cart",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/cart",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Your cart"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "checkout": {
+  "label": "checkout",
+  "status": "200",
+  "bytes": 44818,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/checkout",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/checkout",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "login": {
+  "label": "login",
+  "status": "200",
+  "bytes": 49142,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/login",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/login",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Welcome back"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "register": {
+  "label": "register",
+  "status": "200",
+  "bytes": 49919,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/register",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/register",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Create your account"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "account": {
+  "label": "account",
+  "status": "200",
+  "bytes": 44804,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/account",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/account",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "admin": {
+  "label": "admin",
+  "status": "200",
+  "bytes": 57752,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/admin",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/admin",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "favorites": {
+  "label": "favorites",
+  "status": "200",
+  "bytes": 44832,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/favorites",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/favorites",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "track": {
+  "label": "track",
+  "status": "200",
+  "bytes": 49533,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/track",
+  "hreflang": [],
+  "robots": "noindex, nofollow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/track",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Track your order"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "legal-privacy-en": {
+  "label": "legal-privacy-en",
+  "status": "200",
+  "bytes": 44888,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/legal/privacy",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/legal/privacy",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "legal-privacy-fa": {
+  "label": "legal-privacy-fa",
+  "status": "200",
+  "bytes": 44566,
+  "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+  "desc": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+  "desc_len": 119,
+  "canonical": "http://localhost:3000/fa/legal/privacy",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "og:description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/fa/legal/privacy",
+   "og:type": "website",
+   "og:site_name": "پرس‌پیکس",
+   "og:locale": "fa_IR",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "پرس‌پیکس — کتاب‌های مستقل از تهران و وین",
+   "description": "ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه — رمان، شعر، سفرنامه، کتاب هنر و کودک. ارسال به سراسر اروپا از وین.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 22,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "about": {
+  "label": "about",
+  "status": "200",
+  "bytes": 49663,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/about",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/about",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "About the press"
+  ],
+  "headings_seq": "12222333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "faq": {
+  "label": "faq",
+  "status": "200",
+  "bytes": 57537,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/faq",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/faq",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Frequently asked questions"
+  ],
+  "headings_seq": "1333333333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 1,
+  "ldjson_types": [
+   "FAQPage"
+  ],
+  "ldjson": [
+   {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+     {
+      "@type": "Question",
+      "name": "Where do the books ship from?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "All orders ship from Vienna, Austria. Delivery takes 2–4 business days in Austria, 3–7 days across the EU, and 5–14 days internationally."
+      }
+     },
+     {
+      "@type": "Question",
+      "name": "How much is shipping?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "Austria €4.90; EU €7.90 (free over €60.00); worldwide destinations €14.90. All shipments are tracked."
+      }
+     },
+     {
+      "@type": "Question",
+      "name": "Can I return my order?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "Yes — EU consumers have a 14-day right of withdrawal. Books should be unused. Request a return from the orders page in your account."
+      }
+     },
+     {
+      "@type": "Question",
+      "name": "How do bilingual editions work?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "Bilingual editions print the Persian original and the English translation on facing pages, with notes by the translator and the author."
+      }
+     },
+     {
+      "@type": "Question",
+      "name": "How do I submit a manuscript?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "We currently work through direct author and rights-holder proposals only. For translation rights, write to us via the contact page."
+      }
+     },
+     {
+      "@type": "Question",
+      "name": "Do you ship to Iran?",
+      "acceptedAnswer": {
+       "@type": "Answer",
+       "text": "International shipping covers most countries, but payment and customs limitations may apply. Please contact us before ordering."
+      }
+     }
+    ]
+   }
+  ],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "contact": {
+  "label": "contact",
+  "status": "200",
+  "bytes": 51736,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/contact",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/contact",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Contact us"
+  ],
+  "headings_seq": "1333",
+  "heading_skips": [
+   [
+    1,
+    3
+   ]
+  ],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "shipping": {
+  "label": "shipping",
+  "status": "200",
+  "bytes": 47240,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": "http://localhost:3000/shipping-returns",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "PersePix — Independent books from Tehran & Vienna",
+   "og:description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+   "og:image": "http://localhost:3000/images/hero-season.png",
+   "og:url": "http://localhost:3000/shipping-returns",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "PersePix — Independent books from Tehran &amp; Vienna",
+   "description": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children&#x27;s books. Ships across Europe from Vienna.",
+   "image": "http://localhost:3000/images/hero-season.png"
+  },
+  "h1_count": 1,
+  "h1_texts": [
+   "Shipping & returns"
+  ],
+  "headings_seq": "122333",
+  "heading_skips": [],
+  "html_lang_dir": [
+   "en",
+   "ltr"
+  ],
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 23,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-a": {
+  "label": "soft404-a",
+  "status": "404",
+  "bytes": 21324,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-b": {
+  "label": "soft404-b",
+  "status": "404",
+  "bytes": 21113,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-c": {
+  "label": "soft404-c",
+  "status": "404",
+  "bytes": 21307,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-d": {
+  "label": "soft404-d",
+  "status": "404",
+  "bytes": 21431,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-e": {
+  "label": "soft404-e",
+  "status": "404",
+  "bytes": 21571,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-f": {
+  "label": "soft404-f",
+  "status": "404",
+  "bytes": 21640,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-g": {
+  "label": "soft404-g",
+  "status": "404",
+  "bytes": 21443,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "soft404-h": {
+  "label": "soft404-h",
+  "status": "404",
+  "bytes": 21377,
+  "title": "PersePix — Independent books from Tehran & Vienna",
+  "desc": "Contemporary Persian literature in English and bilingual editions: novels, poetry, memoir, art books and children's books. Ships across Europe from Vienna.",
+  "desc_len": 155,
+  "canonical": null,
+  "hreflang": [],
+  "robots": "noindex",
+  "og": {
+   "og:title": "PersePix",
+   "og:description": "Contemporary Persian literature in English and bilingual editions.",
+   "og:image": null,
+   "og:url": null,
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary",
+   "title": "PersePix",
+   "description": "Contemporary Persian literature in English and bilingual editions.",
+   "image": null
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ },
+ "redirect-en-deep": {
+  "label": "redirect-en-deep",
+  "status": "308",
+  "bytes": 22183,
+  "title": "Rust and Turquoise — PersePix",
+  "desc": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+  "desc_len": 112,
+  "canonical": "http://localhost:3000/books/rust-and-turquoise",
+  "hreflang": [],
+  "robots": "index, follow",
+  "og": {
+   "og:title": "Rust and Turquoise — PersePix",
+   "og:description": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+   "og:image": "http://localhost:3000/images/cover-rust.png",
+   "og:url": "http://localhost:3000/books/rust-and-turquoise",
+   "og:type": "website",
+   "og:site_name": "PersePix",
+   "og:locale": "en_US",
+   "article:published_time": null
+  },
+  "twitter": {
+   "card": "summary_large_image",
+   "title": "Rust and Turquoise — PersePix",
+   "description": "A landmark survey of dye workshops, block printing and the private archive of Iran’s quietest textile historian.",
+   "image": "http://localhost:3000/images/cover-rust.png"
+  },
+  "h1_count": 0,
+  "h1_texts": [],
+  "headings_seq": "",
+  "heading_skips": [],
+  "html_lang_dir": null,
+  "ldjson_count": 0,
+  "ldjson_types": [],
+  "ldjson": [],
+  "ldjson_duplicated": false,
+  "n_links": 0,
+  "x_robots_header": null,
+  "cache_header": "no-cache, must-revalidate"
+ }
+}

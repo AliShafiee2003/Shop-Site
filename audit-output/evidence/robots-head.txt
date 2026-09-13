@@ -1,0 +1,8 @@
+User-Agent: Googlebot
+Allow: /
+Disallow: /api/admin
+Disallow: /api/account
+Disallow: /search
+Disallow: /account
+Disallow: /admin
+Disallow: /checkout

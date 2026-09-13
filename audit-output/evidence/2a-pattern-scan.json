@@ -1,0 +1,213 @@
+{
+ "generated": "2026-09-13T05:08:51.028701Z",
+ "files_scanned": 290,
+ "counts": {
+  "ts_ignore": 0,
+  "ts_expect_error": 0,
+  "eslint_disable": 16,
+  "empty_catch_inline": 1,
+  "or_true": 1,
+  "continue_on_error": 0,
+  "ignore_build_errors": 0,
+  "process_exit0": 0,
+  "console_error": 8,
+  "console_warn": 0,
+  "todo": 0,
+  "fixme": 0,
+  "hack": 0,
+  "xxx": 0
+ },
+ "multiline_empty_catch": [],
+ "console_error_context": [
+  {
+   "file": "src/app/api/checkout/route.ts",
+   "line": 438,
+   "context": "await queueOrderConfirmationEmail(order.mail, order.mail.items, { headers: req.headers }) | } catch (mailErr) { | console.error('outbox: order confirmation mail failed', mailErr)"
+  },
+  {
+   "file": "src/app/api/checkout/route.ts",
+   "line": 465,
+   "context": "return apiError(422, 'DISCOUNT_EXHAUSTED', 'The discount code is no longer valid \u2014 please  | } | console.error('checkout failed', err)"
+  },
+  {
+   "file": "src/components/views/ProductView.tsx",
+   "line": 262,
+   "context": "setMiniCartOpen(true) | } catch (e) { | console.error('ADDCART_FAIL', e)"
+  },
+  {
+   "file": "scripts/pg-transfer.ts",
+   "line": 78,
+   "context": "} | if (!ok) { | console.error('\u2717 Parity FAILED \u2014 do not cutover.')"
+  },
+  {
+   "file": "scripts/pg-transfer.ts",
+   "line": 109,
+   "context": " | main() | .catch((e) => { console.error('ETL failed:', e); process.exit(1) })"
+  },
+  {
+   "file": "scripts/check-routes.ts",
+   "line": 112,
+   "context": "// \u2500\u2500 3. Report \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 | if (broken.length > 0) { | console.error(`\u2717 route-coverage: ${broken.length} broken /api reference(s):\\n`)"
+  },
+  {
+   "file": "scripts/check-routes.ts",
+   "line": 113,
+   "context": "if (broken.length > 0) { | console.error(`\u2717 route-coverage: ${broken.length} broken /api reference(s):\\n`) | for (const b of broken) console.error(`  ${b.ref}   \u2190 ${b.file}`)"
+  },
+  {
+   "file": "scripts/check-routes.ts",
+   "line": 114,
+   "context": "console.error(`\u2717 route-coverage: ${broken.length} broken /api reference(s):\\n`) | for (const b of broken) console.error(`  ${b.ref}   \u2190 ${b.file}`) | console.error('\\nAdd the missing route (see REG-001) or fix the reference.')"
+  }
+ ],
+ "results": {
+  "ts_ignore": [],
+  "ts_expect_error": [],
+  "eslint_disable": [
+   {
+    "file": "src/components/views/AccountView.tsx",
+    "line": 89,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fires once per ?welcome=google arrival; navigate(replace) strips the param before locale/toast can change"
+   },
+   {
+    "file": "src/components/views/CartView.tsx",
+    "line": 32,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: refresh is recreated every render (would loop); locale is the real trigger for the title refetch"
+   },
+   {
+    "file": "src/components/views/SearchView.tsx",
+    "line": 36,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates q+locale with a fetch-dedup guard; adding q would double-fetch per keystroke"
+   },
+   {
+    "file": "src/components/views/PeopleView.tsx",
+    "line": 83,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates slug+locale; adding person/locale would refetch the identical payload"
+   },
+   {
+    "file": "src/components/views/AuthView.tsx",
+    "line": 59,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: one-shot error mapping per ?google= arrival; navigate(replace) clears the param immediately"
+   },
+   {
+    "file": "src/components/views/ProductView.tsx",
+    "line": 111,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: anchorHandled guard makes this run-once per deep link; jumpToReview identity is irrelevant"
+   },
+   {
+    "file": "src/components/views/ProductView.tsx",
+    "line": 209,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: ssrProduct only seeds first paint; the network fetch must key on slug+locale alone"
+   },
+   {
+    "file": "src/components/views/TrackView.tsx",
+    "line": 77,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: auto-lookup runs once on checkout-redirect arrival; user-initiated lookups go through the form"
+   },
+   {
+    "file": "src/components/views/StaticView.tsx",
+    "line": 271,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates type+locale \u2014 the fetch's only intended triggers"
+   },
+   {
+    "file": "src/components/views/StaticView.tsx",
+    "line": 282,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: titles map is rebuilt every render; locale+type are the real triggers of the title"
+   },
+   {
+    "file": "src/components/views/ArticlesView.tsx",
+    "line": 135,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates slug+locale; adding article/locale would refetch the identical payload"
+   },
+   {
+    "file": "src/components/views/admin/ProductEditor.tsx",
+    "line": 656,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: editor reloads on open/productId only; toast/onClose are stable, inclusion risks a reload loop"
+   },
+   {
+    "file": "src/components/views/admin/CustomersTable.tsx",
+    "line": 237,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: load() is recreated each render (adding it loops); [q,sort,dir,page,pageSize] are the triggers"
+   },
+   {
+    "file": "src/components/views/admin/CustomersTable.tsx",
+    "line": 286,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: detail modal loads once per detailId; toast/L.detailError are stable and add no value"
+   },
+   {
+    "file": "src/components/storefront/ProductRow.tsx",
+    "line": 65,
+    "text": "// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: RTL flip changes text metrics \u2014 re-measure must run even though isRtl is unread here"
+   },
+   {
+    "file": ".github/workflows/ci.yml",
+    "line": 9,
+    "text": "#                        per-site eslint-disable comments with reasons)"
+   }
+  ],
+  "empty_catch_inline": [
+   {
+    "file": "src/app/layout.tsx",
+    "line": 60,
+    "text": "\"try{var h=location.hash;if(h.length>1&&h.charCodeAt(1)===47){var p=h.slice(1);if(location.search&&p.indexOf('?')<0)p+=location.search;location.replace(p)}}catch(e){}\";"
+   }
+  ],
+  "or_true": [
+   {
+    "file": "scripts/restore-db.sh",
+    "line": 75,
+    "text": "chmod 600 \"$db_path\" 2>/dev/null || true"
+   }
+  ],
+  "continue_on_error": [],
+  "ignore_build_errors": [],
+  "process_exit0": [],
+  "console_error": [
+   {
+    "file": "src/app/api/checkout/route.ts",
+    "line": 438,
+    "text": "console.error('outbox: order confirmation mail failed', mailErr)"
+   },
+   {
+    "file": "src/app/api/checkout/route.ts",
+    "line": 465,
+    "text": "console.error('checkout failed', err)"
+   },
+   {
+    "file": "src/components/views/ProductView.tsx",
+    "line": 262,
+    "text": "console.error('ADDCART_FAIL', e)"
+   },
+   {
+    "file": "scripts/pg-transfer.ts",
+    "line": 78,
+    "text": "console.error('\u2717 Parity FAILED \u2014 do not cutover.')"
+   },
+   {
+    "file": "scripts/pg-transfer.ts",
+    "line": 109,
+    "text": ".catch((e) => { console.error('ETL failed:', e); process.exit(1) })"
+   },
+   {
+    "file": "scripts/check-routes.ts",
+    "line": 112,
+    "text": "console.error(`\u2717 route-coverage: ${broken.length} broken /api reference(s):\\n`)"
+   },
+   {
+    "file": "scripts/check-routes.ts",
+    "line": 113,
+    "text": "for (const b of broken) console.error(`  ${b.ref}   \u2190 ${b.file}`)"
+   },
+   {
+    "file": "scripts/check-routes.ts",
+    "line": 114,
+    "text": "console.error('\\nAdd the missing route (see REG-001) or fix the reference.')"
+   }
+  ],
+  "console_warn": [],
+  "todo": [],
+  "fixme": [],
+  "hack": [],
+  "xxx": []
+ }
+}

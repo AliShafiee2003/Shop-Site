@@ -1,0 +1,469 @@
+[
+  {
+    "file": "lib/format.ts",
+    "line": 16,
+    "name": "latinDigits",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/markdown.ts",
+    "line": 266,
+    "name": "stripInline",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/router.ts",
+    "line": 35,
+    "name": "normalizeHashPath",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/router.ts",
+    "line": 38,
+    "name": "homeHref",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/router.ts",
+    "line": 52,
+    "name": "localeHash",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/server/articles.ts",
+    "line": 32,
+    "name": "ArticlePayload",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/server/homepage.ts",
+    "line": 36,
+    "name": "HomeSectionsDTO",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/server/product-detail.ts",
+    "line": 258,
+    "name": "ProductDetailDTO",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/sp-path.ts",
+    "line": 14,
+    "name": "setSpPath",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/sp-path.ts",
+    "line": 18,
+    "name": "getSpPath",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/view-cache.ts",
+    "line": 61,
+    "name": "useViewData",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "lib/view-cache.ts",
+    "line": 109,
+    "name": "invalidateView",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "store/store.ts",
+    "line": 153,
+    "name": "readStoredConsent",
+    "external": 0,
+    "internal": 0
+  },
+  {
+    "file": "hooks/use-toast.ts",
+    "line": 75,
+    "name": "reducer",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/analytics.ts",
+    "line": 30,
+    "name": "AnalyticsType",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 12,
+    "name": "SESSION_IDLE_MAX_AGE_SEC",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 148,
+    "name": "ADMIN_ROLES",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 158,
+    "name": "CONTENT_ROLES",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/cart.ts",
+    "line": 12,
+    "name": "CART_MAX_AGE_SEC",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/catalog.ts",
+    "line": 40,
+    "name": "ProductWithCardRelations",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 18,
+    "name": "ConsentCategory",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 20,
+    "name": "ConsentCategories",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 93,
+    "name": "ConsentDecisionInput",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 170,
+    "name": "CookieDef",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/discounts.ts",
+    "line": 25,
+    "name": "DiscountRejection",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/discounts.ts",
+    "line": 94,
+    "name": "eligibleItemTotals",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/discounts.ts",
+    "line": 131,
+    "name": "computeDiscountAmount",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/homepage.ts",
+    "line": 8,
+    "name": "getPublishedHomeSections",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/order-timeline.ts",
+    "line": 10,
+    "name": "PublicTimelinePoint",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/password-reset.ts",
+    "line": 46,
+    "name": "ThrottleVerdict",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/product-list.ts",
+    "line": 16,
+    "name": "StorefrontProductPage",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/promotions.ts",
+    "line": 21,
+    "name": "PromoPrice",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/rate-limit.ts",
+    "line": 15,
+    "name": "RateLimitResult",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/report-mail.ts",
+    "line": 28,
+    "name": "DigestResult",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/report-mail.ts",
+    "line": 102,
+    "name": "collectDigestData",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/report-mail.ts",
+    "line": 184,
+    "name": "buildDigestBody",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/utils.ts",
+    "line": 84,
+    "name": "formatOrderNumber",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 31,
+    "name": "ProductVariantDTO",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 52,
+    "name": "ReviewDTO",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 295,
+    "name": "OrderItemSnapshot",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 341,
+    "name": "TicketMessageDTO",
+    "external": 0,
+    "internal": 1,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/markdown.ts",
+    "line": 32,
+    "name": "InlineSpan",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/route-state.ts",
+    "line": 17,
+    "name": "decodeQueryValue",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 8,
+    "name": "SESSION_MAX_AGE_SEC",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 44,
+    "name": "sessionCookieOptions",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/cart.ts",
+    "line": 15,
+    "name": "CartRow",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/mail-dispatch.ts",
+    "line": 16,
+    "name": "DispatchResult",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/report-mail.ts",
+    "line": 89,
+    "name": "DigestData",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/shipping.ts",
+    "line": 4,
+    "name": "ShippingMethod",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/shipping.ts",
+    "line": 18,
+    "name": "ShippingSettingsShape",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 5,
+    "name": "ContributorRef",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/types.ts",
+    "line": 337,
+    "name": "AddressSnapshot",
+    "external": 0,
+    "internal": 2,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/markdown.ts",
+    "line": 19,
+    "name": "MdBlock",
+    "external": 0,
+    "internal": 3,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 141,
+    "name": "requireRole",
+    "external": 0,
+    "internal": 3,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 13,
+    "name": "CONSENT_COOKIE",
+    "external": 0,
+    "internal": 3,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/giftwrap.ts",
+    "line": 5,
+    "name": "GiftWrapConfig",
+    "external": 0,
+    "internal": 3,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/router.ts",
+    "line": 30,
+    "name": "normalizePath",
+    "external": 0,
+    "internal": 5,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/auth.ts",
+    "line": 7,
+    "name": "SESSION_COOKIE",
+    "external": 0,
+    "internal": 5,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/consent.ts",
+    "line": 14,
+    "name": "TASTE_COOKIE",
+    "external": 0,
+    "internal": 5,
+    "note": "used only inside own file"
+  },
+  {
+    "file": "lib/server/cart.ts",
+    "line": 11,
+    "name": "CART_COOKIE",
+    "external": 0,
+    "internal": 6,
+    "note": "used only inside own file"
+  }
+]

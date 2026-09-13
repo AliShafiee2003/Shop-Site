@@ -1,0 +1,23 @@
+=== historical blobs containing burned seed password literal (count only) ===
+05f137bc105c01534e6d12d0af0d17d69ed86048:prisma/seed.ts
+0c01002da63d7a1632c3f1987e33fdd622bfbc60:prisma/seed.ts
+14f5a834000d2b525beea89fe8906b72cef20c3c:prisma/seed.ts
+2631446ef597aa34b20601825c7f4b8520322f59:docs/production-deploy.md
+2631446ef597aa34b20601825c7f4b8520322f59:prisma/seed.ts
+2631446ef597aa34b20601825c7f4b8520322f59:scripts/rewrite-git-history.sh
+26addeea56c2db1ce4496ed413a3fa40ffa713a0:prisma/seed.ts
+3463bf5ace9eb35a39fe9a37def6a94ed5a6ec18:prisma/seed.ts
+382b14e2b344fe8589d2f035987460281fbe9254:prisma/seed.ts
+48bd5f6ffb190296df23f9799dbaa98f911a6765:prisma/seed.ts
+=== historical blobs with hardcoded hex secret >=32 chars in src (sample names, not values) ===
+04cf388b7026650fc3d012f76763313681ce2303:src/lib/server/google.ts
+05f137bc105c01534e6d12d0af0d17d69ed86048:src/lib/server/google.ts
+0c01002da63d7a1632c3f1987e33fdd622bfbc60:src/lib/server/google.ts
+14f5a834000d2b525beea89fe8906b72cef20c3c:src/lib/server/google.ts
+2631446ef597aa34b20601825c7f4b8520322f59:src/lib/server/google.ts
+26addeea56c2db1ce4496ed413a3fa40ffa713a0:src/lib/server/google.ts
+3463bf5ace9eb35a39fe9a37def6a94ed5a6ec18:src/lib/server/google.ts
+382b14e2b344fe8589d2f035987460281fbe9254:src/lib/server/google.ts
+48bd5f6ffb190296df23f9799dbaa98f911a6765:src/lib/server/google.ts
+5090ef6b2a5fed1a2da790e4cfe4b318d5ca4486:src/lib/server/google.ts
+done

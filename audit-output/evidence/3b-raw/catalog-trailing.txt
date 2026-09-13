@@ -1,0 +1,8 @@
+HTTP/1.1 308 Permanent Redirect
+location: /books
+Refresh: 0;url=/books
+Date: Sun, 13 Sep 2026 05:38:33 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
