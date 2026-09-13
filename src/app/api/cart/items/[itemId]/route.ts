@@ -1,9 +1,11 @@
 // PATCH /api/cart/items/[itemId] — set quantity (0 = remove), clamped to stock.
 // DELETE /api/cart/items/[itemId] — remove item. Both return the updated cart payload.
 import { z } from 'zod'
+import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { getCartPayload, getOrCreateCart } from '@/lib/server/cart'
-import { apiError, json, zodMessage } from '@/lib/server/utils'
+import { rateLimit } from '@/lib/server/rate-limit'
+import { apiError, clientIp, json, zodMessage } from '@/lib/server/utils'
 
 const patchSchema = z.object({
   quantity: z.number().int().min(0).max(10),
@@ -13,8 +15,12 @@ async function loadOwnedItem(itemId: string, cartId: string) {
   return db.cartItem.findFirst({ where: { id: itemId, cartId }, include: { variant: true } })
 }
 
-export async function PATCH(req: Request, ctx: { params: Promise<{ itemId: string }> }) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ itemId: string }> }) {
   const { itemId } = await ctx.params
+  // Audit SEC-005: soft cap on mutation storms (60 adds + 120 edits/min/IP is
+  // far beyond any human checkout flow).
+  const rl = rateLimit(`${clientIp(req)}:cart-item`, 120, 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many cart updates. Please slow down.')
   let body: unknown
   try {
     body = await req.json()
@@ -48,8 +54,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ itemId: strin
   return json(clamped ? { ...payload, clamped: true } : payload)
 }
 
-export async function DELETE(_req: Request, ctx: { params: Promise<{ itemId: string }> }) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ itemId: string }> }) {
   const { itemId } = await ctx.params
+  const rl = rateLimit(`${clientIp(req)}:cart-item`, 120, 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many cart updates. Please slow down.')
   const cart = await getOrCreateCart()
   const item = await loadOwnedItem(itemId, cart.id)
   if (!item) return apiError(404, 'NOT_FOUND', 'Cart item not found')

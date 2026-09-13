@@ -2,9 +2,9 @@
 # =============================================================================
 # PersePix — Git history rewrite: purge the leaked seed password + old DB blob
 # =============================================================================
-# WHY: commit 382b64e's parents still contain the hardcoded seed password
-# `Simorgh#2025` (removed from HEAD in the audit remediation, but git history
-# keeps every old blob reachable). Anyone who cloned the public repo can
+# WHY: early commits still contained the hardcoded seed password (burned
+# and rotated; the literal is deliberately NOT kept in this repo — see audit
+# SEC-006). git history keeps every old blob reachable. Anyone who cloned the public repo can
 # recover it. Two actions close the hole:
 #
 #   1. ROTATE the credential (moot at runtime — seeds now read
@@ -39,7 +39,8 @@ trap 'rm -f "$REPLACEMENTS"' EXIT
 
 # ── 1. Secrets to purge (add more lines here if more leaks are found) ────────
 cat > "$REPLACEMENTS" <<'EOF'
-Simorgh#2025===>***REMOVED***
+# Put the BURNED literal(s) here yourself — they must not be committed:
+#   OLD_SEED_PASSWORD===>***REMOVED***
 EOF
 
 echo "▶ Fresh clone: $REMOTE → $WORKDIR"

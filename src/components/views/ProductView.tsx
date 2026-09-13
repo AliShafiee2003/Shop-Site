@@ -832,16 +832,21 @@ export function ProductView({ slug }: { slug: string }) {
                 {!user && (
                   <div className="mb-3">
                     <Label htmlFor="rev-name" className="mb-1.5 text-xs">{t.product.reviewName}</Label>
-                    <Input id="rev-name" required value={reviewForm.name} onChange={(e) => setReviewForm((f) => ({ ...f, name: e.target.value }))} />
+                    {/* Audit COM-001: client-side caps mirror the API (name ≤ 80). */}
+                    <Input id="rev-name" required maxLength={80} value={reviewForm.name} onChange={(e) => setReviewForm((f) => ({ ...f, name: e.target.value }))} />
                   </div>
                 )}
                 <div className="mb-3">
                   <Label htmlFor="rev-title" className="mb-1.5 text-xs">{t.product.reviewTitle}</Label>
-                  <Input id="rev-title" value={reviewForm.title} onChange={(e) => setReviewForm((f) => ({ ...f, title: e.target.value }))} />
+                  <Input id="rev-title" maxLength={200} value={reviewForm.title} onChange={(e) => setReviewForm((f) => ({ ...f, title: e.target.value }))} />
                 </div>
                 <div className="mb-3">
                   <Label htmlFor="rev-body" className="mb-1.5 text-xs">{t.product.reviewBody}</Label>
-                  <Textarea id="rev-body" required minLength={10} rows={4} value={reviewForm.body} onChange={(e) => setReviewForm((f) => ({ ...f, body: e.target.value }))} />
+                  <Textarea id="rev-body" required minLength={10} maxLength={5000} rows={4} value={reviewForm.body} onChange={(e) => setReviewForm((f) => ({ ...f, body: e.target.value }))} />
+                  {/* Audit COM-001: character counter (API cap: 5000). */}
+                  <p className="mt-1 text-right text-[11px] text-ink-3" aria-live="polite">
+                    {reviewForm.body.length}/5000
+                  </p>
                 </div>
                 <Button type="submit" disabled={reviewBusy} className="w-full">{reviewBusy ? t.common.submitting : t.product.submitReview}</Button>
                 <p className="mt-2 text-center text-[11px] text-ink-3">{t.product.reviewLogin}</p>

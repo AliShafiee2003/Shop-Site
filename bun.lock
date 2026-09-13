@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "nextjs_tailwind_shadcn_ts",
+      "name": "persepix-web",
       "dependencies": {
         "@prisma/client": "^6.11.1",
         "@radix-ui/react-accordion": "^1.2.20",

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { permanentRedirect } from 'next/navigation'
+import { permanentRedirect, notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { Shell, JsonLd } from '@/components/storefront/Shell'
@@ -27,6 +27,34 @@ const NOINDEX_ROOTS = new Set([
   'search', 'account', 'admin', 'checkout', 'cart', 'favorites', 'track', 'login', 'register',
   'forgot-password', 'reset-password', 'verify-email', 'newsletter-confirm', 'confirm-email-change',
 ])
+
+/** Audit SEO-001: roots the storefront actually renders — mirrors the Shell.tsx
+ *  view dispatch 1:1. Every unknown root used to render the inline <NotFound>
+ *  with HTTP 200 (soft-404 farm); now it is a REAL 404 (notFound()). */
+const KNOWN_ROOTS = new Set([
+  // storefront content
+  'books', 'categories', 'authors', 'articles', 'series', 'about', 'faq',
+  'shipping-returns', 'contact', 'legal',
+  // commerce / utility (noindex but render a view)
+  'search', 'cart', 'checkout', 'favorites', 'track',
+  // auth + account + admin
+  'login', 'register', 'forgot-password', 'reset-password', 'verify-email',
+  'confirm-email-change', 'newsletter-confirm', 'account', 'admin',
+])
+
+/** /legal/:type — the StaticView fetches exactly these document types. */
+const KNOWN_LEGAL_TYPES = new Set(['privacy', 'terms', 'withdrawal', 'imprint', 'accessibility', 'cookies'])
+
+/** True when the URL can never render content (unknown root / unknown legal
+ *  type). Detail-entity 404s (draft product, deleted article…) are detected by
+ *  prefetchPageData returning null — availability-safe (DB errors stay 200). */
+function isUnknownRoute(segments: string[]): boolean {
+  const [root, second] = segments
+  if (segments.length === 0) return false
+  if (!KNOWN_ROOTS.has(root)) return true
+  if (root === 'legal' && second && !KNOWN_LEGAL_TYPES.has(second)) return true
+  return false
+}
 
 function absUrl(site: string, path: string): string {
   return `${site}${path}`
@@ -454,9 +482,12 @@ function parseSocials(raw: string | null | undefined): (string | null)[] {
 
 /** C3: server-side prefetch of the page body data, mirrored from the exact
  *  loaders the API routes use — the SSR HTML carries REAL CONTENT, not a
- *  client-rendered skeleton. Best-effort: any failure degrades to the
- *  client-side fetch path, never to a broken page. */
-async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: Record<string, string>): Promise<SsrPageData> {
+ *  client-rendered skeleton.
+ *  Audit SEO-001: returns **null** when the entity behind a detail route does
+ *  not exist (or is unpublished) so the page can issue a REAL HTTP 404 instead
+ *  of an EmptyState with status 200. DB failures still degrade to `{ locale }`
+ *  (best-effort), so outages never start mass-404-ing valid pages. */
+async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: Record<string, string>): Promise<SsrPageData | null> {
   const [root, second, third] = segments
   try {
     if (segments.length === 0) {
@@ -469,18 +500,32 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
       return { locale, home, seriesIndex }
     }
     if (root === 'books' && second) {
+      const detail = await getProductDetail(second, locale, {
+        // R8: keep SSR in sync with the client's review sort param.
+        reviewsSort: query.reviewsSort === 'helpful' ? 'helpful' : 'recent',
+      })
+      // Draft/deleted product → real 404 (was: EmptyState + HTTP 200).
+      if (!detail) return null
       return {
         locale,
         // The loader is the SAME source /api/products/[slug] serializes — its
         // structural shape is the wire format lib/types documents. The cast
         // marks that the TS declaration (not the data) lags the API.
-        product: (await getProductDetail(second, locale, {
-          // R8: keep SSR in sync with the client's review sort param.
-          reviewsSort: query.reviewsSort === 'helpful' ? 'helpful' : 'recent',
-        })) as unknown as SsrPageData['product'],
+        product: detail as unknown as SsrPageData['product'],
       }
     }
+    if (root === 'authors' && second) {
+      // Author pages render client-side today — a cheap existence probe still
+      // guarantees an unpublished/unknown person answers 404, not 200.
+      const person = await db.person.findUnique({ where: { slug: second }, select: { id: true } })
+      if (!person) return null
+    }
     if ((root === 'books' && !second) || root === 'categories') {
+      // Unknown category slug → real 404 (an empty-but-valid listing stays 200).
+      if (root === 'categories' && second) {
+        const category = await db.category.findUnique({ where: { slug: second }, select: { id: true } })
+        if (!category) return null
+      }
       // The dispatcher hands CatalogView `{category}` for category routes and
       // the URL query for /books — mirror EXACTLY that contract so the seeded
       // first page matches the client's own load key.
@@ -495,10 +540,10 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
       return { locale, catalog: { items: page.items, total: page.total, query: effectiveQuery } }
     }
     if (root === 'articles' && second && second !== 'categories') {
-      return {
-        locale,
-        article: (await getArticleDetail(second, locale)) as unknown as SsrPageData['article'],
-      }
+      const article = await getArticleDetail(second, locale)
+      // Draft/deleted article → real 404.
+      if (!article) return null
+      return { locale, article: article as unknown as SsrPageData['article'] }
     }
     if (root === 'articles' && second === 'categories' && third) {
       return { locale, articles: await getArticleList(locale, third), articlesCategory: third }
@@ -507,7 +552,10 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
       return { locale, articles: await getArticleList(locale, null), articlesCategory: null }
     }
     if (root === 'series' && second) {
-      return { locale, series: await getSeriesDetail(second, locale) }
+      const series = await getSeriesDetail(second, locale)
+      // No published book in the series → the series page is empty → 404.
+      if (!series) return null
+      return { locale, series }
     }
     if (root === 'series') {
       return { locale, seriesIndex: await getSeriesIndex(locale) }
@@ -535,8 +583,12 @@ export default async function CatchAllPage({
   }
   const site = siteUrlFrom({ headers: hdrs })
   const route = routeStateFromParams(slug, sp)
+  // Audit SEO-001: unknown roots get a REAL 404 before anything renders.
+  if (isUnknownRoute(route.segments)) notFound()
   const jsonLd = await buildJsonLd(site, route.locale, route.segments)
   const ssrData = await prefetchPageData(route.locale, route.segments, route.query)
+  // null = the detail entity behind this URL is missing/unpublished → real 404.
+  if (!ssrData) notFound()
   ssrData.siteOrigin = site
 
   return (

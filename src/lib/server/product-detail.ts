@@ -146,34 +146,44 @@ export async function getProductDetail(
   push(byContributorRows)
   push(byCategoryRows)
 
-  // ── Reviews (approved only) ──
-  // PERF-002: the read is bounded to the 50 most recent approved reviews while
-  // a parallel aggregate keeps avg/count exact over ALL approved reviews. The
-  // UI renders at most 20 items (slice below), so nothing visible changes.
-  const [allReviews, reviewAgg] = await Promise.all([
-    db.review.findMany({
-      where: { productId: p.id, moderationState: 'APPROVED' },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-      include: { _count: { select: { votes: true } } },
-    }),
+  // ── Reviews (approved only) — SINGLE SOURCE (audit QUALITY-001) ──
+  // GET /api/products/[slug] delegates to this loader, so the server-rendered
+  // HTML and the API response can never drift again (the route used to carry a
+  // near-copy with a different helpful-sort strategy and no reply fields).
+  // Bounded queries only:
+  //   - aggregate (count/avg) over ALL approved reviews,
+  //   - groupBy votes → exact "most helpful" badge + vote counts,
+  //   - ≤20 rendered rows; `helpful` orders by the votes relation aggregate
+  //     (recency tie-break) — no unbounded id pre-read, no take:50 guess.
+  const reviewsSort = opts?.reviewsSort === 'helpful' ? 'helpful' : 'recent'
+  const [reviewAgg, voteCounts] = await Promise.all([
     db.review.aggregate({
       where: { productId: p.id, moderationState: 'APPROVED' },
       _count: { _all: true },
       _avg: { rating: true },
     }),
+    db.reviewVote.groupBy({
+      by: ['reviewId'],
+      where: { review: { productId: p.id, moderationState: 'APPROVED' } },
+      _count: { _all: true },
+    }),
   ])
-  // Review sort parity with GET /api/products/[slug]: `helpful` orders by
-  // votes (recency tie-break) before the top-20 slice; default is `recent`.
-  const orderedReviews =
-    opts?.reviewsSort === 'helpful'
-      ? [...allReviews].sort((a, b) => b._count.votes - a._count.votes || +b.createdAt - +a.createdAt)
-      : allReviews
+  const votesByReview = new Map(voteCounts.map((v) => [v.reviewId, v._count._all]))
+  // The single most-helpful review (≥1 vote) is flagged regardless of sort so
+  // the PDP can pin a "Most helpful" badge on it.
   let topReviewId: string | null = null
   let topVotes = 0
-  for (const r of allReviews) {
-    if (r._count.votes > topVotes) { topVotes = r._count.votes; topReviewId = r.id }
+  for (const [reviewId, votes] of votesByReview) {
+    if (votes > topVotes) { topVotes = votes; topReviewId = reviewId }
   }
+  const reviewRows = await db.review.findMany({
+    where: { productId: p.id, moderationState: 'APPROVED' },
+    orderBy: reviewsSort === 'helpful'
+      ? [{ votes: { _count: 'desc' } }, { createdAt: 'desc' }]
+      : { createdAt: 'desc' },
+    take: 20,
+    include: { _count: { select: { votes: true } } },
+  })
   // Helpfulness votes for the viewer — best-effort: getSessionUser needs the
   // cookie jar, which every caller (RSC + route) provides.
   const viewer = await getSessionUser().catch(() => null)
@@ -182,7 +192,7 @@ export async function getProductDetail(
         (
           await db.reviewVote
             .findMany({
-              where: { userId: viewer.id, reviewId: { in: allReviews.map((r) => r.id) } },
+              where: { userId: viewer.id, reviewId: { in: reviewRows.map((r) => r.id) } },
               select: { reviewId: true },
             })
             .catch(() => [])
@@ -219,7 +229,7 @@ export async function getProductDetail(
       avg,
       count: reviewAgg._count._all,
       topReviewId,
-      items: orderedReviews.slice(0, 20).map((r) => ({
+      items: reviewRows.map((r) => ({
         id: r.id,
         rating: r.rating,
         title: r.title,
@@ -231,6 +241,9 @@ export async function getProductDetail(
         // Helpfulness votes (toggleable by signed-in customers).
         helpfulCount: r._count.votes,
         voted: votedIds.has(r.id),
+        // Press response (public, shown under the review when present).
+        reply: r.reply,
+        repliedAt: r.repliedAt ? r.repliedAt.toISOString() : null,
       })),
     },
     safetyNote: p.safetyNote,

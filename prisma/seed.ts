@@ -5,8 +5,9 @@
  *
  * C2: seed credentials are NEVER hardcoded — they come from SEED_ADMIN_PASSWORD /
  * SEED_CUSTOMER_PASSWORD (a random value is generated when unset) and are not
- * printed to the log. The old hardcoded `Simorgh#2025` leaked an OWNER login
- * with every copy of the repo and must be rotated wherever it was used.
+ * printed to the log. The first hardcoded seed password (long since burned and rotated —
+ * never kept in the repo) leaked an OWNER login with every copy of the
+ * early repo and had to be rotated wherever it was used.
  */
 import { PrismaClient } from '@prisma/client'
 import { scryptSync, randomBytes } from 'crypto'

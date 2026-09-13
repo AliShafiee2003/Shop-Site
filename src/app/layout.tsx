@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { BRAND_NAME } from "@/lib/site";
@@ -58,16 +59,24 @@ export const viewport: Viewport = {
 const LEGACY_HASH_MIGRATION =
   "try{var h=location.hash;if(h.length>1&&h.charCodeAt(1)===47){var p=h.slice(1);if(location.search&&p.indexOf('?')<0)p+=location.search;location.replace(p)}}catch(e){}";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Audit SEC-003: in production the proxy mints a per-request nonce (header
+  // `x-nonce`) and CSP script-src drops 'unsafe-inline' — this inline bootstrap
+  // script MUST carry the nonce to keep executing. In dev there is no nonce
+  // header and the dev CSP still allows 'unsafe-inline', so the attribute is
+  // simply omitted. All storefront routes are force-dynamic, so reading
+  // headers() here forces nothing that wasn't already dynamic.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className="antialiased bg-background text-foreground font-sans">
         <script
           id="sp-legacy-hash-migration"
+          nonce={nonce}
           dangerouslySetInnerHTML={{ __html: LEGACY_HASH_MIGRATION }}
         />
         {/* React 19 hoists <link rel="preload"> into <head> on the server and

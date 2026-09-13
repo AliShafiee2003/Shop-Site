@@ -1,15 +1,23 @@
 // POST /api/cart/items — add { variantId, quantity } (server-authoritative stock clamping).
+// Audit SEC-005: this route creates the cart lazily (first real add) and is
+// rate limited — bots could otherwise mint unlimited Cart/CartItem rows.
 import { z } from 'zod'
+import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { getCartPayload, getOrCreateCart, MAX_QTY_PER_ITEM } from '@/lib/server/cart'
-import { apiError, json, zodMessage } from '@/lib/server/utils'
+import { rateLimit } from '@/lib/server/rate-limit'
+import { apiError, clientIp, json, zodMessage } from '@/lib/server/utils'
 
 const bodySchema = z.object({
   variantId: z.string().min(1),
   quantity: z.number().int().min(1).max(MAX_QTY_PER_ITEM),
 })
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const ip = clientIp(req)
+  const rl = rateLimit(`${ip}:cart-add`, 60, 60_000)
+  if (!rl.ok) return apiError(429, 'RATE_LIMITED', 'Too many cart updates. Please slow down.')
+
   let body: unknown
   try {
     body = await req.json()

@@ -207,7 +207,8 @@ throughput bounded by SQLite, not the app.
 ## 8. Git history hygiene + secret rotation (C2 follow-up, audit v2 P0)
 
 The public repo's early commits still contain the leaked seed password
-(`Simorgh#2025`) even though HEAD is clean. **Purging history does NOT
+(the original hardcoded value — BURNED and rotated; never re-print it in
+docs, issues or commits) even though HEAD is clean. **Purging history does NOT
 invalidate values that were cloned before the purge — every secret that ever
 appeared in history must be treated as BURNED and rotated:**
 
@@ -219,7 +220,7 @@ appeared in history must be treated as BURNED and rotated:**
      newsletter confirm/unsubscribe link and OAuth state minted with the old
      one (they fail HMAC verification → the old links are rejected).
    - `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` — reseed or UPDATE the
-     password hashes; the old `Simorgh#2025` must return 401 (verified in the
+     password hashes; the burned password must return 401 (verified in the
      sandbox on 2026-09-13).
    - Any OAuth client secrets, SMTP credentials or PSP keys that ever lived in
      the old `.env`: rotate at the provider (Google Cloud Console, mail host,

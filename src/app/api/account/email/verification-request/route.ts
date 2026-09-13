@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
   })
 
   const devExpose =
-    process.env.DEV_EXPOSE_RESET_LINK === '1' && process.env.NODE_ENV !== 'production'
+    process.env.DEV_EXPOSE_RESET_LINK === '1' &&
+    process.env.NODE_ENV === 'development'
   return json({ ok: true, ...(devExpose ? { verifyUrl: `/verify-email?token=${token}` } : {}) })
 }

@@ -74,6 +74,27 @@ async function resolveCartToken(): Promise<{ token: string; isGuest: boolean }> 
   return { token: randomBytes(24).toString('hex'), isGuest: true }
 }
 
+/** Audit SEC-005: resolve the EXISTING cart for the session user or guest
+ *  cookie WITHOUT creating anything (no row, no cookie). Read paths (GET
+ *  /api/cart, /api/bootstrap) used to mint a Cart row + cookie for every
+ *  anonymous visitor — including bots — ballooning the table. */
+export async function findActiveCart(): Promise<CartRow | null> {
+  try {
+    const user = await getSessionUser().catch(() => null)
+    if (user) {
+      const cart = await db.cart.findUnique({ where: { token: `u:${user.id}` } })
+      return cart && cart.status === 'ACTIVE' ? cart : null
+    }
+    const jar = await cookies()
+    const token = jar.get(CART_COOKIE)?.value
+    if (!token) return null
+    const cart = await db.cart.findUnique({ where: { token } })
+    return cart && cart.status === 'ACTIVE' ? cart : null
+  } catch {
+    return null
+  }
+}
+
 /** Get the ACTIVE cart for the session user or guest cookie; create (and set cookie) if needed. */
 export async function getOrCreateCart() {
   const { token, isGuest } = await resolveCartToken()
@@ -101,7 +122,12 @@ type CartItemWithVariant = Prisma.CartItemGetPayload<{ include: typeof cartItemI
 /** Full cart DTO — recomputes everything server-side; drops stale (inactive/unpublished) rows. */
 export async function getCartPayload(): Promise<CartPayloadDTO> {
   const cart = await getOrCreateCart()
+  return buildCartPayload(cart)
+}
 
+/** Payload for a cart row that ALREADY exists. Shared by getCartPayload and
+ *  the read-only path so the two can never drift. */
+async function buildCartPayload(cart: CartRow): Promise<CartPayloadDTO> {
   // Remove stale items: inactive variants or unpublished products can't be purchased.
   await db.cartItem.deleteMany({
     where: {
@@ -177,6 +203,35 @@ export async function getCartPayload(): Promise<CartPayloadDTO> {
             savedMinor,
           }
         : null,
+  }
+}
+
+/** Empty cart shape for the read-only path (no row is ever created for it). */
+function emptyCartPayload(): CartPayloadDTO {
+  return {
+    id: '',
+    count: 0,
+    itemsCount: 0,
+    items: [],
+    subtotalMinor: 0,
+    taxMinor: 0,
+    vatRatePct: VAT_RATE_PCT,
+    currency: 'EUR',
+    promotion: null,
+  }
+}
+
+/** Audit SEC-005: read-only cart payload — NEVER creates a Cart row or sets
+ *  the guest cookie. Used by GET /api/cart and the /api/bootstrap cart leg:
+ *  an anonymous visitor with no cart gets the empty shape (guests WITH a
+ *  cart cookie still get their real items). */
+export async function getCartPayloadReadOnly(): Promise<CartPayloadDTO> {
+  const cart = await findActiveCart()
+  if (!cart) return emptyCartPayload()
+  try {
+    return await buildCartPayload(cart)
+  } catch {
+    return emptyCartPayload()
   }
 }
 

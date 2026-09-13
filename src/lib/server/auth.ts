@@ -5,7 +5,13 @@ import type { User } from '@prisma/client'
 import { db } from '@/lib/db'
 
 export const SESSION_COOKIE = 'sp_session'
-export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30 // 30 days
+export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 * 30 // 30 days (absolute)
+// Audit SEC-004: sliding idle window. The absolute 30-day expiry stays, but a
+// session that shows no activity for 7 days dies even if the cookie survives —
+// a stolen cookie can no longer be parked for weeks.
+export const SESSION_IDLE_MAX_AGE_SEC = 60 * 60 * 24 * 7 // 7 days idle
+/** lastSeenAt is refreshed at most once per hour (write amplification guard). */
+const LAST_SEEN_REFRESH_MS = 60 * 60 * 1000
 
 function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex')
@@ -45,14 +51,20 @@ export function sessionCookieOptions(maxAge: number) {
   }
 }
 
-/** Create a session row (stores sha256(token)) and set the sp_session cookie. Returns the raw token. */
+/** Create a session row (stores sha256(token)) and set the sp_session cookie. Returns the raw token.
+ *  Audit SEC-004: when the request already carried a valid session cookie, it
+ *  is revoked first (token rotation) — a login mints a NEW session instead of
+ *  keeping a possibly-stolen one alive alongside the new token. */
 export async function createSession(userId: string, userAgent?: string | null): Promise<string> {
+  await revokeCurrentSession()
   const token = randomBytes(32).toString('hex')
+  const now = new Date()
   await db.session.create({
     data: {
       userId,
       tokenHash: sha256(token),
-      expiresAt: new Date(Date.now() + SESSION_MAX_AGE_SEC * 1000),
+      expiresAt: new Date(now.getTime() + SESSION_MAX_AGE_SEC * 1000),
+      lastSeenAt: now,
       userAgent: userAgent ?? null,
     },
   })
@@ -61,7 +73,23 @@ export async function createSession(userId: string, userAgent?: string | null): 
   return token
 }
 
-/** Resolve the current session user (or null). Ignores revoked/expired/anonymized. */
+/** Revoke whatever session the incoming cookie carries (without touching the
+ *  cookie itself — callers set the new one right after). Best-effort. */
+async function revokeCurrentSession(): Promise<void> {
+  try {
+    const jar = await cookies()
+    const token = jar.get(SESSION_COOKIE)?.value
+    if (!token) return
+    await db.session.updateMany({
+      where: { tokenHash: sha256(token), revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
+  } catch {
+    // best effort — rotation must never block login
+  }
+}
+
+/** Resolve the current session user (or null). Ignores revoked/expired/idle-out/anonymized. */
 export async function getSessionUser(): Promise<User | null> {
   try {
     const jar = await cookies()
@@ -73,8 +101,19 @@ export async function getSessionUser(): Promise<User | null> {
     })
     if (!session) return null
     if (session.revokedAt) return null
-    if (session.expiresAt.getTime() < Date.now()) return null
+    const now = Date.now()
+    if (session.expiresAt.getTime() < now) return null
+    // Audit SEC-004: idle timeout — sessions older than the sliding window
+    // (lastSeenAt, falling back to createdAt for pre-migration rows) are dead.
+    const lastSeen = (session.lastSeenAt ?? session.createdAt).getTime()
+    if (now - lastSeen > SESSION_IDLE_MAX_AGE_SEC * 1000) return null
     if (session.user.status !== 'ACTIVE') return null
+    // Slide the window forward — throttled to one write/hour/session.
+    if (now - lastSeen > LAST_SEEN_REFRESH_MS) {
+      await db.session
+        .updateMany({ where: { id: session.id }, data: { lastSeenAt: new Date(now) } })
+        .catch(() => undefined)
+    }
     return session.user
   } catch {
     return null

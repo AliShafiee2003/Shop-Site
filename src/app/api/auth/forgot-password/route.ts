@@ -47,7 +47,8 @@ export async function POST(req: NextRequest) {
       await db.mailMessage.create({
         data: { to: email, subject, kind: 'PASSWORD_RESET', bodyText, locale },
       })
-      if (process.env.DEV_EXPOSE_RESET_LINK === '1' && process.env.NODE_ENV !== 'production') {
+      if (process.env.DEV_EXPOSE_RESET_LINK === '1' &&
+      process.env.NODE_ENV === 'development') {
         resetUrl = `/forgot-password?token=${token}`
       }
     }

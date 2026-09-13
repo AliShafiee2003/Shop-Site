@@ -60,12 +60,21 @@ export function googleRedirectUri(req: NextRequest): string {
 
 /** Fallback signing key when no client secret is set (state only guards CSRF —
  *  the cookie-vs-query comparison is the real check; the HMAC hardens it).
- *  S12: dedicated STATE_SECRET env first; DATABASE_URL is NOT used as key
- *  material (it leaks with the repo); per-boot random keeps dev functional. */
+ *  S12 + audit SEC-001: dedicated STATE_SECRET env first; DATABASE_URL is NOT
+ *  used as key material (it leaks with the repo). The dev fallback is created
+ *  ONCE per process (module level, same pattern as newsletter.ts) — a per-call
+ *  random key would sign the state at /start with K1 and verify it at /callback
+ *  with K2, so verifyGoogleState could never succeed (always invalid_state).
+ *  Production REQUIRES STATE_SECRET (fail fast, like newsletter link signing). */
+const DEV_FALLBACK_KEY = randomBytes(32).toString('hex')
+
 function stateSigningKey(): string {
   const dedicated = process.env.STATE_SECRET?.trim()
   if (dedicated) return dedicated
-  return randomBytes(32).toString('hex')
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('STATE_SECRET is required in production (Google OAuth state signing)')
+  }
+  return DEV_FALLBACK_KEY
 }
 
 /** Signed one-time state: `nonce.payload.hmac` — payload carries locale,

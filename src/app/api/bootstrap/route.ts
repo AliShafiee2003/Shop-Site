@@ -19,7 +19,7 @@
 // }
 import { db } from '@/lib/db'
 import { getSessionUser, publicUser } from '@/lib/server/auth'
-import { getCartPayload } from '@/lib/server/cart'
+import { getCartPayloadReadOnly } from '@/lib/server/cart'
 import { CONSENT_POLICY_VERSION, resolveConsent } from '@/lib/server/consent'
 import { buildSettingsPayload } from '@/lib/server/store-settings'
 import { json } from '@/lib/server/utils'
@@ -30,8 +30,9 @@ export async function GET() {
   const user = await getSessionUser()
 
   const [cart, settings, consent, wishlist] = await Promise.all([
-    // Cart payload — includes lines + summary; consumers read what they need.
-    getCartPayload().catch(() => null),
+    // Cart payload — READ-ONLY (audit SEC-005): bootstrap runs on every page
+    // load; it must never mint a Cart row/cookie for anonymous visitors.
+    getCartPayloadReadOnly().catch(() => null),
     buildSettingsPayload().catch(() => null),
     // resolveConsent already fails closed to all-necessary-only.
     resolveConsent()

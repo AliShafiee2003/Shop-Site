@@ -6,12 +6,16 @@ import { getSessionUser } from '@/lib/server/auth'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, clientIp, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
 
+// Audit COM-001: title/body previously had NO upper bound (unlike the contact
+// route) — multi-MB payloads validated, stored and re-rendered on every PDP.
 const bodySchema = z.object({
   productId: z.string().min(1),
   rating: z.number().int().min(1).max(5),
-  title: z.string().optional().nullable(),
-  body: z.string().min(10, 'Review must be at least 10 characters'),
-  name: z.string().optional().nullable(),
+  title: z.string().max(200, 'Title must be at most 200 characters').optional().nullable(),
+  body: z.string()
+    .min(10, 'Review must be at least 10 characters')
+    .max(5000, 'Review must be at most 5000 characters'),
+  name: z.string().max(80, 'Name must be at most 80 characters').optional().nullable(),
   locale: z.string().optional(),
 })
 

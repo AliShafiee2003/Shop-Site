@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
     })
     // DEV ONLY: the token/link is exposed in the API response solely for
     // sandbox testing — production never exposes tokens, regardless of env.
-    if (process.env.DEV_EXPOSE_RESET_LINK === '1' && process.env.NODE_ENV !== 'production') {
+    if (process.env.DEV_EXPOSE_RESET_LINK === '1' &&
+      process.env.NODE_ENV === 'development') {
       devVerifyUrl = `/verify-email?token=${token}`
     }
   } catch {

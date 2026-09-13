@@ -72,3 +72,7 @@ tool-results/
 .dev.log
 server.out.log
 download/
+
+# OPS-001: runtime-uploaded media never belongs in git (keep .gitkeep)
+/public/uploads/*
+!/public/uploads/.gitkeep

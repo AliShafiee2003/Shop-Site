@@ -43,6 +43,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       return { error: apiError(400, 'NO_PAYMENT', 'No successful payment to refund') as Response }
     }
 
+    // Audit DB-001: on Postgres (Read Committed) two concurrent refunds could
+    // both read the SAME already-refunded total here and both pass the ceiling
+    // check → over-refund. Lock the order row for the rest of the tx so
+    // concurrent refunds serialize on the cap computation. SQLite has a single
+    // writer per database (writes already serialize); the lock is applied only
+    // when a Postgres URL is detected, so nothing changes in the sandbox.
+    if (process.env.DATABASE_URL?.startsWith('postgres')) {
+      await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${order.id} FOR UPDATE`
+    }
+
     // Fresh ceiling computed INSIDE the tx — concurrent refunds serialize here.
     const alreadyRefunded = order.refunds
       .filter((r) => r.status === 'SUCCEEDED')

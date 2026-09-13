@@ -8,15 +8,16 @@ import type { NextConfig } from "next";
  * - Referrer-Policy strict-origin-when-cross-origin: no full URL (with query)
  *   leaks to third parties.
  * - Permissions-Policy: deny unused powerful features.
- * - CSP: same-origin default; inline scripts/styles stay allowed because the
- *   app bootstraps with an inline legacy-hash migration script, React inline
- *   styles and JSON-LD blocks. `unsafe-eval` is required by next dev (HMR /
- *   react-refresh) ONLY — production builds ship no dev runtime, so it is
- *   dropped there (SEC-004); frame-ancestors is the operative guard here.
+ *
+ * Audit SEC-003: the Content-Security-Policy for PAGE routes now lives in
+ * `src/proxy.ts` (nonce + strict-dynamic in production — no 'unsafe-inline').
+ * A CSP here AND in the proxy would produce two headers, and browsers enforce
+ * the INTERSECTION of duplicates — so only /api/:path* keeps a static CSP
+ * here (JSON responses don't execute scripts; the proxy matcher excludes api/).
  */
 const isProd = process.env.NODE_ENV === "production";
-const scriptSrc = isProd
-  ? "script-src 'self' 'unsafe-inline'"
+const apiScriptSrc = isProd
+  ? "script-src 'self'"
   : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -26,22 +27,19 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
   },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      scriptSrc,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'self'",
-    ].join("; "),
-  },
 ];
+const apiCsp = [
+  "default-src 'self'",
+  apiScriptSrc,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -60,6 +58,14 @@ const nextConfig: NextConfig = {
         source: "/images/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      // Static CSP for API routes only (page CSP is nonce-based in proxy.ts).
+      {
+        source: "/api/:path*",
+        headers: [
+          ...securityHeaders,
+          { key: "Content-Security-Policy", value: apiCsp },
         ],
       },
       { source: "/:path*", headers: securityHeaders },
