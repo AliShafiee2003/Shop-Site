@@ -34,7 +34,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ orderNumber: s
   const result = await db.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { orderNumber },
-      include: { items: true, payments: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      include: { items: true, refunds: true, payments: { orderBy: { createdAt: 'desc' }, take: 1 } },
     })
     if (!order || order.userId !== user.id) return { error: apiError(404, 'NOT_FOUND', 'Order not found') as Response }
 
@@ -52,9 +52,17 @@ export async function POST(req: Request, ctx: { params: Promise<{ orderNumber: s
     }
 
     // Full sandbox refund of the successful payment.
+    // COM-403: the refund amount is CAPPED at the actually-paid amount minus
+    // prior SUCCEEDED refunds (the same ceiling the admin paths compute).
+    // Today the status gate above makes this unreachable (a partially-refunded
+    // order is PARTIALLY_REFUNDED and not cancellable), but the invariant is
+    // now explicit: any future relaxation of the gate can never over-refund.
     const payment = order.payments.find((p) => p.status === 'SUCCEEDED' || p.status === 'PARTIALLY_REFUNDED')
-    const refundedMinor = order.totalMinor
-    if (payment) {
+    const refundedSoFar = order.refunds
+      .filter((r) => r.status === 'SUCCEEDED')
+      .reduce((s, r) => s + r.amountMinor, 0)
+    const refundedMinor = Math.max(0, order.totalMinor - refundedSoFar)
+    if (payment && refundedMinor > 0) {
       await tx.payment.update({ where: { id: payment.id }, data: { status: 'REFUNDED' } })
       await tx.refund.create({
         data: {

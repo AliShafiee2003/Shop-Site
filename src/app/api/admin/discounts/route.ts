@@ -1,10 +1,15 @@
-// GET  /api/admin/discounts — list all codes with usage stats.
+// GET  /api/admin/discounts?page=&pageSize= — list all codes with usage stats.
 // POST /api/admin/discounts — create a code (audited).
+// API-405 (audit v4): the discounts findMany is bounded (shared parseListQuery,
+// default 50, hard cap 100); `total`/`page`/`pageSize` added, the `discounts` key
+// is unchanged. `publishers` stays unpaginated on purpose: it is the DISTINCT
+// publisher list (bounded by catalog size) that feeds the scope editor's
+// autocomplete — truncating it would silently hide assignable publishers.
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
 import { isEmptyScope, normalizeCode, normalizeScope, parseScope, serializeScope } from '@/lib/server/discounts'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json, jsonWithTotal, parseListQuery, zodMessage } from '@/lib/server/utils'
 
 const scopeSchema = z.object({
   productIds: z.array(z.string().max(64)).max(200).optional(),
@@ -26,11 +31,15 @@ const createSchema = z.object({
   scope: scopeSchema.optional(),
 })
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
-  const rows = await db.discountCode.findMany({ orderBy: { createdAt: 'desc' } })
+  const { page, pageSize, skip, take } = parseListQuery(new URL(req.url).searchParams)
+  const [rows, total] = await Promise.all([
+    db.discountCode.findMany({ orderBy: { createdAt: 'desc' }, skip, take }),
+    db.discountCode.count(),
+  ])
   // Join usage: count paid orders referencing each code.
   const usage = await db.order.groupBy({
     by: ['discountCode'],
@@ -81,28 +90,34 @@ export async function GET() {
     }
   }
 
-  return json({
-    publishers: publisherRows.map((p) => p.publisher).filter((p): p is string => !!p),
-    discounts: rows.map((d) => ({
-      id: d.id,
-      code: d.code,
-      type: d.type,
-      value: d.value,
-      minSubtotalMinor: d.minSubtotalMinor,
-      maxRedemptions: d.maxRedemptions,
-      timesUsed: d.timesUsed,
-      paidOrders: usageMap.get(d.code)?.orders ?? 0,
-      givenAwayMinor: usageMap.get(d.code)?.givenMinor ?? 0,
-      startsAt: d.startsAt,
-      endsAt: d.endsAt,
-      isActive: d.isActive,
-      noteEn: d.noteEn,
-      noteFa: d.noteFa,
-      scope: parseScope(d.scopeJson),
-      scopeResolved: resolveScope(d.scopeJson),
-      createdAt: d.createdAt,
-    })),
-  })
+  return jsonWithTotal(
+    {
+      total,
+      page,
+      pageSize,
+      publishers: publisherRows.map((p) => p.publisher).filter((p): p is string => !!p),
+      discounts: rows.map((d) => ({
+        id: d.id,
+        code: d.code,
+        type: d.type,
+        value: d.value,
+        minSubtotalMinor: d.minSubtotalMinor,
+        maxRedemptions: d.maxRedemptions,
+        timesUsed: d.timesUsed,
+        paidOrders: usageMap.get(d.code)?.orders ?? 0,
+        givenAwayMinor: usageMap.get(d.code)?.givenMinor ?? 0,
+        startsAt: d.startsAt,
+        endsAt: d.endsAt,
+        isActive: d.isActive,
+        noteEn: d.noteEn,
+        noteFa: d.noteFa,
+        scope: parseScope(d.scopeJson),
+        scopeResolved: resolveScope(d.scopeJson),
+        createdAt: d.createdAt,
+      })),
+    },
+    total,
+  )
 }
 
 export async function POST(req: Request) {

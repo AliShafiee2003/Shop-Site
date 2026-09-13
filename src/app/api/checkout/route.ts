@@ -4,13 +4,17 @@
 // C6: every order also gets an unguessable publicRef (PR-…) for guest tracking.
 // Idempotency: an `Idempotency-Key` header (or body idempotencyKey) dedupes
 // double-clicks / retries within a 15-minute window — the same key replays the
-// FIRST response instead of minting a second order.
-import { randomBytes, randomUUID } from 'node:crypto'
+// FIRST response instead of minting a second order. API-407: the key is scoped
+// to the visitor (session/cart cookie, hashed) and only 2xx responses are
+// cached, so a leaked key can't hand out someone else's orderNumber/publicRef
+// and a declined card (402) can be retried with the same key.
+import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import type { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { getCartPayload, getOrCreateCart, type CartPayloadDTO } from '@/lib/server/cart'
+import { CART_COOKIE, getCartPayload, getOrCreateCart, type CartPayloadDTO } from '@/lib/server/cart'
+import { SESSION_COOKIE } from '@/lib/server/auth'
 import { validateDiscount } from '@/lib/server/discounts'
 import { loadGiftWrapConfig } from '@/lib/server/giftwrap'
 import { computeTax } from '@/lib/server/money'
@@ -20,15 +24,20 @@ import { loadShippingSettings, methodServesCountry } from '@/lib/server/shipping
 import { getActivePromotion, promoPriceFor } from '@/lib/server/promotions'
 import { apiError, clientIp, json, nextOrderNumber, tehranDayParts, zodMessage } from '@/lib/server/utils'
 
+// COM-411 (audit v4): sane max lengths on every address field — the address
+// snapshot goes into Order.shippingAddressJson/billingAddressJson, the order
+// mails and the admin panel, so a multi-MB "city" used to flow through all of
+// them. Maxes only reject oversized inputs; previously-valid requests are
+// unchanged.
 const addressSchema = z.object({
-  recipient: z.string().min(1),
-  line1: z.string().min(1),
-  line2: z.string().optional().nullable(),
-  city: z.string().min(1),
-  region: z.string().optional().nullable(),
-  postalCode: z.string().min(1),
+  recipient: z.string().min(1).max(120),
+  line1: z.string().min(1).max(200),
+  line2: z.string().max(200).optional().nullable(),
+  city: z.string().min(1).max(80),
+  region: z.string().max(80).optional().nullable(),
+  postalCode: z.string().min(1).max(20),
   countryCode: z.string().min(2).max(2),
-  phone: z.string().optional().nullable(),
+  phone: z.string().max(30).optional().nullable(),
 })
 
 const bodySchema = z.object({
@@ -87,6 +96,22 @@ function idempotencyRemember(key: string, status: number, body: unknown): void {
   idempotencyCache.set(key, { expiresAt: Date.now() + IDEMPOTENCY_TTL_MS, status, body })
 }
 
+// API-407 (audit v4): the replay key is scoped to THIS visitor — the client-supplied
+// key is hashed together with the visitor identity (session token, else the guest
+// cart token, from the httpOnly cookies; hashed so the raw cookie values never sit
+// in the cache). Without the scope, anyone who learned another customer's
+// Idempotency-Key could replay their cached response and read its orderNumber /
+// publicRef. A visitor with neither cookie ('anon') can never hit a populated
+// entry anyway: only SUCCESSFUL checkouts are cached, and those always run with a
+// session or cart cookie present.
+function scopedIdempotencyKey(rawKey: string, req: NextRequest): string {
+  const visitor =
+    req.cookies.get(SESSION_COOKIE)?.value?.trim() ||
+    req.cookies.get(CART_COOKIE)?.value?.trim() ||
+    'anon'
+  return createHash('sha256').update(`${rawKey}|${visitor}`).digest('hex')
+}
+
 /** C6: unguessable public tracking reference. */
 function newPublicRef(): string {
   return `PR-${randomBytes(15).toString('base64url')}`
@@ -139,10 +164,11 @@ export async function POST(req: NextRequest) {
   const data = parsed.data
 
   // Replay protection AFTER validation (so a malformed repeat still 400s) but
-  // BEFORE any state mutation.
+  // BEFORE any state mutation. API-407: the cache key is visitor-scoped.
   const idemKey = (idemKeyRaw || data.idempotencyKey || '').slice(0, 100)
-  if (idemKey) {
-    const replay = idempotencyReplay(idemKey)
+  const scopedIdemKey = idemKey ? scopedIdempotencyKey(idemKey, req) : ''
+  if (scopedIdemKey) {
+    const replay = idempotencyReplay(scopedIdemKey)
     if (replay) return NextResponse.json(replay.body, { status: replay.status })
   }
 
@@ -424,8 +450,10 @@ export async function POST(req: NextRequest) {
   try {
     if (payment.status === 'FAILED') {
       // Declined: order recorded as PENDING_PAYMENT/FAILED, stock untouched, cart kept for retry.
+      // API-407: declined (402) responses are NEVER cached — a retry with the same
+      // key and a working card must actually run, and a cached 402 would also let
+      // the response leak replay semantics to anyone holding the key.
       await persistOrder(false, payment, 0)
-      if (idemKey) idempotencyRemember(idemKey, 402, { error: 'CARD_DECLINED', message: `Payment declined: ${payment.reason}` })
       return apiError(402, 'CARD_DECLINED', `Payment declined: ${payment.reason}`)
     }
     for (let attempt = 0; attempt < 4; attempt++) {
@@ -439,7 +467,7 @@ export async function POST(req: NextRequest) {
         } catch (mailErr) {
           console.error('outbox: order confirmation mail failed', mailErr)
         }
-        if (idemKey) idempotencyRemember(idemKey, 200, order.client)
+        if (idemKey) idempotencyRemember(scopedIdemKey, 200, order.client)
         return json(order.client)
       } catch (err) {
         const code = (err as { code?: string })?.code
@@ -449,19 +477,18 @@ export async function POST(req: NextRequest) {
     }
     return apiError(500, 'ORDER_NUMBER_EXHAUSTED', 'Could not allocate an order number')
   } catch (err) {
+    // API-407: only the SUCCESS path populates the replay cache — non-2xx
+    // responses (409 stock/price races, 422 discount cap, 500s) are transient
+    // states a client may legitimately retry with the same key.
     if ((err as Error)?.message === 'OUT_OF_STOCK') {
-      const res = apiError(409, 'OUT_OF_STOCK', 'One or more items went out of stock while placing your order')
-      if (idemKey) idempotencyRemember(idemKey, 409, { error: 'OUT_OF_STOCK' })
-      return res
+      return apiError(409, 'OUT_OF_STOCK', 'One or more items went out of stock while placing your order')
     }
     if ((err as Error)?.message === 'PRICE_CHANGED') {
-      if (idemKey) idempotencyRemember(idemKey, 409, { error: 'PRICE_CHANGED' })
       return apiError(409, 'PRICE_CHANGED', 'Prices changed while placing your order — please review your cart and retry')
     }
     if ((err as Error)?.message === 'DISCOUNT_EXHAUSTED') {
       // COM-002: redemption cap hit between validation and the tx — same 422
       // contract (and message) as the other DISCOUNT_* failures above.
-      if (idemKey) idempotencyRemember(idemKey, 422, { error: 'DISCOUNT_EXHAUSTED' })
       return apiError(422, 'DISCOUNT_EXHAUSTED', 'The discount code is no longer valid — please remove it and try again.')
     }
     console.error('checkout failed', err)

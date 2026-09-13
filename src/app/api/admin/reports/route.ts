@@ -1,8 +1,16 @@
 // GET /api/admin/reports?days=7|30|90 — daily orders/revenue, per-product, per-country,
 // per-promotion attribution (from Order.promo* snapshots) + totals (Task 27: window selectable).
+// API-405 (audit v4): this is an AGGREGATE endpoint — page/take cannot apply (every
+// order in the ≤365d window feeds the sums), so the unboundedness is addressed by
+// bounding the payload instead: orders are fetched with scalar columns + refunds only
+// (the old `items → variant → product → translations` include materialized every item
+// of every order), and the per-product rollup reads a filtered `orderItem` query with
+// just the fields the rollup needs. The response shape and numbers are unchanged.
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
 import { apiError, json, parseJsonSafe, parseIntParam, pickLocale } from '@/lib/server/utils'
+
+const PAID_STATUSES = ['SUCCEEDED', 'PARTIALLY_REFUNDED'] as const
 
 export async function GET(req: Request) {
   const user = await requireAdmin()
@@ -14,13 +22,31 @@ export async function GET(req: Request) {
   const now = new Date()
   const start = new Date(now.getTime() - days * 86400000)
 
-  const orders = await db.order.findMany({
-    where: { createdAt: { gte: start } },
-    include: {
-      items: { include: { variant: { include: { product: { include: { translations: true } } } } } },
-      refunds: true,
-    },
-  })
+  const [orders, orderItems] = await Promise.all([
+    db.order.findMany({
+      where: { createdAt: { gte: start } },
+      select: {
+        createdAt: true,
+        totalMinor: true,
+        taxMinor: true,
+        paymentStatus: true,
+        shippingAddressJson: true,
+        promoName: true,
+        promoSavedMinor: true,
+        refunds: { select: { status: true, amountMinor: true } },
+      },
+    }),
+    // Per-product rollup input: only paid orders' items, only the rollup fields.
+    db.orderItem.findMany({
+      where: { order: { createdAt: { gte: start }, paymentStatus: { in: [...PAID_STATUSES] } } },
+      select: {
+        quantity: true,
+        totalMinor: true,
+        titleEn: true,
+        variant: { select: { product: { select: { slug: true, translations: { select: { locale: true, title: true } } } } } },
+      },
+    }),
+  ])
 
   const paidOrders = orders.filter((o) => o.paymentStatus === 'SUCCEEDED' || o.paymentStatus === 'PARTIALLY_REFUNDED')
 
@@ -44,16 +70,14 @@ export async function GET(req: Request) {
 
   // ── Per product ──
   const byProductMap = new Map<string, { title: string; units: number; revenueMinor: number }>()
-  for (const o of paidOrders) {
-    for (const item of o.items) {
-      const title = item.variant?.product
-        ? (pickLocale(item.variant.product.translations, 'en')?.title ?? item.variant.product.slug)
-        : item.titleEn
-      const entry = byProductMap.get(title) ?? { title, units: 0, revenueMinor: 0 }
-      entry.units += item.quantity
-      entry.revenueMinor += item.totalMinor
-      byProductMap.set(title, entry)
-    }
+  for (const item of orderItems) {
+    const title = item.variant?.product
+      ? (pickLocale(item.variant.product.translations, 'en')?.title ?? item.variant.product.slug)
+      : item.titleEn
+    const entry = byProductMap.get(title) ?? { title, units: 0, revenueMinor: 0 }
+    entry.units += item.quantity
+    entry.revenueMinor += item.totalMinor
+    byProductMap.set(title, entry)
   }
   const byProduct = [...byProductMap.values()].sort((a, b) => b.units - a.units)
 

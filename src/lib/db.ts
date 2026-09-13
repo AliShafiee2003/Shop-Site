@@ -26,3 +26,22 @@ export const db =
   })
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+
+// DB-402 (audit v4): SQLite tuning. `journal_mode=WAL` is persistent on the DB
+// file itself, so it only needs to be applied once per database — after it
+// sticks, readers no longer block writers (the pre-WAL "delete" mode made every
+// concurrent checkout/analytics write stall all readers and risked SQLITE_BUSY).
+// `busy_timeout` and `foreign_keys` are per-connection settings; applying them
+// on the init connection covers the bootstrap queries and WAL is inherited by
+// every later connection from the file header. The whole block is
+// log-and-continue: a pragma failure (locked file during a migration, read-only
+// volume, …) must NEVER break the app at import time.
+void (async () => {
+  try {
+    await db.$queryRawUnsafe('PRAGMA journal_mode=WAL;')
+    await db.$queryRawUnsafe('PRAGMA busy_timeout=5000;')
+    await db.$queryRawUnsafe('PRAGMA foreign_keys=ON;')
+  } catch (err) {
+    console.error('[db] SQLite pragma init failed (continuing):', err)
+  }
+})()

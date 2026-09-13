@@ -535,6 +535,10 @@ const en = {
     internalNote: 'Internal note', notePlaceholder: 'Note for staff only…', saveNote: 'Save note', noteSaved: 'Internal note saved',
     payments: 'Payments', refunds: 'Refunds', returns: 'Returns', provider: 'Provider', card: 'Card', method: 'Method',
     allStatuses: 'All statuses', noPaymentData: 'No payment records', returnStatus: 'Return', resolution: 'Resolution',
+    // returns queue (COM-401)
+    returnApprove: 'Approve', returnReject: 'Reject', returnReceived: 'Mark received', returnRefundReturn: 'Refund return',
+    returnDecisionSaved: 'Return request updated', returnNotePlaceholder: 'Note for the customer timeline…',
+    returnItemsCol: 'Returned items', returnEmpty: 'No return requests', returnOf: 'Return of',
     // discounts
     editDiscount: 'Edit code', discountUpdated: 'Code updated', confirmDelete: 'Delete {name}? Order snapshots keep their records.',
     startsAt: 'Starts at', endsAt: 'Ends at', clear: 'Clear',
@@ -1137,6 +1141,10 @@ const fa: Dict = {
     internalNote: 'یادداشت داخلی', notePlaceholder: 'یادداشت برای همکاران…', saveNote: 'ذخیرهٔ یادداشت', noteSaved: 'یادداشت داخلی ذخیره شد',
     payments: 'پرداخت‌ها', refunds: 'بازپرداخت‌ها', returns: 'مرجوعی‌ها', provider: 'سرویس', card: 'کارت', method: 'روش',
     allStatuses: 'همهٔ وضعیت‌ها', noPaymentData: 'پرداختی ثبت نشده', returnStatus: 'مرجوعی', resolution: 'راه‌حل',
+    // returns queue (COM-401)
+    returnApprove: 'تأیید', returnReject: 'رد', returnReceived: 'دریافت کالا', returnRefundReturn: 'بازپرداخت مرجوعی',
+    returnDecisionSaved: 'درخواست مرجوعی به‌روز شد', returnNotePlaceholder: 'یادداشت برای خط زمانی مشتری…',
+    returnItemsCol: 'اقلام مرجوعی', returnEmpty: 'درخواست مرجوعی ثبت نشده', returnOf: 'مرجوعیِ',
     // discounts
     editDiscount: 'ویرایش کد', discountUpdated: 'کد به‌روز شد', confirmDelete: '«{name}» حذف شود؟ ردیف سفارش‌های قبلی دست‌نخورده می‌ماند.',
     startsAt: 'شروع', endsAt: 'پایان', clear: 'پاک‌کردن',

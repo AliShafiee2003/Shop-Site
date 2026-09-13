@@ -1,9 +1,14 @@
-// GET  /api/admin/people — list contributors with EN/FA translations + book counts.
+// GET  /api/admin/people?page=&pageSize= — list contributors with EN/FA translations + book counts.
 // POST /api/admin/people — create a contributor (audited, slug auto-generated).
+// API-405 (audit v4): bounded list — shared parseListQuery (default 50, hard cap
+// 100); `total`/`page`/`pageSize` added, the `people` key is unchanged. NOTE: the
+// admin product/discount/article editors also use this endpoint as a picker —
+// with >100 contributors the picker sees only the newest 100 (X-Total-Count
+// exposes the overflow for a future paginated picker).
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json, jsonWithTotal, parseListQuery, zodMessage } from '@/lib/server/utils'
 import { slugify } from '@/app/api/admin/categories/route'
 
 const createSchema = z.object({
@@ -14,37 +19,49 @@ const createSchema = z.object({
   profession: z.string().max(80).optional().nullable(),
 })
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
-  const rows = await db.person.findMany({
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      translations: true,
-      _count: { select: { contributions: true } },
-    },
-  })
-
-  return json({
-    people: rows.map((p) => {
-      const en = p.translations.find((t) => t.locale === 'en')
-      const fa = p.translations.find((t) => t.locale === 'fa')
-      return {
-        id: p.id,
-        slug: p.slug,
-        status: p.status,
-        portraitUrl: p.portraitUrl,
-        nationality: p.nationality,
-        profession: p.profession,
-        nameEn: en?.name ?? null,
-        nameFa: fa?.name ?? null,
-        shortBioEn: en?.shortBio ?? null,
-        shortBioFa: fa?.shortBio ?? null,
-        bookCount: p._count.contributions,
-      }
+  const { page, pageSize, skip, take } = parseListQuery(new URL(req.url).searchParams)
+  const [rows, total] = await Promise.all([
+    db.person.findMany({
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        translations: true,
+        _count: { select: { contributions: true } },
+      },
+      skip,
+      take,
     }),
-  })
+    db.person.count(),
+  ])
+
+  return jsonWithTotal(
+    {
+      total,
+      page,
+      pageSize,
+      people: rows.map((p) => {
+        const en = p.translations.find((t) => t.locale === 'en')
+        const fa = p.translations.find((t) => t.locale === 'fa')
+        return {
+          id: p.id,
+          slug: p.slug,
+          status: p.status,
+          portraitUrl: p.portraitUrl,
+          nationality: p.nationality,
+          profession: p.profession,
+          nameEn: en?.name ?? null,
+          nameFa: fa?.name ?? null,
+          shortBioEn: en?.shortBio ?? null,
+          shortBioFa: fa?.shortBio ?? null,
+          bookCount: p._count.contributions,
+        }
+      }),
+    },
+    total,
+  )
 }
 
 export async function POST(req: Request) {

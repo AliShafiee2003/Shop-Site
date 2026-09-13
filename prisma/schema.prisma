@@ -317,6 +317,8 @@ model PriceHistory {
   effectiveAt   DateTime @default(now())
 
   variant Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId]) // DB-406: admin product editor reads price history per variant
 }
 
 // ───────────────────────── Editorial ─────────────────────────
@@ -533,6 +535,7 @@ model OrderItem {
   returnItems ReturnItem[]
 
   @@index([orderId])
+  @@index([variantId]) // DB-406: soldCount recompute / per-variant reporting scans items by variant
 }
 
 model Payment {
@@ -550,6 +553,8 @@ model Payment {
 
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   refunds Refund[]
+
+  @@index([orderId, createdAt]) // DB-406: order detail + refund route read payments per order (newest first)
 }
 
 model Refund {
@@ -565,6 +570,8 @@ model Refund {
 
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([orderId]) // DB-406: refund ceiling / oversight sums refunds per order
 }
 
 model Shipment {
@@ -582,6 +589,8 @@ model Shipment {
   updatedAt           DateTime  @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId]) // DB-406: order detail page / admin list read shipments per order
 }
 
 model OrderEvent {
@@ -613,6 +622,8 @@ model ReturnRequest {
   order Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   user  User?        @relation(fields: [userId], references: [id])
   items ReturnItem[]
+
+  @@index([orderId]) // DB-406: returns lookup per order
 }
 
 model ReturnItem {
@@ -625,6 +636,9 @@ model ReturnItem {
 
   returnReq ReturnRequest @relation(fields: [returnId], references: [id], onDelete: Cascade)
   orderItem OrderItem     @relation(fields: [orderItemId], references: [id])
+
+  @@index([returnId]) // DB-406: return detail reads items per request
+  @@index([orderItemId]) // DB-406: restock flow resolves the source order item
 }
 
 // ───────────────────────── Reviews & support ─────────────────────────

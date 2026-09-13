@@ -18,6 +18,7 @@ import { createContext, useContext, type ReactNode } from 'react'
 import type { RouteState } from '@/lib/route-state'
 import type { ArticleDetail, ArticleListItem, HomeSection, ProductCard as ProductCardDTO, ProductDetail } from '@/lib/types'
 import type { SeriesDetail, SeriesIndexEntry } from '@/lib/server/series'
+import type { LegalDocDTO } from '@/lib/server/legal'
 
 export const ServerRouteContext = createContext<RouteState | null>(null)
 
@@ -37,6 +38,9 @@ export type SsrPageData = {
   series?: SeriesDetail | null
   /** /series index payload (also feeds the homepage SERIES shelf module) */
   seriesIndex?: SeriesIndexEntry[] | null
+  /** /legal/[type] prefetched document (SEO-402 — the SSR HTML carries the
+   *  full legal text; null = the view falls back to its client fetch) */
+  legal?: LegalDocDTO | null
 }
 
 export const SsrPageDataContext = createContext<SsrPageData | null>(null)

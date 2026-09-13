@@ -7,8 +7,24 @@ import { listSeriesSlugs } from '@/lib/server/series'
 
 export const dynamic = 'force-dynamic'
 
-function urlEntry(loc: string, lastmod?: Date, changefreq = 'weekly', priority = '0.7'): string {
+function urlEntry(
+  loc: string,
+  lastmod: Date | undefined,
+  changefreq: string,
+  priority: string,
+  alternates?: { en: string; fa: string },
+): string {
   const parts = ['<url>', `<loc>${loc}</loc>`]
+  if (alternates) {
+    // SEO-406: per-URL hreflang alternates (x-default → EN, the unprefixed
+    // default) — mirrors pageAlternates() in [...slug]/page.tsx so sitemap and
+    // <head> agree on ONE language-policy per page.
+    parts.push(
+      `<xhtml:link rel="alternate" hreflang="en" href="${alternates.en}"/>`,
+      `<xhtml:link rel="alternate" hreflang="fa" href="${alternates.fa}"/>`,
+      `<xhtml:link rel="alternate" hreflang="x-default" href="${alternates.en}"/>`,
+    )
+  }
   if (lastmod) parts.push(`<lastmod>${lastmod.toISOString()}</lastmod>`)
   parts.push(`<changefreq>${changefreq}</changefreq>`, `<priority>${priority}</priority>`, '</url>')
   return parts.join('')
@@ -64,20 +80,25 @@ export async function GET(req: Request) {
   const urls: string[] = []
   // Canonical URL policy: EN unprefixed (default locale), FA with /fa prefix —
   // REAL paths (no hash), mirroring lib/router.ts and the per-page canonicals
-  // so exactly one crawlable URL per page.
+  // so exactly one crawlable URL per page. Each <url> carries the EN+FA
+  // xhtml:link alternates of its sibling locale (SEO-406).
   for (const locale of ['en', 'fa'] as const) {
-    const p = locale === 'fa' ? '/fa' : ''
-    urls.push(urlEntry(`${base}${p || '/'}`, homeLastmod ?? new Date(), 'daily', '1.0'))
-    urls.push(urlEntry(`${base}${p}/books`, booksLastmod ?? new Date(), 'daily', '0.9'))
-    urls.push(urlEntry(`${base}${p}/series`, seriesLastmod ?? new Date(), 'weekly', '0.6'))
-    urls.push(urlEntry(`${base}${p}/authors`, authorsLastmod ?? new Date(), 'weekly', '0.6'))
-    urls.push(urlEntry(`${base}${p}/articles`, articlesLastmod ?? new Date(), 'daily', '0.8'))
-    for (const c of categories) urls.push(urlEntry(`${base}${p}/categories/${c.slug}`, c.updatedAt, 'weekly', '0.6'))
-    for (const pr of products) urls.push(urlEntry(`${base}${p}/books/${pr.slug}`, pr.updatedAt, 'weekly', '0.9'))
-    for (const s of series) urls.push(urlEntry(`${base}${p}/series/${s.slug}`, s.updatedAt, 'weekly', '0.7'))
-    for (const a of articles) urls.push(urlEntry(`${base}${p}/articles/${a.slug}`, a.publishedAt ?? a.updatedAt, 'monthly', '0.6'))
-    for (const pe of people) urls.push(urlEntry(`${base}${p}/authors/${pe.slug}`, pe.updatedAt, 'monthly', '0.5'))
-    for (const s of staticPaths) urls.push(urlEntry(`${base}${p}${s.path}`, s.legalType ? legalLastmod.get(s.legalType) : undefined, s.changefreq, s.priority))
+    const pair = (path: string, lastmod?: Date, changefreq = 'weekly', priority = '0.7') => {
+      const en = `${base}${path || '/'}`
+      const fa = `${base}/fa${path}`
+      urls.push(urlEntry(locale === 'fa' ? fa : en, lastmod, changefreq, priority, { en, fa }))
+    }
+    pair('', homeLastmod ?? new Date(), 'daily', '1.0')
+    pair('/books', booksLastmod ?? new Date(), 'daily', '0.9')
+    pair('/series', seriesLastmod ?? new Date(), 'weekly', '0.6')
+    pair('/authors', authorsLastmod ?? new Date(), 'weekly', '0.6')
+    pair('/articles', articlesLastmod ?? new Date(), 'daily', '0.8')
+    for (const c of categories) pair(`/categories/${c.slug}`, c.updatedAt, 'weekly', '0.6')
+    for (const pr of products) pair(`/books/${pr.slug}`, pr.updatedAt, 'weekly', '0.9')
+    for (const s of series) pair(`/series/${s.slug}`, s.updatedAt, 'weekly', '0.7')
+    for (const a of articles) pair(`/articles/${a.slug}`, a.publishedAt ?? a.updatedAt, 'monthly', '0.6')
+    for (const pe of people) pair(`/authors/${pe.slug}`, pe.updatedAt, 'monthly', '0.5')
+    for (const s of staticPaths) pair(s.path, s.legalType ? legalLastmod.get(s.legalType) : undefined, s.changefreq, s.priority)
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`

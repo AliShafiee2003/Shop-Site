@@ -119,14 +119,19 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
   const [results, setResults] = useState<SearchResults | null>(null)
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Autofocus is for the overlay/card variants — the inline header box must
   // NOT steal focus on every page load.
   useEffect(() => { if (autoFocus) inputRef.current?.focus() }, [autoFocus])
 
   useEffect(() => {
-    if (q.trim().length < 2) { setResults(null); return }
+    // ARCH-418: below the 2-char threshold the pending fetch is dropped AND the
+    // spinner is reset — otherwise `loading` from a longer query stays stuck
+    // (the early return used to leave it true until the next keystroke/blur).
+    if (q.trim().length < 2) { setResults(null); setLoading(false); return }
     if (debounce.current) clearTimeout(debounce.current)
     setLoading(true)
     debounce.current = setTimeout(async () => {
@@ -138,21 +143,36 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
     return () => { if (debounce.current) clearTimeout(debounce.current) }
   }, [q, locale])
 
+  // ARCH-419: the blur-collapse delay must not outlive the component or race a
+  // refocus — keep the timer id and clear it on unmount and on re-focus.
+  useEffect(() => () => { if (blurTimer.current) clearTimeout(blurTimer.current) }, [])
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (q.trim()) { navigate(`/search?q=${encodeURIComponent(q.trim())}`); onDone?.() }
   }
 
   /** Inline variant: blur/Escape collapse the dropdown (delayed just enough
-   *  for a result click to land first). */
+   *  for a result click to land first). Focus moving WITHIN the form — e.g.
+   *  Tab from the input into a result link — cancels the pending collapse so
+   *  keyboard users keep the panel open; focus leaving the form entirely
+   *  still collapses after the delay (ARCH-419: timer is always owned/cleared). */
   const collapse = () => { setResults(null); setLoading(false) }
-  const onBlur = () => { setTimeout(collapse, 180) }
+  const onBlur = (e: React.FocusEvent) => {
+    const next = e.relatedTarget as Node | null
+    if (next && formRef.current?.contains(next)) return
+    if (blurTimer.current) clearTimeout(blurTimer.current)
+    blurTimer.current = setTimeout(collapse, 180)
+  }
+  const onFocus = () => {
+    if (blurTimer.current) { clearTimeout(blurTimer.current); blurTimer.current = null }
+  }
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') { setQ(''); collapse(); inputRef.current?.blur() }
   }
 
   return (
-    <form onSubmit={submit} role="search" className="w-full">
+    <form ref={formRef} onSubmit={submit} role="search" className="w-full">
       <div className="relative">
         <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden />
         <Input
@@ -160,6 +180,7 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onBlur={onBlur}
+          onFocus={onFocus}
           onKeyDown={onKeyDown}
           placeholder={t.common.searchPlaceholder}
           className={cn('h-11 ps-9 pe-9', inputClassName)}
@@ -179,10 +200,14 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
           ) : (
             <>
               {results.products.slice(0, 5).map((p) => (
-                <button
-                  key={p.id} type="button"
+                /* A11Y-404: real links (href) so middle-click / open-in-new-tab
+                   and SR "link" semantics work; the SPA click still routes
+                   through navigate() with preventDefault (same as Favorites). */
+                <a
+                  key={p.id}
+                  href={localePath(locale, `/books/${p.slug}`)}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-start hover:bg-soft"
-                  onClick={() => { navigate(`/books/${p.slug}`); onDone?.() }}
+                  onClick={(e) => { e.preventDefault(); navigate(`/books/${p.slug}`); onDone?.(); collapse() }}
                 >
                   { }
                   <img src={p.coverUrl ?? ''} alt="" className="h-12 w-9 rounded-sm border border-line object-cover" />
@@ -191,13 +216,14 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
                     <span className="block text-xs text-ink-3">{p.contributors?.[0]?.name}</span>
                   </span>
                   <span className="ms-auto text-xs font-semibold text-ink bdi">{p.priceMinor != null ? formatMoney(p.priceMinor, locale) : '—'}</span>
-                </button>
+                </a>
               ))}
               {results.people.slice(0, 3).map((p) => (
-                <button
-                  key={p.slug} type="button"
+                <a
+                  key={p.slug}
+                  href={localePath(locale, `/authors/${p.slug}`)}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-start hover:bg-soft"
-                  onClick={() => { navigate(`/authors/${p.slug}`); onDone?.() }}
+                  onClick={(e) => { e.preventDefault(); navigate(`/authors/${p.slug}`); onDone?.(); collapse() }}
                 >
                   {p.portraitUrl ? (
                      
@@ -207,17 +233,18 @@ function SearchOverlay({ locale, onDone, autoFocus = true, inputClassName }: { l
                   )}
                   <span className="truncate text-sm font-medium text-ink">{p.name}</span>
                   <span className="ms-auto text-xs text-ink-3">{p.profession}</span>
-                </button>
+                </a>
               ))}
               {results.articles.slice(0, 3).map((a) => (
-                <button
-                  key={a.slug} type="button"
+                <a
+                  key={a.slug}
+                  href={localePath(locale, `/articles/${a.slug}`)}
                   className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-start hover:bg-soft"
-                  onClick={() => { navigate(`/articles/${a.slug}`); onDone?.() }}
+                  onClick={(e) => { e.preventDefault(); navigate(`/articles/${a.slug}`); onDone?.(); collapse() }}
                 >
                   <span className="flex h-9 w-9 items-center justify-center rounded-md bg-soft text-xs text-ink-3" aria-hidden>✎</span>
                   <span className="truncate text-sm text-ink-2">{a.title}</span>
-                </button>
+                </a>
               ))}
               <button
                 type="submit"
@@ -601,6 +628,21 @@ export function Header() {
   const isActive = (href: string) => route.segments[0] === href.slice(1)
   const searchBtnRef = useRef<HTMLButtonElement>(null)
   const searchCardRef = useRef<HTMLDivElement>(null)
+  const burgerRef = useRef<HTMLButtonElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+
+  // A11Y-405: move focus into the mobile menu sheet when it opens (the sheet
+  // container is focusable via tabIndex={-1}) and return focus to the burger
+  // button when it closes. Radix already restores focus on Esc/overlay close;
+  // the body-guard covers programmatic closes (e.g. after link navigation).
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const raf = requestAnimationFrame(() => mobileMenuRef.current?.focus({ preventScroll: true }))
+      return () => cancelAnimationFrame(raf)
+    }
+    const ae = document.activeElement
+    if (ae === document.body || ae === null) burgerRef.current?.focus({ preventScroll: true })
+  }, [mobileMenuOpen])
 
   // Close the desktop search when clicking/tapping anywhere outside it —
   // both the toggle button and the card itself keep it open (user request:
@@ -729,13 +771,13 @@ export function Header() {
             <Sheet open={mobileMenuOpen} onOpenChange={(o) => { setMobileMenuOpen(o); if (o) refreshBookCats() }}>
               <SheetTrigger asChild>
                 <button
-                  type="button" aria-label={t.nav.menu} aria-controls="sp-mobile-menu"
+                  type="button" ref={burgerRef} aria-label={t.nav.menu} aria-controls="sp-mobile-menu" aria-expanded={mobileMenuOpen}
                   className="flex h-10 w-10 items-center justify-center rounded-md text-ink-2 hover:bg-soft lg:hidden"
                 >
                   <Menu className="h-5 w-5" aria-hidden />
                 </button>
               </SheetTrigger>
-              <SheetContent id="sp-mobile-menu" aria-describedby={undefined} side={locale === 'fa' ? 'right' : 'left'} dir={locale === 'fa' ? 'rtl' : 'ltr'} className="w-80 overflow-y-auto p-0">
+              <SheetContent ref={mobileMenuRef} tabIndex={-1} id="sp-mobile-menu" aria-describedby={undefined} side={locale === 'fa' ? 'right' : 'left'} dir={locale === 'fa' ? 'rtl' : 'ltr'} className="w-80 overflow-y-auto p-0">
                 <SheetHeader className="border-b border-line px-4 py-4">
                   <SheetTitle><Logo locale={locale} /></SheetTitle>
                 </SheetHeader>

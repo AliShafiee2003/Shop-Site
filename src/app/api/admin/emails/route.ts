@@ -20,7 +20,7 @@ interface RenderedEmail {
   orderId: string | null
   orderNumber: string
   to: string
-  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE' | 'SALES_DIGEST'
+  kind: 'ORDER_CONFIRMATION' | 'SHIPPING_NOTICE' | 'BACK_IN_STOCK' | 'PASSWORD_RESET' | 'EMAIL_VERIFY' | 'NEWSLETTER_CONFIRM' | 'EMAIL_CHANGE' | 'EMAIL_CHANGE_NOTICE' | 'SALES_DIGEST' | 'RETURN_DECISION'
   locale: string
   createdAt: string
   subject: string
@@ -47,7 +47,7 @@ interface RenderedEmail {
 const FILTERS = ['all', 'orders', 'security', 'newsletter', 'reports'] as const
 const FILTER_KINDS: Record<(typeof FILTERS)[number], string[] | null> = {
   all: null,
-  orders: ['ORDER_CONFIRMATION', 'SHIPPING_NOTICE', 'BACK_IN_STOCK'],
+  orders: ['ORDER_CONFIRMATION', 'SHIPPING_NOTICE', 'BACK_IN_STOCK', 'RETURN_DECISION'],
   security: ['PASSWORD_RESET', 'EMAIL_VERIFY', 'EMAIL_CHANGE', 'EMAIL_CHANGE_NOTICE'],
   newsletter: ['NEWSLETTER_CONFIRM'],
   reports: ['SALES_DIGEST'],
@@ -213,6 +213,8 @@ export async function GET(req: Request) {
         return fa ? 'ایمیل اطلاع‌رسانی ارسال سفارش در صف قرار گرفت (پیش‌نمایش — سفارش در دسترس نیست).' : 'The shipping-notice email was queued (preview — the originating order is unavailable).'
       case 'SALES_DIGEST':
         return fa ? 'گزارش خودکار فروش هفتگی برای صندوق فروشگاه (متن کامل در پایین).' : 'The automatic weekly sales digest for the store inbox (full text below).'
+      case 'RETURN_DECISION':
+        return fa ? 'نامهٔ وضعیت درخواست مرجوعی در صف قرار گرفت (پیش‌نمایش — متن کامل نزد گیرنده است).' : 'A return-request decision email was queued (preview — the full body belongs to the recipient).'
       default:
         return fa ? 'یک ایمیل تراکنشی در صف قرار گرفت (پیش‌نمایش).' : 'A transactional email was queued (preview).'
     }

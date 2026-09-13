@@ -86,7 +86,7 @@ export function TrackView() {
       <form onSubmit={lookup} className="mt-6 grid gap-3 rounded-lg border border-line p-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="tr-order" className="mb-1.5">{t.track.orderNumber}</Label>
-          <Input id="tr-order" dir="ltr" placeholder="SP2612130011" value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} required />
+          <Input id="tr-order" dir="ltr" placeholder="SP2612130011" inputMode="text" autoCapitalize="characters" value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} required />
         </div>
         <div>
           <Label htmlFor="tr-email" className="mb-1.5">{t.track.email}</Label>

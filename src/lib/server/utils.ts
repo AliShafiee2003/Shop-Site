@@ -1,18 +1,56 @@
 // Server-side shared utilities — PersePix backend (Task 4)
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { lastBlockedRetryAfterSec } from '@/lib/server/rate-limit'
 
 /** JSON response helper (success = 200 + payload) */
 export function json(data: unknown, status = 200): NextResponse {
   return NextResponse.json(data, { status })
 }
 
-/** Error response: proper status + { error: 'MACHINE_CODE', message? } */
+/** Error response: proper status + { error: 'MACHINE_CODE', message? }.
+ *  API-402 (audit v4): every 429 in the codebase funnels through here, so the
+ *  limiter's reset window (rate-limit.ts) is attached as a `Retry-After`
+ *  header right here — the 20+ rate-limited routes did not have to change. */
 export function apiError(status: number, code: string, message?: string): NextResponse {
+  const headers: Record<string, string> = {}
+  if (status === 429) {
+    const retryAfterSec = lastBlockedRetryAfterSec()
+    if (retryAfterSec > 0) headers['Retry-After'] = String(retryAfterSec)
+  }
   return NextResponse.json(
     message ? { error: code, message } : { error: code },
-    { status },
+    { status, headers },
   )
+}
+
+/** Success payload with the collection size attached as `X-Total-Count`.
+ *  API-405 (audit v4): bounded admin lists keep their historical body shape
+ *  (callers read `items`/`articles`/… — see each route) while the total row
+ *  count is exposed both as a field in the body and as the standard header. */
+export function jsonWithTotal(data: unknown, total: number, status = 200): NextResponse {
+  const res = NextResponse.json(data, { status })
+  res.headers.set('X-Total-Count', String(total))
+  return res
+}
+
+/** API-405 (audit v4): shared bounds for list endpoints — `page` (1-based,
+ *  default 1) and `pageSize` (default 50, HARD CAP 100) → Prisma `skip`/`take`.
+ *  Malformed/absent params silently fall back to the defaults; a clamped
+ *  pageSize is returned so the response can echo what was actually served. */
+export const LIST_PAGE_SIZE_DEFAULT = 50
+export const LIST_PAGE_SIZE_MAX = 100
+
+export function parseListQuery(
+  searchParams: URLSearchParams,
+  defaultPageSize: number = LIST_PAGE_SIZE_DEFAULT,
+): { page: number; pageSize: number; skip: number; take: number } {
+  const page = Math.max(1, parseIntParam(searchParams.get('page'), 1, 1) ?? 1)
+  const pageSize = Math.min(
+    LIST_PAGE_SIZE_MAX,
+    Math.max(1, parseIntParam(searchParams.get('pageSize'), defaultPageSize, 1, LIST_PAGE_SIZE_MAX) ?? defaultPageSize),
+  )
+  return { page, pageSize, skip: (page - 1) * pageSize, take: pageSize }
 }
 
 /** BUG-002 (audit v2) defense-in-depth: legacy rows may still carry a broken

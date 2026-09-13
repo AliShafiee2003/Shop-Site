@@ -4,13 +4,16 @@
 // its periodic work WITHOUT piggybacking on the health probe:
 //   1. runHousekeeping()   — session/cart/token sweeps + scheduled publishing
 //                            (6h global guard inside; extra calls are no-ops)
-//   2. dispatchQueuedMails — drain up to 20 queued outbox mails per tick
-//   3. queueSalesDigestIfDue — weekly digest (freshness guard inside)
+//   2. cancelStalePendingPayments — COM-414: PENDING_PAYMENT orders older than
+//                            24 h → CANCELLED (guarded flip, idempotent, cheap
+//                            enough to run every tick)
+//   3. dispatchQueuedMails — drain up to 20 queued outbox mails per tick
+//   4. queueSalesDigestIfDue — weekly digest (freshness guard inside)
 // Disabled unless CRON_SECRET is set: 403 DISABLED keeps the endpoint closed
 // in sandboxes that never opted in.
 import { timingSafeEqual } from 'node:crypto'
 import type { NextRequest } from 'next/server'
-import { runHousekeeping } from '@/lib/server/housekeeping'
+import { cancelStalePendingPayments, runHousekeeping } from '@/lib/server/housekeeping'
 import { dispatchQueuedMails } from '@/lib/server/mail-dispatch'
 import { queueSalesDigestIfDue } from '@/lib/server/report-mail'
 import { apiError, json } from '@/lib/server/utils'
@@ -33,8 +36,9 @@ export async function GET(req: NextRequest) {
   }
 
   await runHousekeeping()
+  const cancelledStalePending = await cancelStalePendingPayments()
   await dispatchQueuedMails(20).catch(() => undefined)
   await queueSalesDigestIfDue().catch(() => undefined)
 
-  return json({ ok: true, ts: new Date().toISOString() })
+  return json({ ok: true, cancelledStalePending, ts: new Date().toISOString() })
 }

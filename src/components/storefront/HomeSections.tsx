@@ -9,7 +9,7 @@ import { apiGet } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
 import { useSsrPageData } from './SsrProviders'
 import type { SeriesIndexEntry } from '@/lib/server/series'
-import { faDigits } from '@/lib/format'
+import { faDigits, formatDate } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from './ProductCard'
 import { ProductRow } from './ProductRow'
@@ -639,10 +639,12 @@ function ArticlesSection({ section, locale }: { section: Extract<HomeSection, { 
   const description = isFa ? (s.descriptionFa || s.descriptionEn) : s.descriptionEn
   const ctaLabel = isFa ? (s.ctaFa || s.ctaEn) : s.ctaEn
   const ctaHref = s.ctaHref ?? '/articles'
-  const fmt = (iso?: string | null) => {
-    if (!iso) return ''
-    try { return new Date(iso).toLocaleDateString(isFa ? 'fa-IR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' }) } catch { return '' }
-  }
+  // ARCH-410: this used to re-implement date formatting inline with
+  // `fa-IR` (GREGORIAN) / `en-US` — so the same article showed a Gregorian
+  // date on the /fa homepage but a Persian (jalali) date on /fa/articles.
+  // One formatter for the whole app now: lib/format formatDate (fa →
+  // fa-IR-u-ca-persian, en → en-GB).
+  const fmt = (iso?: string | null) => formatDate(iso, locale)
 
   if (items && items.length === 0) return null
 

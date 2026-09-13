@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BookOpen, Landmark, Languages, HeartHandshake, Mail, Package, RotateCcw, Globe2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,10 +10,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { navigate, useRoute } from '@/lib/router'
 import { apiGet, apiPost } from '@/lib/api'
 import { getDict, tf } from '@/lib/i18n'
-import { formatMoney } from '@/lib/format'
+import { legalTypeLabel, faqItems } from '@/lib/legal-content'
 import { Breadcrumbs, ProseBlocks, LegalPlaceholder, Spinner } from '@/components/storefront/bits'
 import { SocialRow } from '@/components/storefront/Footer'
 import { useSettings } from '@/lib/use-settings'
+import { useSsrPageData } from '@/components/storefront/SsrProviders'
 import { useToast } from '@/hooks/use-toast'
 import type { Block, StoreSettings } from '@/lib/types'
 
@@ -79,27 +80,14 @@ export function FAQView() {
   const route = useRoute()
   const locale = route.locale
   const t = getDict(locale)
-  const isFa = locale === 'fa'
   const settings = useSettings()
-  const freeShipAmount = formatMoney(settings?.store?.freeShippingThresholdMinor ?? 6000, locale)
 
   useEffect(() => { document.title = `${t.static.faqTitle} — PersePix` }, [locale, t])
 
-  const items = isFa ? [
-    { q: 'کتاب‌ها از کجا ارسال می‌شوند؟', a: 'همهٔ سفارش‌ها از وین، اتریش ارسال می‌شود. ارسال در اتریش ۲ تا ۴ روز کاری و در اتحادیهٔ اروپا ۳ تا ۷ روز کاری طول می‌کشد. ارسال بین‌المللی ۵ تا ۱۴ روز.' },
-    { q: 'هزینهٔ ارسال چقدر است؟', a: `اتریش ۴.۹۰ یورو؛ اتحادیهٔ اروپا ۷.۹۰ یورو (برای خرید بالای ${freeShipAmount} رایگان)؛ مقصدهای بین‌المللی ۱۴.۹۰ یورو.` },
-    { q: 'آیا می‌توانم سفارشم را مرجوع کنم؟', a: 'بله، مصرف‌کنندگان در اتحادیهٔ اروپا ۱۴ روز فرصت انصراف دارند. کتاب باید دست‌نخورده باشد. از صفحهٔ سفارش‌ها در حساب کاربری درخواست مرجوعی ثبت کنید.' },
-    { q: 'نسخه‌های دوزبانه چگونه کار می‌کنند؟', a: 'در نسخه‌های دوزبانه، متن اصلی فارسی و ترجمهٔ انگلیسی در صفحات روبه‌رو چاپ می‌شوند؛ با یادداشت‌های مترجم و شاعر.' },
-    { q: 'چگونه کتاب من منتشر می‌شود؟', a: 'در حال حاضر ما فقط از طریق پیشنهاد مستقیم نویسندگان و متصدیان حق نشر کار می‌کنیم. برای حقوق ترجمه به صفحهٔ تماس بنویسید.' },
-    { q: 'آیا کتاب‌ها به ایران ارسال می‌شوند؟', a: 'ارسال بین‌المللی به اکثر کشورها انجام می‌شود؛ اما ممکن است محدودیت‌های پرداخت و گمرکی وجود داشته باشد. پیش از سفارش با ما تماس بگیرید.' },
-  ] : [
-    { q: 'Where do the books ship from?', a: 'All orders ship from Vienna, Austria. Delivery takes 2–4 business days in Austria, 3–7 days across the EU, and 5–14 days internationally.' },
-    { q: 'How much is shipping?', a: `Austria €4.90; EU €7.90 (free over ${freeShipAmount}); worldwide destinations €14.90. All shipments are tracked.` },
-    { q: 'Can I return my order?', a: 'Yes — EU consumers have a 14-day right of withdrawal. Books should be unused. Request a return from the orders page in your account.' },
-    { q: 'How do bilingual editions work?', a: 'Bilingual editions print the Persian original and the English translation on facing pages, with notes by the translator and the author.' },
-    { q: 'How do I submit a manuscript?', a: 'We currently work through direct author and rights-holder proposals only. For translation rights, write to us via the contact page.' },
-    { q: 'Do you ship to Iran?', a: 'International shipping covers most countries, but payment and customs limitations may apply. Please contact us before ordering.' },
-  ]
+  // GEO-402: the accordion and the FAQPage JSON-LD (RSC catch-all) share ONE
+  // Q&A source (lib/legal-content) — the structured data always mirrors the
+  // visible content, including the live free-shipping threshold.
+  const items = faqItems(locale, settings?.store?.freeShippingThresholdMinor ?? 6000)
 
   return (
     <main id="main" className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
@@ -213,24 +201,24 @@ export function ContactView({ settings }: { settings?: StoreSettings | null }) {
             <div className="grid gap-3.5 sm:grid-cols-2">
               <div>
                 <Label htmlFor="ct-name" className="mb-1.5">{t.auth.name}</Label>
-                <Input id="ct-name" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+                <Input id="ct-name" required maxLength={120} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
                 <Label htmlFor="ct-email" className="mb-1.5">{t.auth.email}</Label>
-                <Input id="ct-email" type="email" required dir="ltr" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
+                <Input id="ct-email" type="email" required dir="ltr" maxLength={320} value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
               </div>
             </div>
             <div>
               <Label htmlFor="ct-subject" className="mb-1.5">{t.static.subject}</Label>
-              <Input id="ct-subject" required value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} />
+              <Input id="ct-subject" required maxLength={200} value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))} />
             </div>
             <div>
               <Label htmlFor="ct-order" className="mb-1.5">{t.static.orderNumberOptional}</Label>
-              <Input id="ct-order" dir="ltr" placeholder="SP-2025-…" value={form.orderNumber} onChange={(e) => setForm((f) => ({ ...f, orderNumber: e.target.value }))} />
+              <Input id="ct-order" dir="ltr" placeholder="SP-2025-…" maxLength={40} value={form.orderNumber} onChange={(e) => setForm((f) => ({ ...f, orderNumber: e.target.value }))} />
             </div>
             <div>
               <Label htmlFor="ct-msg" className="mb-1.5">{t.static.yourMessage}</Label>
-              <Textarea id="ct-msg" required minLength={10} rows={5} value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} />
+              <Textarea id="ct-msg" required minLength={10} maxLength={5000} rows={5} value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} />
             </div>
             <Button type="submit" size="lg" className="h-12 w-full sm:w-auto sm:px-10" disabled={!valid || busy}>
               {busy ? t.common.submitting : t.static.sendMessage}
@@ -256,31 +244,42 @@ export function LegalView({ type }: { type: string }) {
   const route = useRoute()
   const locale = route.locale
   const t = getDict(locale)
-  const [state, setState] = useState<{ key: string; doc?: { title: string; body: string; version: string }; failed?: boolean } | null>(null)
+  // SEO-402: seed from the server-prefetched document when the RSC entry
+  // loaded this exact type+locale — the SSR HTML then carries the full legal
+  // text (title + body) on FIRST paint instead of a client-fetch spinner.
+  // The type check guards against a stale context after client-side
+  // navigation from another legal page (mirrors the ArticleView slug guard).
+  const ssr = useSsrPageData()
+  const ssrDoc =
+    ssr && ssr.locale === locale && ssr.legal && ssr.legal.type.toUpperCase() === type.toUpperCase()
+      ? ssr.legal
+      : null
+  const [state, setState] = useState<{ key: string; doc?: { title: string; body: string; version: string }; failed?: boolean } | null>(
+    ssrDoc ? { key: `${locale}|${type}`, doc: { title: ssrDoc.title, body: ssrDoc.body, version: ssrDoc.version } } : null,
+  )
+  const ssrConsumed = useRef(Boolean(ssrDoc))
   const key = `${locale}|${type}`
   const doc = state && state.key === key ? (state.doc ?? null) : null
   const failed = state?.key === key && !!state.failed
 
   useEffect(() => {
+    // The SSR seed already matches this key — skip exactly one fetch round.
+    if (ssrConsumed.current) {
+      ssrConsumed.current = false
+      return
+    }
     let alive = true
     apiGet<{ title: string; body: string; version: string }>(`/api/legal/${encodeURIComponent(type)}?locale=${locale}`)
       .then((r) => { if (alive) setState({ key, doc: r }) })
       .catch(() => { if (alive) setState({ key, failed: true }) })
     return () => { alive = false }
-     
+
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: key encapsulates type+locale — the fetch's only intended triggers
   }, [key])
 
-  const titles: Record<string, string> = {
-    privacy: locale === 'fa' ? 'حریم خصوصی' : 'Privacy notice',
-    terms: locale === 'fa' ? 'شرایط فروش' : 'Terms of sale',
-    withdrawal: locale === 'fa' ? 'حق انصراف' : 'Right of withdrawal',
-    imprint: locale === 'fa' ? 'اطلاعات ناشر' : 'Imprint',
-    accessibility: locale === 'fa' ? 'دسترس‌پذیری' : 'Accessibility statement',
-    cookies: locale === 'fa' ? 'کوکی‌ها' : 'Cookie notice',
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: titles map is rebuilt every render; locale+type are the real triggers of the title
-  useEffect(() => { document.title = `${titles[type] ?? t.static.legalTitle} — PersePix` }, [locale, type])  
+  // SEO-402: label map shared with the RSC catch-all metadata (lib/legal-content).
+  const title = legalTypeLabel(type, locale) ?? t.static.legalTitle
+  useEffect(() => { document.title = `${title} — PersePix` }, [title])
 
   if (failed) {
     return (
@@ -293,7 +292,7 @@ export function LegalView({ type }: { type: string }) {
 
   return (
     <main id="main" className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
-      <Breadcrumbs locale={locale} items={[{ label: t.nav.home, href: `/${locale}` }, { label: titles[type] ?? t.static.legalTitle }]} />
+      <Breadcrumbs locale={locale} items={[{ label: t.nav.home, href: `/${locale}` }, { label: title }]} />
       <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{doc.title}</h1>
       <p className="mt-1 text-xs text-ink-3 bdi">v{doc.version}</p>
       <div className="mt-6">

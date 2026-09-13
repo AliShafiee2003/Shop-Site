@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { SlidersHorizontal, X, Tag, Ban, RotateCcw, Layers, Check } from 'lucide-react'
+import { SlidersHorizontal, X, Tag, Ban, RotateCcw, Layers, Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -88,8 +88,11 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
   const ssrCatalog = ssr && ssr.locale === locale && ssr.catalog && JSON.stringify(ssr.catalog.query) === initKeyJson
     ? ssr.catalog
     : null
-  const [dataState, setDataState] = useState<{ key: string; items: ProductCardDTO[]; total: number; failed?: boolean } | null>(
-    ssrCatalog ? { key: `${locale}|${initKeyJson}`, items: ssrCatalog.items, total: ssrCatalog.total } : null,
+  // DB-416: real SQL pagination — `page` is the page the last fetch ended at
+  // (append mode accumulates 1..page; paged mode holds exactly one page) and
+  // `total` drives the Prev/Next pager below the grid.
+  const [dataState, setDataState] = useState<{ key: string; items: ProductCardDTO[]; total: number; page: number; paged?: boolean; failed?: boolean } | null>(
+    ssrCatalog ? { key: `${locale}|${initKeyJson}`, items: ssrCatalog.items, total: ssrCatalog.total, page: Number.parseInt(initialQuery?.page ?? '1', 10) || 1 } : null,
   )
   const [loadingMore, setLoadingMore] = useState(false)
   const [categories, setCategories] = useState<CategoryDTO[]>([])
@@ -178,17 +181,32 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
     if (dataState?.key === loadKey) return
     let alive = true
     apiGet<{ items: ProductCardDTO[]; total: number }>('/api/products?' + buildParams(1).toString())
-      .then((r) => { if (alive) setDataState({ key: loadKey, items: r.items, total: r.total }) })
-      .catch(() => { if (alive) setDataState({ key: loadKey, items: [], total: 0, failed: true }) })
+      .then((r) => { if (alive) setDataState({ key: loadKey, items: r.items, total: r.total, page: 1 }) })
+      .catch(() => { if (alive) setDataState({ key: loadKey, items: [], total: 0, page: 1, failed: true }) })
     return () => { alive = false }
   }, [loadKey, buildParams, dataState?.key])
+
+  const currentPage = dataState && dataState.key === loadKey ? dataState.page : 1
+  const pagedMode = dataState?.key === loadKey && !!dataState.paged
 
   const loadMore = async () => {
     if (!items) return
     setLoadingMore(true)
     try {
-      const r = await apiGet<{ items: ProductCardDTO[]; total: number }>('/api/products?' + buildParams(Math.floor(items.length / pageSize) + 1).toString())
-      setDataState({ key: loadKey, items: [...items, ...r.items], total: r.total })
+      const r = await apiGet<{ items: ProductCardDTO[]; total: number }>('/api/products?' + buildParams(currentPage + 1).toString())
+      setDataState({ key: loadKey, items: [...items, ...r.items], total: r.total, page: currentPage + 1 })
+    } catch { /* keep list */ } finally { setLoadingMore(false) }
+  }
+
+  /** Prev/Next pager (DB-416): fetch ONE page from SQL and replace the list;
+   *  landing back on page 1 returns to the append/show-more mode. */
+  const goToPage = async (n: number) => {
+    if (n < 1 || n === currentPage) return
+    setLoadingMore(true)
+    try {
+      const r = await apiGet<{ items: ProductCardDTO[]; total: number }>('/api/products?' + buildParams(n).toString())
+      setDataState({ key: loadKey, items: r.items, total: r.total, page: n, paged: n !== 1 })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch { /* keep list */ } finally { setLoadingMore(false) }
   }
 
@@ -490,6 +508,12 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
         </div>
       </header>
 
+      {/* A11Y-403: the catalog jumped h1 → h3 (radix accordion filter headers
+          and the ProductCard titles are all h3). This visually-hidden h2
+          restores the logical h1 → h2 → h3 order for screen-reader heading
+          navigation with zero visual change. */}
+      <h2 className="sr-only">{tf(t.catalog.count, { n: total })}</h2>
+
       {/* R5: series chip rail — one-click shelf filtering on /books. Fed by
           /api/series (same payload as the /series index); hides itself when
           the shop has no published series. */}
@@ -612,7 +636,42 @@ export function CatalogView({ query: initialQuery, heading }: { query?: CatalogQ
               <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 xl:grid-cols-4">
                 {items.map((p, i) => <ProductCard key={p.id} p={p} locale={locale} priority={i < 4} />)}
               </div>
-              {shownCount < total && (
+              {/* DB-416: pager over the SQL total — Prev/Next + viewed-range
+                  indicator (fa digits + rtl-mirrored chevrons). Page 1 keeps
+                  the show-all “Load more” append behavior. */}
+              {(() => {
+                const totalPages = Math.max(1, Math.ceil(total / pageSize))
+                if (totalPages <= 1) return null
+                const from = pagedMode ? (currentPage - 1) * pageSize + 1 : 1
+                const to = Math.min(currentPage * pageSize, total)
+                return (
+                  <nav className="mt-10 flex items-center justify-center gap-3" aria-label={isFa ? 'صفحه‌بندی' : 'Pagination'}>
+                    <Button
+                      variant="outline" size="sm" className="h-9 gap-1"
+                      disabled={loadingMore || currentPage <= 1}
+                      onClick={() => goToPage(currentPage - 1)}
+                      aria-label={t.common.previous}
+                    >
+                      <ChevronLeft className="h-4 w-4 rtl:rotate-180" aria-hidden />
+                      <span className="hidden sm:inline">{t.common.previous}</span>
+                    </Button>
+                    <span className="min-w-24 text-center text-sm tabular-nums text-ink-3" aria-live="polite">
+                      <span className="sr-only">{isFa ? `صفحهٔ ${dig(currentPage)} از ${dig(totalPages)}` : `Page ${currentPage} of ${totalPages}`}: </span>
+                      {dig(from)}–{dig(to)} / {dig(total)}
+                    </span>
+                    <Button
+                      variant="outline" size="sm" className="h-9 gap-1"
+                      disabled={loadingMore || currentPage >= totalPages}
+                      onClick={() => goToPage(currentPage + 1)}
+                      aria-label={t.common.next}
+                    >
+                      <span className="hidden sm:inline">{t.common.next}</span>
+                      <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+                    </Button>
+                  </nav>
+                )
+              })()}
+              {!pagedMode && shownCount < total && (
                 <div className="mt-10 flex justify-center">
                   <Button
                     variant="outline" size="lg" className="h-12 px-8"

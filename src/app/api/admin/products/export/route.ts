@@ -1,4 +1,11 @@
 // GET /api/admin/products/export — FULL catalog export (admin-only, Task 49-7).
+// API-405 (audit v4): DELIBERATELY left unpaginated — this is a true one-shot
+// CSV download (Content-Disposition attachment) whose contract is "every
+// product, every variant, both locales" so the sheet can round-trip through the
+// importer; slicing it would silently produce incomplete exports. The audit
+// therefore accepts the full-catalog read here: admin-only, audited
+// (PRODUCT_EXPORT row below), and the bounded daily-report alternative lives at
+// /api/admin/reports/export. Revisit only if exports start timing out.
 // One row per VARIANT with every field: product meta, BOTH locale translations
 // (subtitle / short & long description — the raw stored markdown/blocks JSON —
 // and SEO), full variant specs, categories, contributors (role:slug), gallery

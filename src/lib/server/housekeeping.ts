@@ -11,6 +11,60 @@ import { queueSalesDigestIfDue } from '@/lib/server/report-mail'
 const HOUSEKEEPING_INTERVAL_MS = 6 * 60 * 60 * 1000
 const globalForHousekeeping = globalThis as unknown as { lastSweepAt?: number }
 
+/** COM-414: a PENDING_PAYMENT order older than this is auto-cancelled. */
+export const PENDING_PAYMENT_EXPIRY_HOURS = 24
+
+/**
+ * COM-414 — sweep stale unpaid orders. Every failed payment leaves an
+ * Order+Payment row in PENDING_PAYMENT/FAILED that nothing ever cleaned up;
+ * they accumulate and add dashboard/revenue-report noise. Orders past the
+ * cutoff are flipped to CANCELLED with a guarded `updateMany` on the still-
+ * PENDING status (idempotent: a concurrent cron/tick loser matches 0 rows),
+ * plus an OrderEvent so the audit trail shows WHY it closed.
+ *
+ * NOTE — deliberately NO restock here: checkout records PENDING_PAYMENT orders
+ * with stock UNTOUCHED (the atomic decrement only runs inside `if (paid)`), so
+ * restocking on cancel would create inventory out of thin air. This deviates
+ * from the generic "cancel ⇒ restock" pattern on purpose.
+ * Never throws — housekeeping must not take the caller down.
+ */
+export async function cancelStalePendingPayments(): Promise<number> {
+  const cutoff = new Date(Date.now() - PENDING_PAYMENT_EXPIRY_HOURS * 3600 * 1000)
+  let cancelled = 0
+  try {
+    const stale = await db.order.findMany({
+      where: { status: 'PENDING_PAYMENT', createdAt: { lt: cutoff } },
+      select: { id: true, orderNumber: true },
+      take: 50, // bounded — the rest catch the next tick
+    })
+    for (const order of stale) {
+      try {
+        await db.$transaction(async (tx) => {
+          const flip = await tx.order.updateMany({
+            where: { id: order.id, status: 'PENDING_PAYMENT' },
+            data: { status: 'CANCELLED' },
+          })
+          if (flip.count === 0) return // already cancelled by a concurrent sweep
+          await tx.orderEvent.create({
+            data: {
+              orderId: order.id,
+              type: 'CANCELLED',
+              message: `Unpaid order auto-cancelled after ${PENDING_PAYMENT_EXPIRY_HOURS} h (housekeeping)`,
+              actor: 'system',
+            },
+          })
+          cancelled += 1
+        })
+      } catch {
+        // one bad row must not stop the sweep
+      }
+    }
+  } catch {
+    // never fail the caller
+  }
+  return cancelled
+}
+
 /**
  * Run every maintenance sweep, but at most once every 6 hours per process
  * (global timestamp guard — the same behaviour the healthz probe always had).

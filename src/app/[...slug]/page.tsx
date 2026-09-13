@@ -14,6 +14,8 @@ import { queryStorefrontProducts } from '@/lib/server/product-list'
 import { getSetting } from '@/lib/server/utils'
 import { getSeriesDetail, seriesMeta, getSeriesIndex } from '@/lib/server/series'
 import { loadShippingSettings } from '@/lib/server/shipping'
+import { getLegalDocument } from '@/lib/server/legal'
+import { LEGAL_TYPES, legalTypeLabel, faqItems } from '@/lib/legal-content'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,7 +45,26 @@ const KNOWN_ROOTS = new Set([
 ])
 
 /** /legal/:type — the StaticView fetches exactly these document types. */
-const KNOWN_LEGAL_TYPES = new Set(['privacy', 'terms', 'withdrawal', 'imprint', 'accessibility', 'cookies'])
+const KNOWN_LEGAL_TYPES = new Set<string>(LEGAL_TYPES)
+
+/** SEO-404: neutral per-root label for the noindex utility surfaces — they
+ *  must not mirror the brand home title in <title>/OG. */
+const NOINDEX_LABELS: Record<string, { en: string; fa: string }> = {
+  search: { en: 'Search', fa: 'جستجو' },
+  cart: { en: 'Cart', fa: 'سبد خرید' },
+  checkout: { en: 'Checkout', fa: 'تسویه حساب' },
+  favorites: { en: 'Favorites', fa: 'علاقه‌مندی‌ها' },
+  track: { en: 'Track your order', fa: 'پیگیری سفارش' },
+  login: { en: 'Sign in', fa: 'ورود' },
+  register: { en: 'Create account', fa: 'ثبت‌نام' },
+  account: { en: 'My account', fa: 'حساب کاربری' },
+  admin: { en: 'Admin', fa: 'مدیریت' },
+  'forgot-password': { en: 'Forgot password', fa: 'فراموشی رمز عبور' },
+  'reset-password': { en: 'Reset password', fa: 'بازنشانی رمز عبور' },
+  'verify-email': { en: 'Email verification', fa: 'تأیید ایمیل' },
+  'newsletter-confirm': { en: 'Newsletter confirmation', fa: 'تأیید خبرنامه' },
+  'confirm-email-change': { en: 'Email change', fa: 'تغییر ایمیل' },
+}
 
 /** True when the URL can never render content (unknown root / unknown legal
  *  type). Detail-entity 404s (draft product, deleted article…) are detected by
@@ -58,6 +79,22 @@ function isUnknownRoute(segments: string[]): boolean {
 
 function absUrl(site: string, path: string): string {
   return `${site}${path}`
+}
+
+/** SEO-404: minimal metadata for the private/utility surfaces — a neutral
+ *  per-root + per-locale title, NO openGraph/twitter block at all (the
+ *  homepage og:image must not travel on noindex pages), robots noindex
+ *  preserved, canonical/hreflang policy untouched. */
+function noindexMetadata(root: string, locale: 'en' | 'fa', brand: string, path: string, site: string): Metadata {
+  const label = NOINDEX_LABELS[root]?.[locale] ?? root
+  return {
+    title: { absolute: `${label} — ${brand}` },
+    description: locale === 'fa'
+      ? `صفحهٔ ${label} فروشگاه کتاب پرس‌پیکس.`
+      : `The ${label} page of the PersePix bookstore.`,
+    alternates: pageAlternates(site, locale, path),
+    robots: { index: false, follow: false },
+  }
 }
 
 /** Absolute URL for a locale-scoped path. Canonical URL policy: EN is the
@@ -143,8 +180,42 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
       description = fa
         ? 'مجموعه‌های کتاب پرس‌پیکس — از تاریخ مصور ایران تا نثر معاصر فارسی. همهٔ جلدهای هر مجموعه در یک نگاه.'
         : 'The PersePix book series — from the Illustrated History of Iran to contemporary Persian prose. Every volume of each collection, in one place.'
-    } else if (root === 'books' || root === 'categories') {
+    } else if (root === 'categories' && second) {
+      // SEO-403: category pages used to reuse the /books title/description —
+      // cannibalization risk. Each category now carries its DB name (EN+FA)
+      // in the title and a description of its own; canonical/hreflang below
+      // stay untouched.
+      const c = await db.category.findUnique({ where: { slug: second }, include: { translations: true } })
+      if (c) {
+        const ct = c.translations.find((x) => x.locale === locale) ?? c.translations.find((x) => x.locale === 'en')
+        const name = ct?.name ?? c.slug
+        title = fa ? `کتاب‌های دستهٔ ${name}` : `${name} books`
+        description =
+          ct?.seoDesc ||
+          (ct?.description
+            ? fa
+              ? `${ct.description} — فهرست کتاب‌های دستهٔ «${name}» در پرس‌پیکس؛ ارسال به سراسر اروپا از وین.`
+              : `${ct.description} — Browse the “${name}” shelf at PersePix; ships across Europe from Vienna.`
+            : fa
+              ? `کتاب‌های دستهٔ «${name}» — ادبیات معاصر ایران به انگلیسی و در نسخه‌های دوزبانه؛ ارسال به سراسر اروپا از وین.`
+              : `Books in the “${name}” category — contemporary Persian literature in English and bilingual editions, shipped from Vienna.`)
+      } else {
+        title = fa ? 'همه کتاب‌ها' : 'All books'
+      }
+    } else if (root === 'books') {
       title = fa ? 'همه کتاب‌ها' : 'All books'
+    } else if (root === 'legal' && second) {
+      // SEO-402 companion: legal pages are indexable but used to inherit the
+      // home title. Use the document's own title (the same row the H1
+      // renders), with the shared label map as fallback.
+      const doc = await getLegalDocument(second, locale).catch(() => null)
+      const label = doc?.title ?? legalTypeLabel(second, locale)
+      if (label) {
+        title = label
+        description = fa
+          ? `${label} فروشگاه کتاب پرس‌پیکس — نسخهٔ معتبر فعلی این سند.`
+          : `${label} of the PersePix bookstore — the current valid version of this document.`
+      }
     } else if (root === 'articles') {
       title = fa ? 'مجله' : 'Journal'
     } else if (root === 'authors') {
@@ -180,9 +251,10 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
       },
     }
     if (root && NOINDEX_ROOTS.has(root)) {
-      // Private/utility surfaces (search, cart, checkout, account, admin…):
-      // keep them out of every index (audit §8.7).
-      return { ...base, robots: { index: false, follow: false } }
+      // SEO-404: private/utility surfaces (search, cart, checkout, account…)
+      // keep out of every index (audit §8.7) AND stop mirroring the home
+      // title/OG — neutral label, no OG/Twitter block.
+      return noindexMetadata(root, locale, brand, path, site)
     }
     return base
   }
@@ -191,6 +263,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
     return await build()
   } catch {
     // Metadata is best-effort; never break rendering.
+    if (root && NOINDEX_ROOTS.has(root)) return noindexMetadata(root, locale, brand, path, site)
     return {
       title: { absolute: homeTitle },
       description: homeDesc,
@@ -379,27 +452,13 @@ async function buildJsonLd(site: string, locale: 'en' | 'fa', segments: string[]
         ]))
       }
     }
-    // FAQPage schema on /faq (GEO §9 — was missing entirely).
+    // FAQPage schema on /faq (GEO §9). The Q&A list comes from the SAME
+    // source the page renders (lib/legal-content faqItems) so the structured
+    // data can never drift from the visible accordion; the amounts follow the
+    // live free-shipping setting.
     if (root === 'faq') {
       const store = await getSetting<{ freeShippingThresholdMinor?: number }>('store', {})
-      const freeShip = `€${((store.freeShippingThresholdMinor ?? 6000) / 100).toFixed(2)}`
-      const items = fa
-        ? [
-            { q: 'کتاب‌ها از کجا ارسال می‌شوند؟', a: 'همهٔ سفارش‌ها از وین، اتریش ارسال می‌شود. ارسال در اتریش ۲ تا ۴ روز کاری و در اتحادیهٔ اروپا ۳ تا ۷ روز کاری طول می‌کشد. ارسال بین‌المللی ۵ تا ۱۴ روز.' },
-            { q: 'هزینهٔ ارسال چقدر است؟', a: `اتریش ۴.۹۰ یورو؛ اتحادیهٔ اروپا ۷.۹۰ یورو (برای خرید بالای ${freeShip} رایگان)؛ مقصدهای بین‌المللی ۱۴.۹۰ یورو.` },
-            { q: 'آیا می‌توانم سفارشم را مرجوع کنم؟', a: 'بله، مصرف‌کنندگان در اتحادیهٔ اروپا ۱۴ روز فرصت انصراف دارند. کتاب باید دست‌نخورده باشد. از صفحهٔ سفارش‌ها در حساب کاربری درخواست مرجوعی ثبت کنید.' },
-            { q: 'نسخه‌های دوزبانه چگونه کار می‌کنند؟', a: 'در نسخه‌های دوزبانه، متن اصلی فارسی و ترجمهٔ انگلیسی در صفحات روبه‌رو چاپ می‌شوند؛ با یادداشت‌های مترجم و شاعر.' },
-            { q: 'چگونه کتاب من منتشر می‌شود؟', a: 'در حال حاضر ما فقط از طریق پیشنهاد مستقیم نویسندگان و متصدیان حق نشر کار می‌کنیم. برای حقوق ترجمه به صفحهٔ تماس بنویسید.' },
-            { q: 'آیا کتاب‌ها به ایران ارسال می‌شوند؟', a: 'ارسال بین‌المللی به اکثر کشورها انجام می‌شود؛ اما ممکن است محدودیت‌های پرداخت و گمرکی وجود داشته باشد. پیش از سفارش با ما تماس بگیرید.' },
-          ]
-        : [
-            { q: 'Where do the books ship from?', a: 'All orders ship from Vienna, Austria. Delivery takes 2–4 business days in Austria, 3–7 days across the EU, and 5–14 days internationally.' },
-            { q: 'How much is shipping?', a: `Austria €4.90; EU €7.90 (free over ${freeShip}); worldwide destinations €14.90. All shipments are tracked.` },
-            { q: 'Can I return my order?', a: 'Yes — EU consumers have a 14-day right of withdrawal. Books should be unused. Request a return from the orders page in your account.' },
-            { q: 'How do bilingual editions work?', a: 'Bilingual editions print the Persian original and the English translation on facing pages, with notes by the translator and the author.' },
-            { q: 'How do I submit a manuscript?', a: 'We currently work through direct author and rights-holder proposals only. For translation rights, write to us via the contact page.' },
-            { q: 'Do you ship to Iran?', a: 'International shipping covers most countries, but payment and customs limitations may apply. Please contact us before ordering.' },
-          ]
+      const items = faqItems(locale, store.freeShippingThresholdMinor ?? 6000)
       payloads.push({
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -559,6 +618,16 @@ async function prefetchPageData(locale: 'en' | 'fa', segments: string[], query: 
     }
     if (root === 'series') {
       return { locale, seriesIndex: await getSeriesIndex(locale) }
+    }
+    if (root === 'legal' && second) {
+      // SEO-402: prefetch the current legal document so the SSR HTML carries
+      // the full title+body on first paint (the view used to fetch it
+      // client-side, leaving this indexable page with a bare spinner).
+      // null = known type without a current document → REAL 404 (mirrors the
+      // KNOWN_LEGAL_TYPES gate; DB failures below still degrade to `{ locale }`).
+      const legal = await getLegalDocument(second, locale)
+      if (!legal) return null
+      return { locale, legal }
     }
     return { locale }
   } catch {

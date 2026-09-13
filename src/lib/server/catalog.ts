@@ -28,7 +28,7 @@ export type ProductCardDTO = {
   createdAt: string
 }
 
-/** Include shape used for every product → card mapping. */
+/** Include shape used for every product → card mapping (deep — detail/related). */
 export const productCardInclude = {
   translations: true,
   variants: true,
@@ -37,15 +37,55 @@ export const productCardInclude = {
   categories: { include: { category: { include: { translations: true } } } },
 } satisfies Prisma.ProductInclude
 
+/** Slim include for LIST paths — exactly the relations toProductCard() reads.
+ *  List cards render none of Product.categories (toProductCard never maps it),
+ *  so the catalog query skips that 3-deep branch entirely (DB-416); the detail
+ *  page keeps its own deep productCardInclude fetch. */
+export const productListCardInclude = {
+  translations: { select: { locale: true, title: true, subtitle: true, shortDescription: true } },
+  variants: { select: { isActive: true, priceMinor: true, stock: true, lowStockThreshold: true, format: true } },
+  contributors: {
+    select: {
+      role: true,
+      displayOrder: true,
+      person: { select: { slug: true, translations: { select: { locale: true, name: true } } } },
+    },
+  },
+  reviews: { where: { moderationState: 'APPROVED' }, select: { rating: true } },
+} satisfies Prisma.ProductInclude
+
+/** Structural shape toProductCard() actually reads — the deep productCardInclude
+ *  payload and the slim productListCardInclude payload both satisfy it, so one
+ *  mapper serves detail (deep) and list (slim) fetches without casts. */
+export type ProductCardSource = {
+  id: string
+  slug: string
+  coverUrl: string | null
+  isFeatured: boolean
+  fixedPrice: boolean
+  publicationDate: Date | null
+  publishAt: Date | null
+  createdAt: Date
+  series: string | null
+  translations: { locale: string; title: string; subtitle: string | null; shortDescription: string | null }[]
+  variants: { isActive: boolean; priceMinor: number; stock: number; lowStockThreshold: number; format: string }[]
+  contributors: {
+    role: string
+    displayOrder: number
+    person: { slug: string; translations: { locale: string; name: string }[] }
+  }[]
+  reviews: { rating: number }[]
+}
+
 export type ProductWithCardRelations = Prisma.ProductGetPayload<{
   include: typeof productCardInclude
 }>
 
 export type ProductSort = 'featured' | 'newest' | 'bestselling' | 'price-asc' | 'price-desc'
 
-/** Map a Product row (with card relations) to the public ProductCardDTO. */
+/** Map a Product row (deep or slim card relations) to the public ProductCardDTO. */
 export function toProductCard(
-  p: ProductWithCardRelations,
+  p: ProductCardSource,
   locale: string,
   promo?: ActivePromotion | null,
 ): ProductCardDTO {

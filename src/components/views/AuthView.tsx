@@ -126,11 +126,11 @@ export function AuthView({ mode }: { mode: 'login' | 'register' }) {
           )}
           <div>
             <Label htmlFor="auth-email" className="mb-1.5">{t.auth.email}</Label>
-            <Input id="auth-email" type="email" required autoComplete="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Input id="auth-email" type="email" required autoComplete="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={error ? true : undefined} aria-describedby={error ? 'auth-error' : undefined} />
           </div>
           <div>
             <Label htmlFor="auth-pass" className="mb-1.5">{t.auth.password}</Label>
-            <Input id="auth-pass" type="password" required minLength={8} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input id="auth-pass" type="password" required minLength={8} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={error ? true : undefined} aria-describedby={error ? 'auth-error' : undefined} />
             {mode === 'login' && (
               <button
                 type="button"
@@ -141,7 +141,9 @@ export function AuthView({ mode }: { mode: 'login' | 'register' }) {
               </button>
             )}
           </div>
-          {error && <p role="alert" className="text-sm text-error">{error}</p>}
+          {/* A11Y-402: id + role=alert — the email/password fields reference it
+              via aria-describedby and flip aria-invalid while it is visible. */}
+          {error && <p id="auth-error" role="alert" className="text-sm text-error">{error}</p>}
           <Button type="submit" size="lg" className="h-12 w-full" disabled={busy}>
             {busy && <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden />}
             {mode === 'login' ? t.auth.login : t.auth.register}

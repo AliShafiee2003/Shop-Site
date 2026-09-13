@@ -1,10 +1,15 @@
-// GET  /api/admin/categories — list categories with EN/FA translations + product counts.
+// GET  /api/admin/categories?page=&pageSize= — list categories with EN/FA translations + product counts.
 // POST /api/admin/categories — create a category (audited). Slug is auto-generated
 // from the English name; uniqueness is enforced with a numeric suffix fallback.
+// API-405 (audit v4): bounded list — shared parseListQuery (default 50, hard cap
+// 100); `total`/`page`/`pageSize` added, the `categories` key is unchanged. NOTE:
+// the product editor + discount scope editor also use this endpoint as a picker —
+// with >100 categories the picker sees only the first page (X-Total-Count exposes
+// the overflow for a future paginated picker).
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json, jsonWithTotal, parseListQuery, zodMessage } from '@/lib/server/utils'
 
 const createSchema = z.object({
   nameEn: z.string().min(2).max(60),
@@ -25,38 +30,50 @@ export function slugify(input: string): string {
   return base || 'category'
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
-  const rows = await db.category.findMany({
-    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
-    include: {
-      translations: true,
-      _count: { select: { products: true } },
-    },
-  })
-
-  return json({
-    categories: rows.map((c) => {
-      const en = c.translations.find((t) => t.locale === 'en')
-      const fa = c.translations.find((t) => t.locale === 'fa')
-      return {
-        id: c.id,
-        slug: c.slug,
-        icon: c.icon,
-        iconUrl: c.iconUrl,
-        color: c.color,
-        sortOrder: c.sortOrder,
-        isActive: c.isActive,
-        nameEn: en?.name ?? null,
-        nameFa: fa?.name ?? null,
-        descriptionEn: en?.description ?? null,
-        descriptionFa: fa?.description ?? null,
-        productCount: c._count.products,
-      }
+  const { page, pageSize, skip, take } = parseListQuery(new URL(req.url).searchParams)
+  const [rows, total] = await Promise.all([
+    db.category.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      include: {
+        translations: true,
+        _count: { select: { products: true } },
+      },
+      skip,
+      take,
     }),
-  })
+    db.category.count(),
+  ])
+
+  return jsonWithTotal(
+    {
+      total,
+      page,
+      pageSize,
+      categories: rows.map((c) => {
+        const en = c.translations.find((t) => t.locale === 'en')
+        const fa = c.translations.find((t) => t.locale === 'fa')
+        return {
+          id: c.id,
+          slug: c.slug,
+          icon: c.icon,
+          iconUrl: c.iconUrl,
+          color: c.color,
+          sortOrder: c.sortOrder,
+          isActive: c.isActive,
+          nameEn: en?.name ?? null,
+          nameFa: fa?.name ?? null,
+          descriptionEn: en?.description ?? null,
+          descriptionFa: fa?.description ?? null,
+          productCount: c._count.products,
+        }
+      }),
+    },
+    total,
+  )
 }
 
 export async function POST(req: Request) {

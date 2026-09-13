@@ -1,5 +1,8 @@
-// GET  /api/admin/announcements — all announcement-bar messages (incl. disabled),
-//                                ordered sortOrder asc then createdAt asc.
+// GET  /api/admin/announcements?page=&pageSize= — all announcement-bar messages
+//                                (incl. disabled), ordered sortOrder asc then createdAt
+//                                asc — bounded (API-405: shared parseListQuery, default
+//                                50, hard cap 100) with `total` + X-Total-Count; the
+//                                `announcements` key is unchanged.
 // POST /api/admin/announcements — create a message (audited).
 //
 // NOTE — raw SQL on purpose: the long-running dev server process was booted
@@ -12,7 +15,7 @@ import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
+import { apiError, audit, json, jsonWithTotal, parseListQuery, zodMessage } from '@/lib/server/utils'
 
 interface AnnouncementRow {
   id: string
@@ -59,14 +62,22 @@ async function fetchOne(id: string): Promise<AnnouncementRow | null> {
   return (rows as AnnouncementRow[])[0] ?? null
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await requireContentAdmin()
   if (!user) return apiError(403, 'FORBIDDEN')
 
+  const { page, pageSize, skip, take } = parseListQuery(new URL(req.url).searchParams)
+  // API-405: same bounds as the Prisma-backed lists, applied to the raw SQL.
   const rows = await db.$queryRawUnsafe<AnnouncementRow[]>(
-    `SELECT ${ANN_COLS} FROM "Announcement" ORDER BY "sortOrder" ASC, "createdAt" ASC`,
+    `SELECT ${ANN_COLS} FROM "Announcement" ORDER BY "sortOrder" ASC, "createdAt" ASC LIMIT ? OFFSET ?`,
+    take,
+    skip,
   )
-  return json({ announcements: rows })
+  const countRows = await db.$queryRawUnsafe<{ c: number | bigint }[]>(
+    'SELECT COUNT(*) AS c FROM "Announcement"',
+  )
+  const total = Number(countRows[0]?.c ?? 0)
+  return jsonWithTotal({ total, page, pageSize, announcements: rows }, total)
 }
 
 export async function POST(req: Request) {

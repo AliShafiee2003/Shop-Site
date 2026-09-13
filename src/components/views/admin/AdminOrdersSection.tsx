@@ -13,6 +13,14 @@ import { useApp } from '@/store/store'
 import { useToast } from '@/hooks/use-toast'
 
 interface AdminOrder { id: string; orderNumber: string; email: string; status: string; totalMinor: number; createdAt: string; fulfillmentStatus: string }
+interface AdminReturnItem { id: string; titleEn: string; titleFa: string; quantity: number; lineTotalMinor: number; restocked: boolean }
+interface AdminReturn {
+  id: string; status: string; reason: string; details: string | null; resolution: string | null
+  decidedBy: string | null; decidedAt: string | null; createdAt: string
+  orderNumber: string; orderEmail: string; orderStatus: string
+  items: AdminReturnItem[]; itemsTotalMinor: number
+}
+type ReturnAction = 'approve' | 'reject' | 'mark-received' | 'refund'
 
 export function AdminOrders() {
   const locale = useApp((s) => s.locale)
@@ -31,6 +39,10 @@ export function AdminOrders() {
   const [note, setNote] = useState('')
   const [noteBusy, setNoteBusy] = useState(false)
   const [cancelBusy, setCancelBusy] = useState(false)
+  // COM-401: the return queue + per-return note + in-flight action guard.
+  const [returnList, setReturnList] = useState<AdminReturn[] | null>(null)
+  const [returnNotes, setReturnNotes] = useState<Record<string, string>>({})
+  const [returnBusy, setReturnBusy] = useState<string | null>(null)
   const user = useApp((s) => s.user)
   const PAGE_SIZE = 20
 
@@ -40,6 +52,11 @@ export function AdminOrders() {
   }, [q, statusFilter, page])
   useEffect(() => { load() }, [load])
   useEffect(() => { setPage(1) }, [q, statusFilter])
+  const loadReturns = useCallback(() => {
+    apiGet<{ returns: AdminReturn[] }>('/api/admin/returns')
+      .then((r) => setReturnList(r.returns)).catch(() => setReturnList([]))
+  }, [])
+  useEffect(() => { loadReturns() }, [loadReturns])
 
   const open = async (id: string) => {
     const r = await apiGet<{ order: Record<string, unknown> }>(`/api/admin/orders/${id}`)
@@ -102,12 +119,52 @@ export function AdminOrders() {
       toast({ title: t.admin.noteSaved })
     } catch (e) { toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' }) } finally { setNoteBusy(false) }
   }
+  /** COM-401: walk a return request through its guarded state machine —
+   *  approve → mark-received (restock) → refund; reject is terminal. The server
+   *  guards every transition (409 on a stale status), restocks exactly once and
+   *  queues the customer email; here we just refresh all three views. */
+  const decideReturn = async (id: string, action: ReturnAction) => {
+    if (action === 'reject' && !window.confirm(`${t.admin.returnReject}?`)) return
+    setReturnBusy(`${id}:${action}`)
+    try {
+      const note = (returnNotes[id] ?? '').trim()
+      await apiPatch(`/api/admin/returns/${id}`, { action, note: note || undefined })
+      toast({ title: t.admin.returnDecisionSaved })
+      setReturnNotes((n) => ({ ...n, [id]: '' }))
+      loadReturns()
+      load()
+      if (detail && detail.id) {
+        const r = await apiGet<{ order: Record<string, unknown> }>(`/api/admin/orders/${String(detail.id)}`)
+        setDetail(r.order)
+      }
+    } catch (e) { toast({ title: (e as { message?: string }).message ?? t.common.error, variant: 'destructive' }) } finally { setReturnBusy(null) }
+  }
+  /** Action buttons for a return row, per current status — shared by the
+   *  queue panel and the order-detail dialog. */
+  const returnActions = (r: { id: string; status: string }) => (
+    <span className="flex flex-wrap items-center gap-1.5">
+      {r.status === 'REQUESTED' && (
+        <>
+          <Button size="sm" className="h-8" disabled={returnBusy !== null} onClick={() => decideReturn(r.id, 'approve')}>{t.admin.returnApprove}</Button>
+          <Button size="sm" variant="ghost" className="h-8 text-error hover:bg-error/10" disabled={returnBusy !== null} onClick={() => decideReturn(r.id, 'reject')}>{t.admin.returnReject}</Button>
+        </>
+      )}
+      {r.status === 'APPROVED' && (
+        <Button size="sm" variant="outline" className="h-8 border-brand/40 text-brand hover:bg-brand/10" disabled={returnBusy !== null} onClick={() => decideReturn(r.id, 'mark-received')}>{t.admin.returnReceived}</Button>
+      )}
+      {(r.status === 'APPROVED' || r.status === 'RECEIVED') && (
+        <Button size="sm" variant="outline" className="h-8 border-error/40 text-error hover:bg-error/10" disabled={returnBusy !== null} onClick={() => decideReturn(r.id, 'refund')}>{t.admin.returnRefundReturn}</Button>
+      )}
+    </span>
+  )
+  const returnBadgeTone = (status: string): 'warning' | 'brand' | 'default' | 'error' | 'success' =>
+    status === 'REQUESTED' ? 'warning' : status === 'REJECTED' ? 'error' : status === 'REFUNDED' ? 'success' : status === 'APPROVED' ? 'brand' : 'default'
 
   if (!orders) return <Spinner label={t.common.loading} />
   const ORDER_STATUSES = ['PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'REFUNDED', 'PARTIALLY_REFUNDED']
   const payments = (detail?.payments as { id: string; provider: string; amountMinor: number; status: string; cardBrand: string | null; cardLast4: string | null; failureReason: string | null; createdAt: string }[] | undefined) ?? []
   const refunds = (detail?.refunds as { id: string; amountMinor: number; reason: string | null; status: string; createdAt: string }[] | undefined) ?? []
-  const returns = (detail?.returns as { id: string; status: string; reason: string; resolution: string | null; createdAt: string }[] | undefined) ?? []
+  const returns = (detail?.returns as { id: string; status: string; reason: string; resolution: string | null; createdAt: string; items?: { quantity: number }[] }[] | undefined) ?? []
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -161,6 +218,46 @@ export function AdminOrders() {
           </div>
         </div>
       )}
+
+      {/* COM-401: the return-request queue — approve → mark-received (restock)
+          → refund, reject is terminal. Every action hits the guarded PATCH
+          /api/admin/returns/[id] which also queues the customer email. */}
+      <div className="mt-6 rounded-lg border border-line p-4">
+        <h3 className="mb-3 text-sm font-semibold text-ink">{t.admin.returns}</h3>
+        {returnList === null ? <Spinner label={t.common.loading} /> : returnList.length === 0 ? (
+          <p className="text-xs text-ink-3">{t.admin.returnEmpty}</p>
+        ) : (
+          <ul className="divide-y divide-line">
+            {returnList.map((r) => (
+              <li key={r.id} className="py-3 text-sm">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="font-mono text-xs font-semibold text-brand bdi" dir="ltr">{r.orderNumber}</span>
+                  <span className="min-w-0 max-w-48 truncate text-xs text-ink-3 bdi" dir="ltr">{r.orderEmail}</span>
+                  <Badge tone={returnBadgeTone(r.status)}>{r.status}</Badge>
+                  <span className="text-xs text-ink-2">{r.reason}</span>
+                  {r.resolution && <span className="text-xs text-ink-3">{t.admin.resolution}: {r.resolution}</span>}
+                  <span className="font-semibold text-ink bdi">{formatMoney(r.itemsTotalMinor, locale)}</span>
+                  <span className="ms-auto text-xs text-ink-3">{formatDateTime(r.createdAt, locale)}</span>
+                  {returnActions(r)}
+                </div>
+                <p className="mt-1 text-xs text-ink-3">
+                  {t.admin.returnItemsCol}: {r.items.map((i) => `${(locale === 'fa' && i.titleFa) || i.titleEn} × ${i.quantity}`).join(', ')}
+                </p>
+                {r.details && <p className="mt-0.5 text-xs text-ink-3 bdi">{r.details}</p>}
+                {r.decidedBy && <p className="mt-0.5 text-xs text-ink-3 bdi" dir="ltr">{r.decidedBy}</p>}
+                <div className="mt-2">
+                  <Input
+                    value={returnNotes[r.id] ?? ''}
+                    onChange={(e) => setReturnNotes((n) => ({ ...n, [r.id]: e.target.value }))}
+                    placeholder={t.admin.returnNotePlaceholder}
+                    className="h-8 max-w-72 text-xs"
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label={t.admin.orders} onClick={() => setDetail(null)}>
@@ -296,11 +393,25 @@ export function AdminOrders() {
                   <p className="mb-2 font-semibold">{t.admin.returns}</p>
                   <ul className="space-y-2">
                     {returns.map((r) => (
-                      <li key={r.id} className="flex flex-wrap items-center gap-x-2 text-xs">
-                        <Badge tone={r.status === 'REQUESTED' ? 'warning' : r.status === 'REJECTED' ? 'error' : 'success'}>{r.status}</Badge>
-                        <span className="text-ink-2">{r.reason}</span>
-                        {r.resolution && <span className="text-ink-3">{t.admin.resolution}: {r.resolution}</span>}
-                        <span className="ms-auto text-ink-3">{formatDateTime(r.createdAt, locale)}</span>
+                      <li key={r.id} className="text-xs">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <Badge tone={returnBadgeTone(r.status)}>{r.status}</Badge>
+                          <span className="text-ink-2">{r.reason}</span>
+                          {r.resolution && <span className="text-ink-3">{t.admin.resolution}: {r.resolution}</span>}
+                          {r.items && r.items.length > 0 && (
+                            <span className="text-ink-3">{t.admin.returnItemsCol}: {r.items.reduce((s, i) => s + i.quantity, 0)}</span>
+                          )}
+                          <span className="ms-auto text-ink-3">{formatDateTime(r.createdAt, locale)}</span>
+                          {returnActions(r)}
+                        </div>
+                        <div className="mt-1.5">
+                          <Input
+                            value={returnNotes[r.id] ?? ''}
+                            onChange={(e) => setReturnNotes((n) => ({ ...n, [r.id]: e.target.value }))}
+                            placeholder={t.admin.returnNotePlaceholder}
+                            className="h-8 max-w-72 text-xs"
+                          />
+                        </div>
                       </li>
                     ))}
                   </ul>

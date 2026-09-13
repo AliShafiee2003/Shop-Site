@@ -158,12 +158,25 @@ export function CheckoutView({ mode }: { mode?: 'success' | 'cancelled' }) {
     return <SuccessPanel locale={locale} orderNumber={orderResult.orderNumber} email={orderResult.email} refCode={publicRefRef.current} />
   }
 
-  if (!cartLoaded) return <Spinner label={t.common.loading} />
+  if (!cartLoaded)
+    return (
+      // SEO-405: the Shell does NOT wrap this view in <main> (it renders its
+      // own landmark), so the first paint — the pre-bootstrap loading state —
+      // used to be a bare spinner with no <main> and no <h1> in the raw HTML.
+      <main id="main" className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">{t.checkout.title}</h1>
+        <Spinner label={t.common.loading} />
+      </main>
+    )
 
   if (!cart || cart.items.length === 0) {
     return (
       <main id="main" className="mx-auto max-w-6xl px-4 py-20">
-        <EmptyState title={t.checkout.emptyCart} action={<Button onClick={() => navigate('/books')}>{t.checkout.emptyCartCta}</Button>} />
+        {/* SEO-405: keep ONE <h1> in every checkout state. */}
+        <h1 className="text-2xl font-bold tracking-tight text-ink">{t.checkout.title}</h1>
+        <div className="mt-8">
+          <EmptyState title={t.checkout.emptyCart} action={<Button onClick={() => navigate('/books')}>{t.checkout.emptyCartCta}</Button>} />
+        </div>
       </main>
     )
   }

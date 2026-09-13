@@ -216,3 +216,104 @@ export async function queueBackInStockEmail(
 ): Promise<void> {
   await db.mailMessage.create({ data: backInStockMail(subscriber, product, origin) })
 }
+
+/** COM-401: build the RETURN_DECISION mail row — the customer copy that tells
+ *  them what happened to their return request (approved / rejected / received /
+ *  refunded). Pairs with queueReturnDecisionEmail; the admin PATCH route calls
+ *  that after every decision. */
+export function returnDecisionMail(
+  order: { orderNumber: string; email: string; locale: string },
+  decision: { action: 'approve' | 'reject' | 'mark-received' | 'refund'; itemsTotalMinor: number; refundedMinor: number },
+): { to: string; subject: string; kind: string; bodyText: string; locale: string } {
+  const fa = order.locale === 'fa'
+  const amount = formatMinor(decision.itemsTotalMinor)
+  const refunded = formatMinor(decision.refundedMinor)
+  const subject = fa
+    ? {
+        approve: `درخواست مرجوعی سفارش ${order.orderNumber} تأیید شد`,
+        reject: `درخواست مرجوعی سفارش ${order.orderNumber} رد شد`,
+        'mark-received': `کالای مرجوعی سفارش ${order.orderNumber} دریافت شد`,
+        refund: `بازپرداخت سفارش ${order.orderNumber} انجام شد`,
+      }[decision.action]
+    : {
+        approve: `Return request for ${order.orderNumber} approved`,
+        reject: `Return request for ${order.orderNumber} rejected`,
+        'mark-received': `Your return for ${order.orderNumber} was received`,
+        refund: `Refund processed for ${order.orderNumber}`,
+      }[decision.action]
+  const body = fa
+    ? {
+        approve: [
+          'سلام،',
+          '',
+          `درخواست مرجوعی شما برای سفارش ${order.orderNumber} تأیید شد. لطفاً کالا را به نشانی فروشگاه ارسال کنید؛ پس از دریافت، بازپرداخت انجام می‌شود.`,
+          `ارزش اقلام مرجوعی: ${amount}`,
+        ],
+        reject: [
+          'سلام،',
+          '',
+          `متأسفانه درخواست مرجوعی شما برای سفارش ${order.orderNumber} رد شد. اگر سؤالی دارید با پشتیبانی تماس بگیرید.`,
+        ],
+        'mark-received': [
+          'سلام،',
+          '',
+          `کالای مرجوعی سفارش ${order.orderNumber} دریافت و به قفسه‌ها بازگردانده شد. مرحلهٔ بعدی، پردازش بازپرداخت است.`,
+        ],
+        refund: [
+          'سلام،',
+          '',
+          `بازپرداخت مربوط به مرجوعی سفارش ${order.orderNumber} انجام شد. مبلغ معمولاً ظرف چند روز کاری به کارت شما برمی‌گردد.`,
+          `مبلغ بازپرداخت: ${refunded}`,
+        ],
+      }[decision.action]
+    : {
+        approve: [
+          'Hello,',
+          '',
+          `Your return request for order ${order.orderNumber} has been approved. Please send the items back to the store address; the refund will be processed once they arrive.`,
+          `Value of the returned items: ${amount}`,
+        ],
+        reject: [
+          'Hello,',
+          '',
+          `Unfortunately your return request for order ${order.orderNumber} was rejected. If anything is unclear, please contact support.`,
+        ],
+        'mark-received': [
+          'Hello,',
+          '',
+          `We have received the returned items for order ${order.orderNumber} and put them back on the shelf. The next step is processing your refund.`,
+        ],
+        refund: [
+          'Hello,',
+          '',
+          `The refund for the returned items of order ${order.orderNumber} has been processed. It usually takes a few business days to appear on your card.`,
+          `Refund amount: ${refunded}`,
+        ],
+      }[decision.action]
+  return {
+    to: order.email,
+    subject,
+    kind: 'RETURN_DECISION',
+    bodyText: [...body, '', fa ? 'پرس‌پیکس — وین' : 'PersePix — Vienna'].join('\n'),
+    locale: fa ? 'fa' : 'en',
+  }
+}
+
+/** COM-401: queue one RETURN_DECISION mail. Best-effort, same contract as the
+ *  order mails — callers wrap it in .catch(() => undefined). */
+export async function queueReturnDecisionEmail(
+  order: { orderId: string; orderNumber: string; email: string; locale: string },
+  decision: { action: 'approve' | 'reject' | 'mark-received' | 'refund'; itemsTotalMinor: number; refundedMinor: number },
+): Promise<void> {
+  const mail = returnDecisionMail(order, decision)
+  await db.mailMessage.create({
+    data: {
+      to: mail.to,
+      subject: mail.subject,
+      kind: mail.kind,
+      bodyText: mail.bodyText,
+      locale: mail.locale,
+      orderId: order.orderId,
+    },
+  })
+}
