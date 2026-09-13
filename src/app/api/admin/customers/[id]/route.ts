@@ -144,15 +144,17 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         db.user.update({ where: { id }, data: { status: 'BLOCKED' } }),
         db.session.deleteMany({ where: { userId: id } }),
       ])
-      await audit(user.email, 'CUSTOMER_BLOCKED', 'User', id, `Blocked ${existing.email} (all sessions revoked)`)
+      await audit(user.email, 'CUSTOMER_BLOCKED', 'User', id, 'Blocked customer account (all sessions revoked)')
     } else if (action === 'UNBLOCK' && existing.status !== 'ACTIVE') {
       await db.user.update({ where: { id }, data: { status: 'ACTIVE' } })
-      await audit(user.email, 'CUSTOMER_UNBLOCKED', 'User', id, `Unblocked ${existing.email}`)
+      await audit(user.email, 'CUSTOMER_UNBLOCKED', 'User', id, 'Unblocked customer account')
     }
 
     if (role && role !== existing.role) {
       await db.user.update({ where: { id }, data: { role } })
-      await audit(user.email, 'CUSTOMER_ROLE', 'User', id, `Role ${existing.role} → ${role} for ${existing.email}`)
+      // SEC-401: no customer email in the summary — entityId already links the
+      // row to the user, so future erasure passes leave no residue here.
+      await audit(user.email, 'CUSTOMER_ROLE', 'User', id, `Role ${existing.role} → ${role}`)
     }
   }
 
@@ -171,7 +173,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       },
     })
 
-    await audit(user.email, 'CUSTOMER_NOTE', 'User', id, `Internal note ${note === null ? 'cleared' : 'updated'} for ${existing.email}`)
+    await audit(user.email, 'CUSTOMER_NOTE', 'User', id, `Internal note ${note === null ? 'cleared' : 'updated'}`)
     // Legacy note-only response shape (the admin dialog reads customer.adminNote);
     // when combined with account actions the compact { ok: true } shape is used.
     if (!action && !role) {

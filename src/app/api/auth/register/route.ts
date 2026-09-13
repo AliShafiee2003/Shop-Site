@@ -10,9 +10,27 @@ import { mintVerifyToken } from '@/lib/server/email-verification'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { apiError, clientIp, json, normalizeLocale, zodMessage } from '@/lib/server/utils'
 
+/** SEC-410 (ASVS 2.1.1 minimal quality gate): at least 2 of 4 character
+ *  classes. Long passphrases stay valid without forcing full complexity. */
+function passwordQuality(pw: string): boolean {
+  let classes = 0
+  if (/[a-z]/.test(pw)) classes++
+  if (/[A-Z]/.test(pw)) classes++
+  if (/\d/.test(pw)) classes++
+  if (/[^A-Za-z0-9]/.test(pw)) classes++
+  return classes >= 2
+}
+
 const bodySchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  // SEC-410: max(128) caps the scryptSync input (CPU-amplification via huge
+  // bodies — matches reset-password/account/password which already cap 128);
+  // the refine adds the minimum quality check register never had.
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be at most 128 characters')
+    .refine(passwordQuality, 'Password must mix at least two of: lowercase, uppercase, digits, symbols'),
   name: z.string().optional().nullable(),
   locale: z.string().optional(),
 })

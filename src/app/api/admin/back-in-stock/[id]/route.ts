@@ -4,6 +4,8 @@
 import { z } from 'zod'
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
+import { queueBackInStockEmail } from '@/lib/server/order-mail'
+import { siteUrlFrom } from '@/lib/site'
 import { apiError, audit, json, zodMessage } from '@/lib/server/utils'
 
 const patchSchema = z.object({ notified: z.boolean() })
@@ -38,8 +40,22 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   })
 
   if (parsed.data.notified) {
-    const title = sub.variant.product.translations.find((t) => t.locale === 'en')?.title ?? sub.variant.product.slug
-    await audit(user.email, 'BACK_IN_STOCK_NOTIFY', 'BackInStockSubscriber', id, `Restock notice sent to ${updated.email} — ${title} (${sub.variant.sku})`)
+    // COM-402: actually queue the mail (the batch notify route does the same).
+    // The stamp is already set; a mail failure must not 500 the admin action.
+    const titleEn =
+      sub.variant.product.translations.find((t) => t.locale === 'en')?.title ??
+      sub.variant.product.slug
+    const titleFa = sub.variant.product.translations.find((t) => t.locale === 'fa')?.title ?? ''
+    try {
+      await queueBackInStockEmail(
+        { email: updated.email, locale: sub.locale },
+        { slug: sub.variant.product.slug, titleEn, titleFa, sku: sub.variant.sku },
+        siteUrlFrom(null),
+      )
+    } catch {
+      // best-effort — same contract as the order mails
+    }
+    await audit(user.email, 'BACK_IN_STOCK_NOTIFY', 'BackInStockSubscriber', id, `Restock notice sent to ${updated.email} — ${titleEn} (${sub.variant.sku})`)
   }
   return json({ ok: true, notifiedAt: updated.notifiedAt?.toISOString() ?? null })
 }

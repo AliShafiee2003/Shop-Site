@@ -148,8 +148,21 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     // status flip + restock + a FULL refund of the remaining refundable amount
     // all run in ONE transaction, so a failure mid-way can never leave a
     // CANCELLED order with paymentStatus stuck on SUCCEEDED.
-    const result = await db.$transaction(async (tx) => {
-      const o = await tx.order.update({ where: { id }, data: patchData })
+    // COM-409: the flip is a GUARDED updateMany on the pre-read status — two
+    // concurrent PATCHes can no longer both restock (the loser sees count=0
+    // and aborts with 409 instead of double-restocking the shelf).
+    let result: { order: UpdatedOrder; items: { id: string }[]; refundedMinor: number }
+    try {
+      result = await db.$transaction(async (tx) => {
+        const flip = await tx.order.updateMany({
+          where: { id, status: order.status },
+          data: patchData,
+        })
+        if (flip.count === 0) throw new Error('ORDER_STATE_CHANGED')
+        const o = (await tx.order.findUniqueOrThrow({
+          where: { id },
+          select: { id: true, status: true, fulfillmentStatus: true },
+        })) as UpdatedOrder
 
       await tx.orderEvent.create({
         data: {
@@ -210,7 +223,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       }
 
       return { order: o as UpdatedOrder, items, refundedMinor }
-    })
+      })
+    } catch (e) {
+      if (e instanceof Error && e.message === 'ORDER_STATE_CHANGED') {
+        return apiError(409, 'ORDER_STATE_CHANGED', 'Order was already changed by another request — reload and retry')
+      }
+      throw e
+    }
     updated = result.order
 
     await audit(user.email, 'ORDER_STATUS', 'Order', order.id, `Status ${order.status} → ${status} (${order.orderNumber})`)

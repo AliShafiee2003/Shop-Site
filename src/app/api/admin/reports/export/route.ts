@@ -1,13 +1,7 @@
 // GET /api/admin/reports/export — CSV attachment (daily rows + per-product rows).
 import { db } from '@/lib/db'
 import { requireAdmin } from '@/lib/server/auth'
-import { apiError, parseJsonSafe, parseIntParam, pickLocale } from '@/lib/server/utils'
-
-function csvEscape(value: string | number): string {
-  const s = String(value)
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-  return s
-}
+import { apiError, csvCell, parseIntParam, parseJsonSafe, pickLocale } from '@/lib/server/utils'
 
 export async function GET(req: Request) {
   const user = await requireAdmin()
@@ -68,16 +62,16 @@ export async function GET(req: Request) {
   const lines: string[] = []
   lines.push('section,date,country,title,orders,units,revenue_minor,saved_minor')
   for (const [date, v] of [...dailyMap.entries()].sort(([a], [b]) => a.localeCompare(b))) {
-    lines.push(['daily', date, '', '', v.orders, '', v.revenueMinor, ''].map(csvEscape).join(','))
+    lines.push(['daily', date, '', '', v.orders, '', v.revenueMinor, ''].map(csvCell).join(','))
   }
   for (const [, v] of byProductMap) {
-    lines.push(['by_product', '', '', v.title, '', v.units, v.revenueMinor, ''].map(csvEscape).join(','))
+    lines.push(['by_product', '', '', v.title, '', v.units, v.revenueMinor, ''].map(csvCell).join(','))
   }
   for (const [code, v] of byCountryMap) {
-    lines.push(['by_country', '', code, '', v.orders, '', v.revenueMinor, ''].map(csvEscape).join(','))
+    lines.push(['by_country', '', code, '', v.orders, '', v.revenueMinor, ''].map(csvCell).join(','))
   }
   for (const [, v] of byPromotionMap) {
-    lines.push(['by_promotion', '', '', v.name, v.orders, '', v.revenueMinor, v.savedMinor].map(csvEscape).join(','))
+    lines.push(['by_promotion', '', '', v.name, v.orders, '', v.revenueMinor, v.savedMinor].map(csvCell).join(','))
   }
 
   const csv = lines.join('\n')

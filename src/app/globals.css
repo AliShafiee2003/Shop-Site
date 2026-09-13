@@ -133,7 +133,10 @@
   --orange-dark: #B94F0A;
   --ink: #172026;
   --ink-2: #47545D;
-  --ink-3: #71808A;
+  /* A11Y-401: was #71808A (4.07:1 on white — WCAG AA fail for 11–16px
+     caption/hint text). #5F6B76 gives 5.4:1 on white and 5.0:1 on --soft,
+     clearing the 4.5:1 bar in every usage context. */
+  --ink-3: #5F6B76;
   --line: #D7DEE3;
   --soft: #F4F7F8;
   --success: #247A52;

@@ -92,6 +92,21 @@ export async function POST(req: Request) {
     }),
     // 7) Back-in-stock requests (contain the email).
     db.backInStockSubscriber.deleteMany({ where: { email } }),
+    // 8) Mail outbox (SEC-401): queued AND already-sent mails keep the real
+    //    address in `to` while bodyText quotes the email, order items, amounts
+    //    and even one-time tokens. Housekeeping only prunes mails sent >30d
+    //    ago, so unsent rows would live forever. Scrub in the same tx.
+    db.mailMessage.updateMany({
+      where: { to: email },
+      data: { to: `deleted-${user.id}@mails.invalid`, bodyText: '[erased]' },
+    }),
+    // 9) Audit-log residue (SEC-401): the customer email appears in `summary`
+    //    (e.g. "Blocked user@…") and as actorEmail of the user's own actions.
+    //    entityId survives, so the commercial/administrative trail stays intact.
+    db.auditLog.updateMany({
+      where: { OR: [{ summary: { contains: email } }, { actorEmail: email }] },
+      data: { summary: '[erased]', actorEmail: `deleted-${user.id}@audit.invalid` },
+    }),
   ])
 
   await destroySession()

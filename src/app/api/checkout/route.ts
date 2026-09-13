@@ -39,7 +39,9 @@ const bodySchema = z.object({
   shippingMethodId: z.string().min(1),
   discountCode: z.string().max(40).optional().nullable(),
   locale: z.string().default('en'),
-  customerNote: z.string().optional().nullable(),
+  // COM-404: cap the note like giftMessage — the only unbounded text field in
+  // checkout let multi-MB bodies into the DB, the admin panel and the mails.
+  customerNote: z.string().max(1000).optional().nullable(),
   giftWrap: z.boolean().optional().nullable(),
   giftMessage: z.string().max(300).optional().nullable(),
   consents: z.object({ terms: z.literal(true) }),

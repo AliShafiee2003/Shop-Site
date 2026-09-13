@@ -190,3 +190,13 @@ export function toKebab(raw: string, maxLen = 80): string {
     .replace(/^-+|-+$/g, '')
     .slice(0, maxLen)
 }
+
+/** RFC-4180 CSV cell + SEC-011/SEC-408 formula-injection guard — ONE policy for
+ *  every CSV export (moved here from products/export so reports/export shares
+ *  it). Spreadsheet formula starters (=, +, -, @, TAB, CR) are neutralized by
+ *  prefixing an apostrophe so Excel/Sheets treat the cell as text. */
+export function csvCell(value: unknown): string {
+  let s = String(value ?? '')
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}

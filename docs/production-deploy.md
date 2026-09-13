@@ -116,11 +116,17 @@ Until the dedicated scheduler exists (audit 07-C §6), background work is driven
 **external** scheduler, not by probe polling:
 
 ```cron
-*/10 * * * * curl -fsS -H "x-cron-secret: $CRON_SECRET" https://books.example.com/api/cron/tick >/dev/null
+*/10 * * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://books.example.com/api/cron/tick >/dev/null
 ```
 
-(every 10 min; exact header name per the OPS-004/1-b implementation). This decouples
-mail dispatch + housekeeping from `/api/healthz` being polled.
+(every 10 min; **OPS-403 fixed**: the route guards on `Authorization: Bearer`
+(see `src/app/api/cron/tick/route.ts`) — an earlier revision of this snippet
+used `x-cron-secret`, which the route rejects with 403, silently killing
+housekeeping/mail/digest). To make a silent failure visible, log non-200s:
+
+```cron
+*/10 * * * * curl -fsS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $CRON_SECRET" https://books.example.com/api/cron/tick | grep -q 200 || echo "cron tick FAILED" >&2
+```
 
 ---
 

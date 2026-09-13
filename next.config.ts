@@ -60,6 +60,14 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
+      // PERF-403: self-hosted fonts are content-static like images — without
+      // this rule they revalidated (max-age=0) on every visit.
+      {
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
       // Static CSP for API routes only (page CSP is nonce-based in proxy.ts).
       {
         source: "/api/:path*",

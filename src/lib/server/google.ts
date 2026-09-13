@@ -21,6 +21,26 @@ export const GOOGLE_SCOPES = 'openid email profile'
 export const GOOGLE_STATE_COOKIE = 'sp_g_state'
 export const GOOGLE_STATE_MAX_AGE_SEC = 600 // 10 minutes to finish the dance
 
+/** Validate the OAuth `next` continuation path (SEC-405). The old check
+ *  (`startsWith('/') && !startsWith('//')`) still let `/\evil.com` through:
+ *  WHATWG URL parsers treat `\` as `/` for special schemes, so the callback's
+ *  `Location: /\evil.com` would bounce the browser to `//evil.com`.
+ *  A safe path starts with exactly one `/` and contains no backslash. */
+export function safeOAuthNext(raw: string | null | undefined): string | undefined {
+  if (typeof raw !== 'string') return undefined
+  if (!/^\/(?!\/)/.test(raw)) return undefined
+  if (raw.includes('\\')) return undefined
+  return raw
+}
+
+/** Build the state cookie's Set-Cookie value in ONE place (SEC-407): the
+ *  hand-rolled literals never carried `Secure`, unlike every other app cookie
+ *  (`secure: NODE_ENV === 'production'`). */
+export function googleStateSetCookie(value: string, maxAgeSec: number): string {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  return `${GOOGLE_STATE_COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}${secure}`
+}
+
 /** Google userinfo claims we consume and where they land in our User row. */
 export interface GoogleProfile {
   sub: string
@@ -112,7 +132,7 @@ export function verifyGoogleState(
     return {
       locale: payload.locale === 'fa' ? 'fa' : 'en',
       intent: payload.intent === 'register' ? 'register' : 'login',
-      next: typeof payload.next === 'string' && payload.next.startsWith('/') ? payload.next : undefined,
+      next: safeOAuthNext(payload.next),
     }
   } catch {
     return null

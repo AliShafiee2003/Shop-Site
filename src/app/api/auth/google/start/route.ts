@@ -7,12 +7,13 @@ import { rateLimit } from '@/lib/server/rate-limit'
 import {
   GOOGLE_AUTH_ENDPOINT,
   GOOGLE_SCOPES,
-  GOOGLE_STATE_COOKIE,
   GOOGLE_STATE_MAX_AGE_SEC,
   createGoogleState,
   googleClientId,
   googleConfigured,
   googleRedirectUri,
+  googleStateSetCookie,
+  safeOAuthNext,
 } from '@/lib/server/google'
 
 export async function GET(req: NextRequest) {
@@ -30,8 +31,8 @@ export async function GET(req: NextRequest) {
   const sp = req.nextUrl.searchParams
   const locale = sp.get('locale') === 'fa' ? 'fa' : 'en'
   const intent = sp.get('intent') === 'register' ? 'register' : 'login'
-  const nextParam = sp.get('next')
-  const next = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : undefined
+  // SEC-405: shared validator — also rejects backslash trickery (/\evil.com).
+  const next = safeOAuthNext(sp.get('next'))
 
   const state = createGoogleState({ locale, intent, next, ts: Date.now() })
 
@@ -46,9 +47,7 @@ export async function GET(req: NextRequest) {
   url.searchParams.set('include_granted_scopes', 'true')
 
   const headers = new Headers({ Location: url.toString() })
-  headers.append(
-    'Set-Cookie',
-    `${GOOGLE_STATE_COOKIE}=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${GOOGLE_STATE_MAX_AGE_SEC}`,
-  )
+  // SEC-407: single cookie builder — carries Secure in production.
+  headers.append('Set-Cookie', googleStateSetCookie(state, GOOGLE_STATE_MAX_AGE_SEC))
   return new Response(null, { status: 302, headers })
 }

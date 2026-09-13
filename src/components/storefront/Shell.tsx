@@ -120,8 +120,14 @@ export function Shell() {
       .then((b) => {
         setUser(b.user)
         if (b.cart) {
-          const n = normalizeCart(b.cart)
-          setCartSummary(n.count, n.subtotalMinor)
+          // E2E-401: on /cart the CartView's own refresh() is authoritative —
+          // a slow bootstrap snapshot resolving AFTER it stamped the real
+          // count used to overwrite the badge back to a stale value.
+          const onCart = /^\/(fa\/)?cart(\/|$)/.test(window.location.pathname)
+          if (!onCart) {
+            const n = normalizeCart(b.cart)
+            setCartSummary(n.count, n.subtotalMinor)
+          }
         }
         if (b.settings) {
           setSettings(b.settings.store)

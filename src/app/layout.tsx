@@ -70,9 +70,20 @@ export default async function RootLayout({
   // header and the dev CSP still allows 'unsafe-inline', so the attribute is
   // simply omitted. All storefront routes are force-dynamic, so reading
   // headers() here forces nothing that wasn't already dynamic.
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const reqHeaders = await headers();
+  const nonce = reqHeaders.get("x-nonce") ?? undefined;
+  // Audit SEO-401: /fa content was served with <html lang="en" dir="ltr"> —
+  // wrong for crawlers and screen readers. The proxy exposes the real request
+  // path via `x-sp-path`; the fa locale is the /fa prefix (isomorphic with the
+  // KNOWN_ROOTS routing used by Shell).
+  const spPath = reqHeaders.get("x-sp-path") ?? "/";
+  const isFa = spPath === "/fa" || spPath.startsWith("/fa/");
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html
+      lang={isFa ? "fa" : "en"}
+      dir={isFa ? "rtl" : "ltr"}
+      suppressHydrationWarning
+    >
       <body className="antialiased bg-background text-foreground font-sans">
         <script
           id="sp-legacy-hash-migration"

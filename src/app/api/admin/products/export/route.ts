@@ -7,17 +7,7 @@
 // columns after them are extra (import ignores unknown headers by name).
 import { db } from '@/lib/db'
 import { requireContentAdmin } from '@/lib/server/auth'
-import { apiError, audit } from '@/lib/server/utils'
-
-/** Quote a cell only when needed (commas, quotes, newlines) — RFC-4180 style. */
-function csvCell(value: unknown): string {
-  let s = String(value ?? '')
-  // SEC-011 / OWASP "CSV injection": neutralize spreadsheet formula starters
-  // (=, +, -, @, TAB, CR) by prefixing an apostrophe so Excel/Sheets treat the
-  // cell as text instead of executing a formula on admin import.
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-}
+import { apiError, audit, csvCell } from '@/lib/server/utils'
 
 export async function GET() {
   const user = await requireContentAdmin()

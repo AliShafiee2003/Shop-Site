@@ -18,6 +18,7 @@ import {
   googleClientSecret,
   googleConfigured,
   googleRedirectUri,
+  googleStateSetCookie,
   verifyGoogleState,
   type GoogleProfile,
 } from '@/lib/server/google'
@@ -26,8 +27,9 @@ function fail(locale: string, reason: string): Response {
   const headers = new Headers({
     Location: `/${locale === 'fa' ? 'fa/' : ''}login?google=${encodeURIComponent(reason)}`,
   })
-  // Always clear the state cookie — the dance is over either way.
-  headers.append('Set-Cookie', `${GOOGLE_STATE_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`)
+  // Always clear the state cookie — the dance is over either way (SEC-407:
+  // single builder, Secure in production).
+  headers.append('Set-Cookie', googleStateSetCookie('', 0))
   return new Response(null, { status: 302, headers })
 }
 
@@ -37,7 +39,7 @@ function succeed(locale: string, next?: string): Response {
   if (locale === 'fa' && !target.startsWith('/fa')) target = `/fa${target}`
   const sep = target.includes('?') ? '&' : '?'
   const headers = new Headers({ Location: `${target}${sep}welcome=google` })
-  headers.append('Set-Cookie', `${GOOGLE_STATE_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`)
+  headers.append('Set-Cookie', googleStateSetCookie('', 0))
   return new Response(null, { status: 302, headers })
 }
 

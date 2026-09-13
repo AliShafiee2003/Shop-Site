@@ -164,3 +164,55 @@ export async function queueShippingNoticeEmail(
     },
   })
 }
+
+/** COM-402: build the BACK_IN_STOCK mail row. The old notify route only
+ *  stamped `notifiedAt` — subscribers were told "sent" while the dispatcher
+ *  (which only drains MailMessage rows) had nothing to send. Copy mirrors the
+ *  admin outbox BACK_IN_STOCK preview (admin/emails route). */
+export function backInStockMail(
+  subscriber: { email: string; locale: string | null },
+  product: { slug: string; titleEn: string; titleFa: string; sku: string },
+  origin?: string | { headers: Headers } | null,
+): { to: string; subject: string; kind: string; bodyText: string; locale: string } {
+  const fa = subscriber.locale === 'fa'
+  const site = resolveOrigin(origin)
+  const title = fa ? product.titleFa || product.titleEn : product.titleEn
+  const link = `${site}/books/${product.slug}`
+  const subject = fa ? `«${title}» دوباره موجود شد` : `“${title}” is back in stock`
+  const body = fa
+    ? [
+        'سلام،',
+        '',
+        `خبر خوب — «${title}» دوباره به قفسه‌ها برگشت. موجودی محدود است، پس زودتر سر بزنید:`,
+        link,
+        '',
+        `کد کالا: ${product.sku}`,
+        'پرس‌پیکس — وین',
+      ].join('\n')
+    : [
+        'Hello,',
+        '',
+        `Good news — “${title}” is back on our shelves. Stock is limited, so don't wait too long:`,
+        link,
+        '',
+        `SKU: ${product.sku}`,
+        'PersePix — Vienna',
+      ].join('\n')
+  return {
+    to: subscriber.email,
+    subject,
+    kind: 'BACK_IN_STOCK',
+    bodyText: body,
+    locale: fa ? 'fa' : 'en',
+  }
+}
+
+/** COM-402: queue one BACK_IN_STOCK mail (single-subscriber notify path).
+ *  Best-effort, same contract as the order mails. */
+export async function queueBackInStockEmail(
+  subscriber: { email: string; locale: string | null },
+  product: { slug: string; titleEn: string; titleFa: string; sku: string },
+  origin?: string | { headers: Headers } | null,
+): Promise<void> {
+  await db.mailMessage.create({ data: backInStockMail(subscriber, product, origin) })
+}
